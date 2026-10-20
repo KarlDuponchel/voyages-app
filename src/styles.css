@@ -129,7 +129,8 @@ a {
 /* ---------- Mise en page ---------- */
 .screen {
   min-height: 100dvh;
-  padding: calc(var(--safe-top) + 16px) 0 calc(var(--tabbar-h) + var(--safe-bottom) + 32px);
+  /* +32px : sort les premiers textes de la zone floutée par iOS sous la barre d'état */
+  padding: calc(var(--safe-top) + 32px) 0 calc(var(--tabbar-h) + var(--safe-bottom) + 32px);
   display: flex;
   flex-direction: column;
   gap: 16px;
