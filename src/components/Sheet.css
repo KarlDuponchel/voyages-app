@@ -1,0 +1,52 @@
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(5, 7, 15, 0.55);
+  animation: sheet-fade 0.2s ease both;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 20px calc(var(--safe-bottom) + 28px);
+  border-radius: 32px 32px 0 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 0;
+  animation: sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.sheet__grab {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+  align-self: center;
+  flex: none;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-backdrop {
+    animation: none;
+  }
+}

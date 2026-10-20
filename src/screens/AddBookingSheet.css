@@ -1,0 +1,85 @@
+.add-option {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  text-align: left;
+}
+.add-option--featured {
+  border: 1.5px solid var(--accent-sunset);
+}
+.add-option__chip {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+.add-option__address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+}
+.add-option__copy {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.add-form__file {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-lavender) 12%, transparent);
+}
+
+.add-form__kinds {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.add-form__kinds legend {
+  margin-bottom: 6px;
+}
+.add-form__kinds label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.add-form__kinds label span {
+  color: var(--text-primary);
+}
+.add-form__kinds input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.add-form__kinds label:has(input:checked) {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+.add-form__kinds label:has(input:focus-visible) {
+  outline: 2px solid var(--accent-sunset);
+  outline-offset: 2px;
+}

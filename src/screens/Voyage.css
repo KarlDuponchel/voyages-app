@@ -1,0 +1,94 @@
+.voyage__hero {
+  position: relative;
+  height: calc(320px + var(--safe-top));
+}
+.voyage__hero > svg {
+  position: absolute;
+  inset: 0;
+}
+
+.voyage__nav {
+  position: absolute;
+  top: calc(var(--safe-top) + 12px);
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  color: #f5f1e8;
+}
+.voyage__nav .icon-btn {
+  color: #f5f1e8;
+  background: rgba(10, 15, 31, 0.45);
+}
+
+.voyage__title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.voyage__country {
+  color: var(--accent-sun);
+}
+.voyage__chip {
+  background: color-mix(in srgb, var(--bg-base) 55%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+.segmented button {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.segmented button.is-active {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+}
+
+.voyage__day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+}
+.voyage__day i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-sunset);
+}
+
+.voyage__empty {
+  margin: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.voyage__fab {
+  position: fixed;
+  z-index: 15;
+  right: max(24px, calc(50% - 240px + 24px));
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
+  border-radius: 999px;
+  padding: 14px 20px 14px 18px;
+  font-size: 15px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-sunset) 40%, transparent);
+}

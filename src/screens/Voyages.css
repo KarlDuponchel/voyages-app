@@ -1,0 +1,23 @@
+h2.overline {
+  margin: 4px 0 0;
+}
+
+.trip-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px 10px 10px;
+}
+.trip-row__cover {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.trip-row__badge {
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--accent-sunset) 16%, transparent);
+  color: var(--accent-sunset);
+  font-weight: 600;
+}

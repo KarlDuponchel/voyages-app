@@ -1,0 +1,110 @@
+.billet {
+  align-items: center;
+  gap: 18px;
+}
+.billet > header {
+  width: 100%;
+}
+
+.billet__offline {
+  color: var(--accent-lagoon);
+  background: color-mix(in srgb, var(--accent-lagoon) 14%, transparent);
+}
+
+/* Le billet utilise les couleurs "inversées" de la palette : clair sur fond sombre, sombre sur fond clair */
+.ticket {
+  width: calc(100% - 2 * var(--gutter));
+  border-radius: var(--radius-xl);
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.ticket__dim {
+  opacity: 0.6;
+}
+
+.ticket__band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px;
+  background: var(--gradient-sunset);
+  color: var(--text-on-accent);
+}
+
+.ticket__route {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 22px 6px;
+}
+.ticket__route--simple {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.ticket__code {
+  font-family: var(--font-display);
+  font-synthesis: none;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1.1;
+}
+.ticket__mid {
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-sunset);
+}
+.ticket__mid .caption {
+  color: var(--text-inverse);
+}
+
+.ticket__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 12px;
+  margin: 0;
+  padding: 16px 22px 20px;
+}
+.ticket__grid dd {
+  margin: 2px 0 0;
+}
+
+.ticket__perf {
+  position: relative;
+  height: 24px;
+  margin: 0 -1px;
+  background: radial-gradient(circle at 0 50%, var(--bg-base) 12px, transparent 12.5px),
+    radial-gradient(circle at 100% 50%, var(--bg-base) 12px, transparent 12.5px);
+}
+.ticket__perf::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  border-top: 1.5px dashed currentColor;
+  opacity: 0.25;
+}
+
+.ticket__qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 24px;
+}
+.qr {
+  border-radius: 6px;
+}
+
+.billet__source {
+  width: calc(100% - 2 * var(--gutter));
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+}

@@ -1,0 +1,110 @@
+.stories {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 2px var(--gutter);
+  scrollbar-width: none;
+}
+.stories::-webkit-scrollbar {
+  display: none;
+}
+.story {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.story__ring {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  padding: 3px;
+  background: var(--border-subtle);
+}
+.story__ring.is-new {
+  background: var(--gradient-sunset);
+}
+.story__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--bg-base);
+}
+
+/* Les cartes photo gardent un texte clair, quel que soit le thème */
+.memory,
+.memory-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  color: #f5f1e8;
+  isolation: isolate;
+}
+.memory > svg,
+.memory-card > svg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.memory::after,
+.memory-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 45%, rgba(10, 15, 31, 0.85));
+}
+
+.memory {
+  height: 210px;
+  border-radius: 26px;
+}
+.memory__tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(10, 15, 31, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.memory__tag svg {
+  color: #f6c46a;
+}
+.memory__bottom {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+}
+.memory__play {
+  flex: none;
+  padding: 10px 14px 10px 12px;
+  background: #f5f1e8;
+  color: #0a0f1f;
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.memory-card {
+  height: 200px;
+  border-radius: 22px;
+}
+.memory-card__text {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

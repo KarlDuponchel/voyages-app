@@ -1,0 +1,40 @@
+.profil-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.profil-theme {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.profil-theme button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.profil-theme button.is-active {
+  border-color: var(--accent-sunset);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent-sunset) 12%, transparent);
+}
+.profil-theme button.is-active svg {
+  color: var(--accent-sunset);
+}
+
+.profil-steps {
+  margin: 0;
+  padding-left: 36px;
+  gap: 8px;
+}
+.profil-steps svg {
+  vertical-align: -2px;
+  color: var(--accent-sunset);
+}

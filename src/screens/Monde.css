@@ -1,0 +1,76 @@
+.monde {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ciel étoilé (opacité réglable dans palettes.ts : starsOpacity) */
+.monde__stars {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 560px;
+  pointer-events: none;
+  opacity: var(--stars-opacity);
+  background-image: radial-gradient(1.4px 1.4px at 12% 18%, #fff8 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 64%, #fff6 50%, transparent 51%), radial-gradient(1.6px 1.6px at 46% 9%, #fff7 50%, transparent 51%),
+    radial-gradient(1px 1px at 64% 38%, #fff5 50%, transparent 51%), radial-gradient(1.2px 1.2px at 82% 22%, #fff8 50%, transparent 51%),
+    radial-gradient(1px 1px at 91% 71%, #fff5 50%, transparent 51%), radial-gradient(1.4px 1.4px at 6% 84%, #fff6 50%, transparent 51%),
+    radial-gradient(1px 1px at 37% 88%, #fff4 50%, transparent 51%), radial-gradient(1.3px 1.3px at 74% 92%, #fff6 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 52%, #fff3 50%, transparent 51%);
+}
+
+.monde > *:not(.monde__stars) {
+  position: relative;
+}
+
+.monde__globe {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+}
+
+.monde__tag {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  border: 1px solid var(--border-subtle);
+}
+.monde__tag i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-sun);
+}
+
+.monde__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+}
+
+.monde__next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: var(--gradient-sunset);
+  color: var(--text-on-accent);
+}
+.monde__next-icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #0a0f1f;
+  color: #f6c46a;
+}
