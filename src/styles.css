@@ -227,6 +227,24 @@ a {
   color: var(--text-primary);
   font: inherit;
   font-size: 16px; /* en dessous de 16px, Safari iOS zoome sur le champ */
+  min-width: 0; /* les champs date / select ont une largeur minimale qui les fait déborder côte à côte */
+}
+/* Champs date et heure : même rendu que les autres champs (Safari iOS les élargit et les centre sinon) */
+.input[type='date'],
+.input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 48px;
+  padding-left: 12px;
+  padding-right: 10px;
+}
+.input::-webkit-date-and-time-value {
+  text-align: left;
+}
+.input::-webkit-calendar-picker-indicator {
+  margin-left: 2px;
+  opacity: 0.6;
 }
 .input:focus {
   outline: none;
@@ -234,6 +252,7 @@ a {
 }
 label.field,
 div.field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
