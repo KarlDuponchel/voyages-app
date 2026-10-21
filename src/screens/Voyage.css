@@ -82,13 +82,3 @@
   gap: 6px;
 }
 
-.voyage__fab {
-  position: fixed;
-  z-index: 15;
-  right: max(24px, calc(50% - 240px + 24px));
-  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
-  border-radius: 999px;
-  padding: 14px 20px 14px 18px;
-  font-size: 15px;
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-sunset) 40%, transparent);
-}

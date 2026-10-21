@@ -41,7 +41,7 @@ export function Voyage() {
   const shown = tab === 'Billets' ? trip.bookings.filter((b) => b.ticket || b.reference) : trip.bookings
 
   return (
-    <main className="screen voyage" style={{ paddingTop: 0 }}>
+    <main className={`screen voyage ${editable ? 'screen--fab' : ''}`} style={{ paddingTop: 0 }}>
       <section className="voyage__hero">
         <Cover colors={trip.cover} skyline fadeTo="var(--bg-base)" />
         <div className="voyage__nav">
@@ -123,7 +123,7 @@ export function Voyage() {
       )}
 
       {editable && (
-        <button className="voyage__fab btn btn--accent" onClick={() => setAdding(true)}>
+        <button className="fab btn btn--accent" onClick={() => setAdding(true)}>
           <Plus size={20} /> Ajouter
         </button>
       )}

@@ -1,5 +1,5 @@
-import { BarChart3, Plane } from 'lucide-react'
-import { useMemo } from 'react'
+import { BarChart3, Plane, Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Globe } from '../components/Globe'
 import { useAuth } from '../data/auth'
@@ -8,6 +8,7 @@ import { daysUntil, formatNumber, formatRange } from '../lib/format'
 import { visitedCities } from '../lib/stats'
 import { mainPlace } from '../lib/trip'
 import { useStats } from '../lib/useStats'
+import { NewTripSheet } from './NewTripSheet'
 import './Monde.css'
 
 export function Monde() {
@@ -25,9 +26,10 @@ export function Monde() {
     return place ? { name: place.city, lat: place.lat, lng: place.lng } : undefined
   }, [next])
   const globeSize = Math.min(320, window.innerWidth - 60)
+  const [creating, setCreating] = useState(false)
 
   return (
-    <main className="screen monde">
+    <main className="screen screen--fab monde">
       <div className="monde__stars" aria-hidden />
 
       <header className="row between px">
@@ -99,6 +101,11 @@ export function Monde() {
           </Link>
         </section>
       )}
+
+      <button className="fab btn btn--accent" onClick={() => setCreating(true)}>
+        <Plus size={20} /> Nouveau voyage
+      </button>
+      <NewTripSheet open={creating} onClose={() => setCreating(false)} />
     </main>
   )
 }
