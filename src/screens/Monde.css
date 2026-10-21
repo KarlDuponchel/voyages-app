@@ -18,7 +18,8 @@
     radial-gradient(1px 1px at 55% 52%, #fff3 50%, transparent 51%);
 }
 
-.monde > *:not(.monde__stars) {
+/* (sauf le bouton flottant, qui doit rester en position fixe) */
+.monde > *:not(.monde__stars, .fab) {
   position: relative;
 }
 
