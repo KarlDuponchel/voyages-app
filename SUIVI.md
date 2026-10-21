@@ -41,23 +41,58 @@
 ## Session du 21 octobre 2026
 
 ### Fait
-- Titres passés en **Bricolage Grotesque** : Sink est retirée partout.
-- **Schéma Supabase multi-utilisateurs** : `supabase/migrations/20261021120000_schema_initial.sql`, expliqué dans [docs/supabase.md](docs/supabase.md).
-  - Profils, voyages à plusieurs étapes, membres avec rôles (owner / editor / viewer), invitations par lien, réservations, fichiers, pays visités.
-  - Sécurité par voyage (RLS) vérifiée par 34 tests : `npm run test:db`.
+- **Police** : les titres sont en **Bricolage Grotesque**, Sink est retirée partout.
+- **Base Supabase multi-utilisateurs** (projet `qpxcaywcslayfmcjcpgw`, région Europe) : le schéma est dans `supabase/migrations/20261021120000_schema_initial.sql` et expliqué dans [docs/supabase.md](docs/supabase.md).
+  - Profils, voyages à plusieurs étapes, membres avec rôles (owner / editor / viewer), invitations par lien (usage unique, 14 jours), réservations avec fuseau horaire, fichiers (bucket privé `trip-files`), pays visités, suppression de compte.
+  - La sécurité par voyage (RLS) est vérifiée par 34 tests : `npm run test:db`.
+- **App branchée sur Supabase** :
+  - connexion par code reçu par e-mail (indispensable pour l'app installée sur iPhone) ;
+  - création de voyage avec recherche de ville (Open-Meteo), y compris depuis un bouton flottant sur l'accueil ;
+  - plusieurs villes par voyage (bloc « Étapes » dans l'onglet Itinéraire) ;
+  - « Voyageurs » : membres, lien d'invitation, quitter ou supprimer le voyage ;
+  - profil : prénom, ville de départ (pour les distances), pays visités avant l'app, déconnexion, suppression du compte ;
+  - stats, globe et villes calculés à partir des vraies données ; voyages d'exemple retirés ;
+  - copie locale pour consulter l'app hors ligne.
+- **Côté Supabase** (fait par Karl) : migration exécutée, modèles d'e-mail avec `{{ .Token }}`, SMTP `noreply@karlduponchel.fr`.
 
-- **App branchée sur Supabase** (projet `qpxcaywcslayfmcjcpgw`) :
-  - connexion par code reçu par e-mail ;
-  - création de voyage avec recherche de ville ;
-  - invitations par lien ;
-  - profil, pays visités, suppression du compte ;
-  - copie locale pour le mode hors ligne ;
-  - voyages d'exemple retirés.
+### Reste à vérifier
+- [ ] **Redirect URLs** réglées (Vercel + localhost).
+- [ ] Les e-mails arrivent en spam : vérifier SPF / DKIM / DMARC du domaine, et passer les modèles en français.
+- [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 
-### À faire par Karl
-- [x] Créer le projet Supabase et transmettre l'URL et la clé publique.
-- [ ] Exécuter la migration dans **SQL Editor** (voir [docs/supabase.md](docs/supabase.md) § Mise en place).
-- [ ] Ajouter `{{ .Token }}` dans les modèles d'e-mail **Magic Link** et **Confirm signup**.
-- [ ] Régler les **Redirect URLs** (Vercel + localhost).
-- [ ] Avant d'inviter quelqu'un d'autre : brancher un **SMTP** (Resend, Brevo…).
-- [ ] Tester : connexion, création d'un voyage, invitation de la deuxième personne.
+## Feuille de route conseillée
+
+### 1. Consolider (court, avant d'inviter du monde)
+- Modifier ou supprimer une réservation, modifier un voyage (titre, dates, budget), réordonner les étapes.
+- **Supabase CLI** : appliquer les prochaines migrations en ligne de commande plutôt que par copier-coller, et générer les types TypeScript de la base.
+- Projet gratuit : Supabase **met en pause** un projet sans activité pendant 7 jours. À surveiller, ou passer en offre payante à l'ouverture.
+
+### 2. Billets PDF
+- Joindre un PDF ou une capture à une réservation : le bucket `trip-files` et ses règles de sécurité sont prêts.
+- Consulter le billet hors ligne (le vrai QR code à l'embarquement).
+- C'est la base de l'étape suivante.
+
+### 3. Import automatique par l'IA (la fonction phare)
+- Une adresse de transfert par utilisateur : réception de l'e-mail (Cloudflare Email Routing ou un service d'e-mails entrants), puis une Edge Function Supabase.
+- L'IA (Claude) lit l'e-mail ou le PDF et extrait la réservation : type, dates, horaires, référence, données du billet.
+- On la propose à l'utilisateur pour validation avant de l'enregistrer.
+
+### 4. Photos et souvenirs
+- Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
+- Remplace le compteur `photos: 0` et les couvertures en dégradé.
+- Points à anticiper : les quotas de stockage et leur coût.
+
+### 5. Budget partagé
+- Dépenses par voyage, qui a payé quoi, répartition et soldes entre participants.
+
+### 6. Notifications
+- Web Push : sur iPhone, ça ne marche qu'avec l'app installée sur l'écran d'accueil (iOS 16.4 et plus).
+- Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
+
+### 7. Ouverture au public
+- CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
+- Gestion des quotas et des coûts, nom de domaine, page d'accueil.
+
+### Plus tard
+- Bilan annuel des voyages (« Wrapped »).
+- Souvenirs automatiques (« il y a un an »).
