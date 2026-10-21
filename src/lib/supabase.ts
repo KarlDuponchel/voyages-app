@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
+import type { Database } from '../data/database.types'
 
-/** Client Supabase partagé (URL et clé publique dans le fichier .env). */
-export const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, {
+/**
+ * Client Supabase partagé (URL et clé publique dans le fichier .env).
+ * Types générés depuis la base : npx supabase gen types typescript --linked | Out-File -Encoding utf8 src/data/database.types.ts
+ */
+export const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 })
 

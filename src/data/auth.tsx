@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
+import type { TablesUpdate } from './database.types'
 import type { Profile } from './types'
 
 /**
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     updateProfile: async (patch) => {
       if (!userId) return
-      const row: Record<string, unknown> = {}
+      const row: TablesUpdate<'profiles'> = {}
       if (patch.displayName !== undefined) row.display_name = patch.displayName
       if (patch.homeCity !== undefined) row.home_city = patch.homeCity
       if (patch.homeLat !== undefined) row.home_lat = patch.homeLat

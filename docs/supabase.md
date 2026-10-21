@@ -80,9 +80,13 @@ npx supabase db push
 
 Et pour générer les types TypeScript de la base :
 
-```bash
-npx supabase gen types typescript --linked > src/data/database.types.ts
+```powershell
+npx supabase gen types typescript --linked | Out-File -Encoding utf8 src/data/database.types.ts
 ```
+
+Sous Windows PowerShell, `>` écrirait le fichier en UTF-16, que TypeScript lit mal. D'où `Out-File -Encoding utf8`.
+
+Ces types sont branchés sur le client (`createClient<Database>`). Si la base et le code ne correspondent plus, la compilation le signale.
 
 ## Côté app
 

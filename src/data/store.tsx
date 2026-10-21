@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Place } from '../lib/places'
 import { supabase } from '../lib/supabase'
 import { randomCover } from '../lib/trip'
+import type { TablesUpdate } from './database.types'
 import type { Booking, Ticket, Transport, Trip, TripRole } from './types'
 
 /**
@@ -230,7 +231,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
     },
 
     updateTrip: async (tripId, patch) => {
-      const row: Record<string, unknown> = {}
+      const row: TablesUpdate<'trips'> = {}
       if (patch.title !== undefined) row.title = patch.title
       if (patch.start !== undefined) row.start_date = patch.start
       if (patch.end !== undefined) row.end_date = patch.end

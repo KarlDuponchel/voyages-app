@@ -66,7 +66,7 @@
 
 ### 1. Consolider (court, avant d'inviter du monde)
 - [x] Modifier ou supprimer une réservation, modifier un voyage (titre, dates, budget), réordonner les étapes.
-- [ ] **Supabase CLI** (à faire par Karl, voir [docs/supabase.md](docs/supabase.md) § Faire évoluer la base) : relier le projet une fois, puis appliquer les prochaines migrations en ligne de commande et générer les types TypeScript.
+- [x] **Supabase CLI** (fait par Karl le 21/10 ; types générés et branchés sur le client, voir [docs/supabase.md](docs/supabase.md) § Faire évoluer la base) : relier le projet une fois, puis appliquer les prochaines migrations en ligne de commande et générer les types TypeScript.
 - Projet gratuit : Supabase **met en pause** un projet sans activité pendant 7 jours. À surveiller, ou passer en offre payante à l'ouverture.
 
 ### 2. Billets PDF
