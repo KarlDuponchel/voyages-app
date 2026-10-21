@@ -79,7 +79,7 @@ function toTrip(r: TripRow, userId: string): Trip {
     photos: 0,
     destinations: [...r.trip_destinations]
       .sort((a, b) => a.position - b.position)
-      .map((d) => ({ id: d.id, city: d.city, countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
+      .map((d) => ({ id: d.id, position: d.position, city: d.city, countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
     bookings: r.bookings
       .map((b) => ({
         id: b.id,
@@ -124,6 +124,8 @@ type TripsContextValue = Cache & {
   acceptInvitation: (token: string) => Promise<string>
   addCountry: (countryId: string) => Promise<void>
   removeCountry: (countryId: string) => Promise<void>
+  addDestination: (tripId: string, place: Place) => Promise<void>
+  removeDestination: (destinationId: string) => Promise<void>
 }
 
 const TripsContext = createContext<TripsContextValue | null>(null)
@@ -254,6 +256,27 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
 
     addCountry: async (countryId) => {
       must(await supabase.from('user_countries').upsert({ country_code: countryId }, { onConflict: 'user_id,country_code', ignoreDuplicates: true }))
+      await refresh()
+    },
+
+    addDestination: async (tripId, place) => {
+      const trip = data.trips.find((t) => t.id === tripId)
+      must(
+        await supabase.from('trip_destinations').insert({
+          trip_id: tripId,
+          position: Math.max(-1, ...(trip?.destinations.map((d) => d.position) ?? [])) + 1,
+          city: place.name,
+          country_code: place.countryId,
+          lat: place.lat,
+          lng: place.lng,
+          timezone: place.timezone ?? null,
+        }),
+      )
+      await refresh()
+    },
+
+    removeDestination: async (destinationId) => {
+      must(await supabase.from('trip_destinations').delete().eq('id', destinationId))
       await refresh()
     },
 

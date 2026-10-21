@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
 import { Cover } from '../components/Cover'
+import { TripStops } from '../components/TripStops'
 import { useTrips } from '../data/store'
 import type { Booking } from '../data/types'
 import { formatDayHeader, formatNumber, formatRange, nightsBetween } from '../lib/format'
@@ -82,6 +83,7 @@ export function Voyage() {
 
       {(tab === 'Itinéraire' || tab === 'Billets') && (
         <section className="px stack fade-in" style={{ gap: 10 }} key={tab}>
+          {tab === 'Itinéraire' && <TripStops trip={trip} />}
           {shown.length === 0 && (
             <p className="card voyage__empty">
               <span className="strong">Rien pour l'instant.</span>

@@ -40,6 +40,8 @@ export type Booking = {
 /** Une étape du voyage (ville) */
 export type Destination = {
   id: string
+  /** Ordre dans le voyage */
+  position: number
   city: string
   /** Code ISO 3166 numérique du pays (identifiant utilisé par la carte du monde) */
   countryId: string

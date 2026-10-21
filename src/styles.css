@@ -274,3 +274,9 @@ div.field {
 .screen--fab {
   padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 96px);
 }
+
+/* Message d'erreur sous un formulaire */
+.form-error {
+  margin: 0;
+  color: var(--accent-sunset);
+}
