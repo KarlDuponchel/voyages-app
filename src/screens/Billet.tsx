@@ -40,10 +40,10 @@ function sourceLine(b: Booking) {
 export function Billet() {
   const { tripId, bookingId } = useParams()
   const navigate = useNavigate()
-  const { trips } = useTrips()
+  const { trips, status } = useTrips()
   const trip = trips.find((t) => t.id === tripId)
   const booking = trip?.bookings.find((b) => b.id === bookingId)
-  if (!trip || !booking) return <Navigate to="/voyages" replace />
+  if (!trip || !booking) return status === 'chargement' ? null : <Navigate to="/voyages" replace />
 
   const t = booking.ticket
   const kind = bookingKinds[booking.kind]

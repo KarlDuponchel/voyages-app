@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, Plus, Share, Wallet } from 'lucide-react'
+import { CalendarDays, ChevronLeft, Plus, Users, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
@@ -6,7 +6,9 @@ import { Cover } from '../components/Cover'
 import { useTrips } from '../data/store'
 import type { Booking } from '../data/types'
 import { formatDayHeader, formatNumber, formatRange, nightsBetween } from '../lib/format'
+import { canEdit, tripCountries } from '../lib/trip'
 import { AddBookingSheet } from './AddBookingSheet'
+import { ShareTripSheet } from './ShareTripSheet'
 import './Voyage.css'
 
 const tabs = ['Itinéraire', 'Billets', 'Budget', 'Photos'] as const
@@ -23,27 +25,20 @@ function groupByDay(bookings: Booking[]) {
 
 export function Voyage() {
   const { tripId } = useParams()
-  const { trips } = useTrips()
+  const { trips, status } = useTrips()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('Itinéraire')
   const [adding, setAdding] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const trip = trips.find((t) => t.id === tripId)
-  if (!trip) return <Navigate to="/voyages" replace />
+  if (!trip) return status === 'chargement' ? null : <Navigate to="/voyages" replace />
+  const editable = canEdit(trip)
+  const money = (n: number) => `${formatNumber(n)} ${trip.currency === 'EUR' ? '€' : trip.currency}`
 
   const nights = nightsBetween(trip.start, trip.end)
   const firstDay = trip.start
   const dayNumber = (day: string) => nightsBetween(firstDay, day) + 1
   const shown = tab === 'Billets' ? trip.bookings.filter((b) => b.ticket || b.reference) : trip.bookings
-
-  const share = async () => {
-    const text = `${trip.city} · ${formatRange(trip.start, trip.end)}`
-    try {
-      if (navigator.share) await navigator.share({ title: trip.city, text })
-      else await navigator.clipboard.writeText(text)
-    } catch {
-      // partage annulé par l'utilisateur
-    }
-  }
 
   return (
     <main className="screen voyage" style={{ paddingTop: 0 }}>
@@ -53,22 +48,22 @@ export function Voyage() {
           <button className="icon-btn icon-btn--glass" onClick={() => navigate(-1)} aria-label="Retour">
             <ChevronLeft size={20} />
           </button>
-          <button className="icon-btn icon-btn--glass" onClick={share} aria-label="Partager">
-            <Share size={20} />
+          <button className="icon-btn icon-btn--glass" onClick={() => setSharing(true)} aria-label="Voyageurs et invitations">
+            <Users size={20} />
           </button>
         </div>
         <div className="voyage__title px">
           <span className="overline voyage__country">
-            {trip.country} · {nights + 1} jours
+            {tripCountries(trip)} · {nights + 1} jours
           </span>
-          <h1 className="display-xl">{trip.city}</h1>
+          <h1 className="display-xl">{trip.title}</h1>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <span className="pill voyage__chip">
               <CalendarDays size={14} /> {formatRange(trip.start, trip.end)}
             </span>
             {trip.budget != null && (
               <span className="pill voyage__chip">
-                <Wallet size={14} /> {formatNumber(trip.budget)} €
+                <Wallet size={14} /> {money(trip.budget)}
               </span>
             )}
           </div>
@@ -90,7 +85,9 @@ export function Voyage() {
           {shown.length === 0 && (
             <p className="card voyage__empty">
               <span className="strong">Rien pour l'instant.</span>
-              <span className="caption muted">Ajoutez un billet, un hôtel ou une activité avec le bouton « Ajouter ».</span>
+              <span className="caption muted">
+                {editable ? 'Ajoutez un billet, un hôtel ou une activité avec le bouton « Ajouter ».' : 'Les réservations ajoutées par les participants apparaîtront ici.'}
+              </span>
             </p>
           )}
           {groupByDay(shown).map(([day, items]) => (
@@ -110,7 +107,7 @@ export function Voyage() {
       {tab === 'Budget' && (
         <section className="px fade-in">
           <div className="card voyage__empty">
-            <span className="numeric-l">{trip.budget != null ? `${formatNumber(trip.budget)} €` : '—'}</span>
+            <span className="numeric-l">{trip.budget != null ? money(trip.budget) : '—'}</span>
             <span className="caption muted">Budget prévu. Le suivi des dépenses partagées (qui a payé quoi) arrive dans une prochaine version.</span>
           </div>
         </section>
@@ -125,10 +122,13 @@ export function Voyage() {
         </section>
       )}
 
-      <button className="voyage__fab btn btn--accent" onClick={() => setAdding(true)}>
-        <Plus size={20} /> Ajouter
-      </button>
+      {editable && (
+        <button className="voyage__fab btn btn--accent" onClick={() => setAdding(true)}>
+          <Plus size={20} /> Ajouter
+        </button>
+      )}
       <AddBookingSheet trip={trip} open={adding} onClose={() => setAdding(false)} />
+      <ShareTripSheet trip={trip} open={sharing} onClose={() => setSharing(false)} />
     </main>
   )
 }

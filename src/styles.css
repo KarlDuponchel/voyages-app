@@ -226,12 +226,14 @@ a {
   background: var(--bg-base);
   color: var(--text-primary);
   font: inherit;
+  font-size: 16px; /* en dessous de 16px, Safari iOS zoome sur le champ */
 }
 .input:focus {
   outline: none;
   border-color: var(--accent-sunset);
 }
-label.field {
+label.field,
+div.field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -250,4 +252,9 @@ label.field {
   .fade-in {
     animation: none;
   }
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }

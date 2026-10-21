@@ -27,7 +27,7 @@ Titres en **Bricolage Grotesque**, texte en **DM Sans** (Google Fonts, embarqué
 |---|---|
 | `src/screens/` | Les écrans : Monde, Voyages, Voyage, Billet, Souvenirs, Stats, Profil, ajout de réservation |
 | `src/components/` | Éléments réutilisables : globe, barre d'onglets, carte de réservation… |
-| `src/data/` | Voyages d'exemple, pays visités, sauvegarde sur le téléphone |
+| `src/data/` | Connexion, voyages (Supabase + copie hors ligne), liste des pays |
 | `src/lib/` | Calcul des statistiques, formats de dates |
 | `public/logo.svg` | Icône de l'app (régénérer les icônes avec `npm run icons`) |
 
@@ -36,9 +36,10 @@ Titres en **Bricolage Grotesque**, texte en **DM Sans** (Google Fonts, embarqué
 L'installation complète (icône, plein écran, mode hors ligne) demande une adresse en **https** : il faudra publier l'app
 (Vercel ou Cloudflare Pages, gratuits). Ensuite, dans Safari : Partager → « Sur l'écran d'accueil ».
 
+| `supabase/` | Schéma de la base et tests de sécurité (`npm run test:db`), voir [docs/supabase.md](docs/supabase.md) |
+
 ## Prochaines étapes
 
-- Synchronisation entre les deux téléphones (Supabase)
 - Lecture automatique des e-mails et PDF de réservation
 - Import des photos et vidéos, souvenirs automatiques
 - Budget partagé

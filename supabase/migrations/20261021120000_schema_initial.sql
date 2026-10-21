@@ -105,6 +105,8 @@ create table public.trip_destinations (
   country_code char(3) not null check (country_code ~ '^[0-9]{3}$'),
   lat double precision not null check (lat between -90 and 90),
   lng double precision not null check (lng between -180 and 180),
+  -- Fuseau IANA du lieu, ex. 'Europe/Lisbon' (sert d'heure locale aux réservations)
+  timezone text,
   arrive_on date,
   leave_on date,
   created_at timestamptz not null default now()
@@ -465,7 +467,7 @@ revoke update on public.profiles, public.trips, public.trip_destinations, public
 grant update (display_name, avatar_path, home_city, home_lat, home_lng, locale) on public.profiles to authenticated;
 grant update (title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors, cover_path)
   on public.trips to authenticated;
-grant update (position, city, country_code, lat, lng, arrive_on, leave_on) on public.trip_destinations to authenticated;
+grant update (position, city, country_code, lat, lng, timezone, arrive_on, leave_on) on public.trip_destinations to authenticated;
 grant update (role) on public.trip_members to authenticated;
 grant update (role, email, expires_at, revoked_at) on public.trip_invitations to authenticated;
 grant update (kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket)
@@ -543,8 +545,24 @@ begin
 end;
 $$;
 
-revoke all on function public.invitation_preview(uuid), public.accept_invitation(uuid) from public, anon;
-grant execute on function public.invitation_preview(uuid), public.accept_invitation(uuid) to authenticated;
+-- Suppression de son compte (RGPD) : efface le profil, ses pays et sa place dans les voyages.
+-- Les voyages partagés restent aux autres membres (voir after_member_removed).
+create function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Connexion requise';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.invitation_preview(uuid), public.accept_invitation(uuid), public.delete_my_account() from public, anon;
+grant execute on function public.invitation_preview(uuid), public.accept_invitation(uuid), public.delete_my_account() to authenticated;
 
 -- ---------------------------------------------------------------------
 -- Pays visités (calculés) : saisis à la main + étapes des voyages terminés

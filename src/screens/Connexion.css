@@ -1,0 +1,32 @@
+.connexion {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+  padding: calc(var(--safe-top) + 32px) var(--gutter) calc(var(--safe-bottom) + 32px);
+}
+
+.connexion__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+
+.connexion form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.connexion__code {
+  font-size: 28px;
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--accent-sunset);
+}

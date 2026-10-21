@@ -1,0 +1,48 @@
+.place-search {
+  position: relative;
+}
+
+.place-results {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.place-results button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+.place-results button:active {
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.place-results svg,
+.place-chosen svg {
+  color: var(--accent-sunset);
+  flex: none;
+}
+
+.place-chosen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.place-clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+.place-clear svg {
+  color: inherit;
+}

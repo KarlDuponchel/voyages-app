@@ -1,4 +1,4 @@
-import { BedDouble, Bus, ChevronRight, Compass, Plane, TrainFront, type LucideIcon } from 'lucide-react'
+import { BedDouble, Bus, CarFront, ChevronRight, Compass, MapPin, Plane, Ship, TrainFront, type LucideIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { Booking, BookingKind } from '../data/types'
@@ -9,8 +9,11 @@ export const bookingKinds: Record<BookingKind, { label: string; Icon: LucideIcon
   vol: { label: 'Vol', Icon: Plane, color: 'var(--accent-sunset)' },
   train: { label: 'Train', Icon: TrainFront, color: 'var(--accent-sun)' },
   car: { label: 'Car', Icon: Bus, color: 'var(--accent-sun)' },
+  bateau: { label: 'Bateau', Icon: Ship, color: 'var(--accent-lagoon)' },
+  location: { label: 'Location', Icon: CarFront, color: 'var(--accent-sun)' },
   hotel: { label: 'Hôtel', Icon: BedDouble, color: 'var(--accent-lavender)' },
   activite: { label: 'Activité', Icon: Compass, color: 'var(--accent-lagoon)' },
+  autre: { label: 'Autre', Icon: MapPin, color: 'var(--text-secondary)' },
 }
 
 function typeLine(b: Booking) {

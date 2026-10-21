@@ -1,56 +1,269 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { sampleTrips } from './sampleTrips'
-import type { Booking, Trip } from './types'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import type { Place } from '../lib/places'
+import { supabase } from '../lib/supabase'
+import { randomCover } from '../lib/trip'
+import type { Booking, Ticket, Transport, Trip, TripRole } from './types'
 
 /**
- * Stockage local (sur le téléphone) des voyages.
- * Une base partagée (Supabase) pourra remplacer ce fichier pour synchroniser vos deux téléphones.
+ * Voyages de l'utilisateur connecté, lus dans Supabase.
+ * Une copie est gardée sur le téléphone : l'app s'ouvre instantanément et reste consultable hors ligne.
+ * Les modifications demandent une connexion.
  */
-const STORAGE_KEY = 'voyages:trips:v1'
 
-function load(): Trip[] {
+type Status = 'chargement' | 'a-jour' | 'hors-ligne' | 'erreur'
+
+type Cache = { trips: Trip[]; visitedCountryIds: string[]; manualCountryIds: string[] }
+const EMPTY: Cache = { trips: [], visitedCountryIds: [], manualCountryIds: [] }
+const cacheKey = (userId: string) => `voyages:cache:v2:${userId}`
+
+function readCache(userId: string): Cache {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw) as Trip[]
+    const raw = localStorage.getItem(cacheKey(userId))
+    if (raw) return { ...EMPTY, ...(JSON.parse(raw) as Cache) }
   } catch {
-    // données illisibles ou stockage bloqué : on repart des exemples
+    // cache illisible : on attend le serveur
   }
-  return sampleTrips
+  return EMPTY
 }
 
-type TripsContextValue = {
-  trips: Trip[]
-  addBooking: (tripId: string, booking: Omit<Booking, 'id'>) => void
-  resetSample: () => void
+// ---- Lignes renvoyées par Supabase -------------------------------------------------
+
+type TripRow = {
+  id: string
+  title: string
+  start_date: string
+  end_date: string
+  transport: Transport
+  budget_amount: number | null
+  budget_currency: string
+  cover_colors: string[] | null
+  trip_destinations: { id: string; position: number; city: string; country_code: string; lat: number; lng: number; timezone: string | null }[]
+  bookings: {
+    id: string
+    kind: Booking['kind']
+    title: string
+    detail: string
+    starts_at: string
+    ends_at: string | null
+    timezone: string | null
+    reference: string | null
+    provider: string | null
+    source: Booking['source']
+    imported_at: string | null
+    ticket: Ticket | null
+  }[]
+  trip_members: { user_id: string; role: TripRole; profiles: { display_name: string } | null }[]
+}
+
+const TRIP_SELECT = `
+  id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors,
+  trip_destinations ( id, position, city, country_code, lat, lng, timezone ),
+  bookings ( id, kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket ),
+  trip_members ( user_id, role, profiles ( display_name ) )
+`
+
+/** « 2026-11-03T07:15:00 » → « 2026-11-03T07:15 » */
+const minutes = (ts: string) => ts.slice(0, 16)
+
+function toTrip(r: TripRow, userId: string): Trip {
+  const cover = r.cover_colors?.length === 3 ? (r.cover_colors as [string, string, string]) : randomCover()
+  return {
+    id: r.id,
+    title: r.title,
+    start: r.start_date,
+    end: r.end_date,
+    transport: r.transport,
+    budget: r.budget_amount ?? undefined,
+    currency: r.budget_currency,
+    cover,
+    photos: 0,
+    destinations: [...r.trip_destinations]
+      .sort((a, b) => a.position - b.position)
+      .map((d) => ({ id: d.id, city: d.city, countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
+    bookings: r.bookings
+      .map((b) => ({
+        id: b.id,
+        kind: b.kind,
+        title: b.title,
+        detail: b.detail,
+        start: minutes(b.starts_at),
+        end: b.ends_at ? minutes(b.ends_at) : undefined,
+        timezone: b.timezone ?? undefined,
+        reference: b.reference ?? undefined,
+        provider: b.provider ?? undefined,
+        source: b.source,
+        importedAt: b.imported_at ?? undefined,
+        ticket: b.ticket ?? undefined,
+      }))
+      .sort((a, b) => a.start.localeCompare(b.start)),
+    members: r.trip_members.map((m) => ({ userId: m.user_id, role: m.role, name: m.profiles?.display_name ?? 'Membre' })),
+    role: r.trip_members.find((m) => m.user_id === userId)?.role ?? 'viewer',
+  }
+}
+
+// ---- Contexte ----------------------------------------------------------------------
+
+export type NewTrip = {
+  title: string
+  place: Place
+  start: string
+  end: string
+  transport: Transport
+  budget?: number
+}
+
+type TripsContextValue = Cache & {
+  status: Status
+  refresh: () => Promise<void>
+  createTrip: (trip: NewTrip) => Promise<string>
+  deleteTrip: (tripId: string) => Promise<void>
+  leaveTrip: (tripId: string) => Promise<void>
+  addBooking: (tripId: string, booking: Omit<Booking, 'id'>) => Promise<void>
+  /** Crée un lien d'invitation et renvoie son adresse */
+  createInvitation: (tripId: string, role: Exclude<TripRole, 'owner'>) => Promise<string>
+  acceptInvitation: (token: string) => Promise<string>
+  addCountry: (countryId: string) => Promise<void>
+  removeCountry: (countryId: string) => Promise<void>
 }
 
 const TripsContext = createContext<TripsContextValue | null>(null)
 
-export function TripsProvider({ children }: { children: ReactNode }) {
-  const [trips, setTrips] = useState<Trip[]>(load)
+const must = <T,>({ data, error }: { data: T; error: unknown }): T => {
+  if (error) throw error
+  return data
+}
+
+export function TripsProvider({ userId, children }: { userId: string; children: ReactNode }) {
+  const [data, setData] = useState<Cache>(() => readCache(userId))
+  const [status, setStatus] = useState<Status>('chargement')
+  const loading = useRef<Promise<void> | null>(null)
+
+  const refresh = useCallback(async () => {
+    // Une seule lecture à la fois ; si une lecture est en cours, on en relance une après elle
+    // pour être sûr de voir la modification qui vient d'être faite.
+    if (loading.current) await loading.current.catch(() => {})
+    loading.current ??= (async () => {
+      try {
+        const [trips, visited, manual] = await Promise.all([
+          supabase.from('trips').select(TRIP_SELECT).order('start_date'),
+          supabase.from('my_visited_countries').select('country_code'),
+          supabase.from('user_countries').select('country_code'),
+        ])
+        const next: Cache = {
+          trips: ((must(trips) ?? []) as unknown as TripRow[]).map((r) => toTrip(r, userId)),
+          visitedCountryIds: (must(visited) ?? []).map((c) => c.country_code as string),
+          manualCountryIds: (must(manual) ?? []).map((c) => c.country_code as string),
+        }
+        setData(next)
+        setStatus('a-jour')
+        try {
+          localStorage.setItem(cacheKey(userId), JSON.stringify(next))
+        } catch {
+          // stockage plein ou bloqué : les données restent en mémoire
+        }
+      } catch {
+        setStatus(navigator.onLine ? 'erreur' : 'hors-ligne')
+      } finally {
+        loading.current = null
+      }
+    })()
+    await loading.current
+  }, [userId])
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(trips))
-    } catch {
-      // stockage plein ou bloqué : les données restent en mémoire pour la session
+    refresh()
+    const onVisible = () => document.visibilityState === 'visible' && refresh()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('online', refresh)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('online', refresh)
     }
-  }, [trips])
+  }, [refresh])
 
-  const addBooking: TripsContextValue['addBooking'] = (tripId, booking) => {
-    const withId: Booking = { ...booking, id: crypto.randomUUID() }
-    setTrips((all) =>
-      all.map((t) =>
-        t.id === tripId ? { ...t, bookings: [...t.bookings, withId].sort((a, b) => a.start.localeCompare(b.start)) } : t,
-      ),
-    )
+  const value: TripsContextValue = {
+    ...data,
+    status,
+    refresh,
+
+    createTrip: async ({ title, place, start, end, transport, budget }) => {
+      const trip = must(
+        await supabase
+          .from('trips')
+          .insert({ title, start_date: start, end_date: end, transport, budget_amount: budget ?? null, cover_colors: randomCover() })
+          .select('id')
+          .single(),
+      ) as { id: string }
+      must(
+        await supabase.from('trip_destinations').insert({
+          trip_id: trip.id,
+          position: 0,
+          city: place.name,
+          country_code: place.countryId,
+          lat: place.lat,
+          lng: place.lng,
+          timezone: place.timezone ?? null,
+        }),
+      )
+      await refresh()
+      return trip.id
+    },
+
+    deleteTrip: async (tripId) => {
+      must(await supabase.from('trips').delete().eq('id', tripId))
+      await refresh()
+    },
+
+    leaveTrip: async (tripId) => {
+      must(await supabase.from('trip_members').delete().eq('trip_id', tripId).eq('user_id', userId))
+      await refresh()
+    },
+
+    addBooking: async (tripId, b) => {
+      const trip = data.trips.find((t) => t.id === tripId)
+      must(
+        await supabase.from('bookings').insert({
+          trip_id: tripId,
+          kind: b.kind,
+          title: b.title,
+          detail: b.detail,
+          starts_at: b.start,
+          ends_at: b.end ?? null,
+          timezone: b.timezone ?? trip?.destinations[0]?.timezone ?? null,
+          reference: b.reference ?? null,
+          provider: b.provider ?? null,
+          source: b.source,
+          ticket: b.ticket ?? null,
+        }),
+      )
+      await refresh()
+    },
+
+    createInvitation: async (tripId, role) => {
+      const inv = must(await supabase.from('trip_invitations').insert({ trip_id: tripId, role }).select('token').single()) as {
+        token: string
+      }
+      return `${window.location.origin}/invitation/${inv.token}`
+    },
+
+    acceptInvitation: async (token) => {
+      const tripId = must(await supabase.rpc('accept_invitation', { p_token: token })) as string
+      await refresh()
+      return tripId
+    },
+
+    addCountry: async (countryId) => {
+      must(await supabase.from('user_countries').upsert({ country_code: countryId }, { onConflict: 'user_id,country_code', ignoreDuplicates: true }))
+      await refresh()
+    },
+
+    removeCountry: async (countryId) => {
+      must(await supabase.from('user_countries').delete().eq('user_id', userId).eq('country_code', countryId))
+      await refresh()
+    },
   }
 
-  return (
-    <TripsContext.Provider value={{ trips, addBooking, resetSample: () => setTrips(sampleTrips) }}>
-      {children}
-    </TripsContext.Provider>
-  )
+  return <TripsContext.Provider value={value}>{children}</TripsContext.Provider>
 }
 
 export function useTrips() {

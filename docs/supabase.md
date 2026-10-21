@@ -54,13 +54,21 @@ Les réservations sont enregistrées en **heure locale du lieu**, accompagnée d
 4. Dans **Authentication → URL Configuration** :
    - mets `https://voyages-app-chi.vercel.app` comme **Site URL** ;
    - ajoute `https://voyages-app-chi.vercel.app/**` et `http://localhost:5173/**` dans les **Redirect URLs**.
-5. Dans **Project Settings → API**, récupère l'**URL du projet** et la clé **anon / publishable**. Ces deux valeurs peuvent figurer dans l'app sans risque, car c'est la RLS qui protège les données. La clé **service_role** ou **secret**, elle, ne doit jamais aller dans l'app ni sur GitHub.
+5. Dans **Authentication → Emails → Templates**, ajoute le code dans les modèles **Magic Link** et **Confirm signup**, par exemple :
+   `<p>Votre code : <strong>{{ .Token }}</strong></p>`
+   Sans ce code, on ne peut pas se connecter depuis l'app installée sur l'iPhone. Elle ne partage pas sa session avec Safari, donc un lien ouvert depuis Mail connecterait Safari, pas l'app.
+6. **Avant d'ouvrir l'app à d'autres personnes** : branche un service d'envoi d'e-mails (SMTP) dans **Authentication → Emails → SMTP Settings**. Resend, Brevo et d'autres ont une offre gratuite. Sans lui, Supabase n'envoie des e-mails qu'aux membres de l'équipe du projet, et seulement quelques-uns par heure.
+7. Dans **Project Settings → API**, récupère l'**URL du projet** et la clé **anon / publishable**. Ces deux valeurs peuvent figurer dans l'app sans risque, car c'est la RLS qui protège les données. La clé **service_role** ou **secret**, elle, ne doit jamais aller dans l'app ni sur GitHub.
 
-## Côté app (étapes suivantes)
+## Côté app
 
-1. Ajouter `@supabase/supabase-js` et un fichier `.env.local` avec `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`, ces deux variables étant aussi à déclarer sur Vercel.
-2. Créer l'écran de connexion par lien magique, puis l'écran d'accueil d'une invitation (`/invitation/:token`).
-3. Remplacer `src/data/store.tsx` par des lectures et écritures Supabase, en gardant un cache local pour que l'app marche hors ligne.
-4. Brancher le profil (« Bonjour {nom} », ville de départ pour les distances) et les pays visités (`my_visited_countries`) à la place des valeurs écrites en dur.
-5. Ajouter l'envoi des PDF de billets dans le bucket `trip-files`, rangés sous `{trip_id}/{booking_id}/…`.
-6. Proposer, à la première connexion, d'importer les voyages déjà enregistrés sur le téléphone.
+- **Configuration** : l'URL et la clé publique sont dans `.env`. Ce fichier est versionné, car ces valeurs sont publiques, et Vercel n'a donc rien à configurer.
+- **Connexion** ([Connexion.tsx](../src/screens/Connexion.tsx), [auth.tsx](../src/data/auth.tsx)) : on saisit son e-mail, on reçoit un code et on le tape. Le compte est créé à la première connexion.
+- **Données** ([store.tsx](../src/data/store.tsx)) : les voyages, les étapes, les réservations, les membres et les pays visités sont lus dans Supabase. Une copie reste sur le téléphone : l'app s'ouvre tout de suite et reste lisible hors ligne. Elle se met à jour au retour dans l'app et au retour du réseau. Les modifications demandent une connexion.
+- **Création d'un voyage** : la destination se cherche avec le service gratuit Open-Meteo, qui fournit la ville, le pays, les coordonnées et le fuseau horaire. Seul le texte tapé lui est envoyé.
+- **Partage** : dans un voyage, le bouton « Voyageurs » affiche les membres, crée un lien d'invitation (« peut modifier » ou « peut seulement voir ») et permet de quitter ou de supprimer le voyage.
+- **Profil** : prénom (« Bonjour … »), ville de départ pour les distances, pays visités avant l'app, déconnexion et suppression du compte.
+
+### À venir
+- L'envoi des PDF de billets dans le bucket `trip-files`, rangés sous `{trip_id}/{booking_id}/…`.
+- La modification et la suppression d'une réservation, et les voyages à plusieurs étapes dans l'interface (la base les gère déjà).

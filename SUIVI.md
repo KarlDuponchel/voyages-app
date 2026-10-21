@@ -46,9 +46,18 @@
   - Profils, voyages à plusieurs étapes, membres avec rôles (owner / editor / viewer), invitations par lien, réservations, fichiers, pays visités.
   - Sécurité par voyage (RLS) vérifiée par 34 tests : `npm run test:db`.
 
-### À faire par Karl
-- [ ] Créer le projet Supabase (région Europe), puis exécuter la migration (voir [docs/supabase.md](docs/supabase.md) § Mise en place).
-- [ ] Transmettre l'URL du projet et la clé **anon / publishable**, jamais la clé service_role.
+- **App branchée sur Supabase** (projet `qpxcaywcslayfmcjcpgw`) :
+  - connexion par code reçu par e-mail ;
+  - création de voyage avec recherche de ville ;
+  - invitations par lien ;
+  - profil, pays visités, suppression du compte ;
+  - copie locale pour le mode hors ligne ;
+  - voyages d'exemple retirés.
 
-### Ensuite
-- Brancher l'app : connexion par lien magique, invitations, remplacement de `store.tsx` (voir [docs/supabase.md](docs/supabase.md) § Côté app).
+### À faire par Karl
+- [x] Créer le projet Supabase et transmettre l'URL et la clé publique.
+- [ ] Exécuter la migration dans **SQL Editor** (voir [docs/supabase.md](docs/supabase.md) § Mise en place).
+- [ ] Ajouter `{{ .Token }}` dans les modèles d'e-mail **Magic Link** et **Confirm signup**.
+- [ ] Régler les **Redirect URLs** (Vercel + localhost).
+- [ ] Avant d'inviter quelqu'un d'autre : brancher un **SMTP** (Resend, Brevo…).
+- [ ] Tester : connexion, création d'un voyage, invitation de la deuxième personne.

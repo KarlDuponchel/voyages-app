@@ -2,22 +2,28 @@ import { BarChart3, Plane } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Globe } from '../components/Globe'
-import { visitedCities, visitedCountries } from '../data/countries'
+import { useAuth } from '../data/auth'
 import { useTrips } from '../data/store'
 import { daysUntil, formatNumber, formatRange } from '../lib/format'
-import { computeStats } from '../lib/stats'
+import { visitedCities } from '../lib/stats'
+import { mainPlace } from '../lib/trip'
+import { useStats } from '../lib/useStats'
 import './Monde.css'
 
-const visitedIds = new Set(visitedCountries.map((c) => c.id))
-
 export function Monde() {
-  const { trips } = useTrips()
-  const stats = useMemo(() => computeStats(trips), [trips])
+  const { trips, visitedCountryIds } = useTrips()
+  const { profile } = useAuth()
+  const stats = useStats()
+  const visitedIds = useMemo(() => new Set(visitedCountryIds), [visitedCountryIds])
+  const pins = useMemo(() => visitedCities(trips), [trips])
   const next = useMemo(
     () => trips.filter((t) => daysUntil(t.end) >= 0).sort((a, b) => a.start.localeCompare(b.start))[0],
     [trips],
   )
-  const highlight = useMemo(() => (next ? { name: next.city, lat: next.lat, lng: next.lng } : undefined), [next])
+  const highlight = useMemo(() => {
+    const place = next && mainPlace(next)
+    return place ? { name: place.city, lat: place.lat, lng: place.lng } : undefined
+  }, [next])
   const globeSize = Math.min(320, window.innerWidth - 60)
 
   return (
@@ -26,7 +32,7 @@ export function Monde() {
 
       <header className="row between px">
         <div className="stack" style={{ gap: 4 }}>
-          <span className="overline muted">Bonjour Karl</span>
+          <span className="overline muted">{profile ? `Bonjour ${profile.displayName}` : 'Bonjour'}</span>
           <h1 className="display-xl">Votre monde</h1>
         </div>
         <Link to="/stats" className="icon-btn" aria-label="Statistiques détaillées">
@@ -35,10 +41,10 @@ export function Monde() {
       </header>
 
       <section className="monde__globe">
-        <Globe visitedIds={visitedIds} pins={visitedCities} highlight={highlight} size={globeSize} />
+        <Globe visitedIds={visitedIds} pins={pins} highlight={highlight} size={globeSize} />
         {next && (
           <span className="pill monde__tag">
-            <i aria-hidden /> {next.city} · {daysUntil(next.start) > 0 ? `J-${daysUntil(next.start)}` : 'en cours'}
+            <i aria-hidden /> {next.title} · {daysUntil(next.start) > 0 ? `J-${daysUntil(next.start)}` : 'en cours'}
           </span>
         )}
       </section>
@@ -82,7 +88,7 @@ export function Monde() {
               <span className="overline" style={{ opacity: 0.7 }}>
                 Prochain départ · J-{Math.max(0, daysUntil(next.start))}
               </span>
-              <span className="display-l">{next.city}</span>
+              <span className="display-l">{next.title}</span>
               <span className="caption" style={{ opacity: 0.75 }}>
                 {formatRange(next.start, next.end, false)} · {next.bookings.length} réservations
               </span>

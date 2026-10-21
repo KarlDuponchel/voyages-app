@@ -1,0 +1,37 @@
+.members {
+  list-style: none;
+  margin: 0;
+  padding: 6px 14px;
+}
+.members li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.members li + li {
+  border-top: 1px solid var(--border-subtle);
+}
+.members__avatar {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 16%, transparent);
+}
+
+.share-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+.share-link__url {
+  word-break: break-all;
+  user-select: all;
+  -webkit-user-select: all;
+}

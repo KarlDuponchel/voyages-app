@@ -38,3 +38,20 @@
   vertical-align: -2px;
   color: var(--accent-sunset);
 }
+
+.profil-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.profil-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.profil-chip--add {
+  color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 12%, transparent);
+}

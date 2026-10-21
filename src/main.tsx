@@ -8,7 +8,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
-import { TripsProvider } from './data/store'
+import { AuthProvider } from './data/auth'
 import { ThemeProvider } from './theme/theme'
 
 // Mise à jour automatique : l'app installée sur l'iPhone reste ouverte en arrière-plan,
@@ -27,9 +27,9 @@ registerSW({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <TripsProvider>
+      <AuthProvider>
         <App />
-      </TripsProvider>
+      </AuthProvider>
     </ThemeProvider>
   </StrictMode>,
 )

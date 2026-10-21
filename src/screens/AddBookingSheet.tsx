@@ -4,7 +4,9 @@ import { bookingKinds } from '../components/BookingCard'
 import { Sheet } from '../components/Sheet'
 import { useTrips } from '../data/store'
 import type { BookingKind, Trip } from '../data/types'
+import { errorMessage } from '../lib/supabase'
 import './AddBookingSheet.css'
+import './Connexion.css'
 
 /** Domaine de l'adresse de transfert d'e-mails (à brancher en V2 sur Cloudflare Email Routing). */
 const EMAIL_DOMAIN = 'mes-voyages.app'
@@ -16,12 +18,15 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
   const [mode, setMode] = useState<Mode>('menu')
   const [copied, setCopied] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const address = `${trip.id.split('-')[0]}@${EMAIL_DOMAIN}`
 
   const close = () => {
     setMode('menu')
     setFileName(null)
+    setError(null)
     onClose()
   }
 
@@ -35,20 +40,28 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
     }
   }
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
     const date = String(f.get('date'))
     const time = String(f.get('time') || '00:00')
-    addBooking(trip.id, {
-      kind: f.get('kind') as BookingKind,
-      title: String(f.get('title')),
-      detail: String(f.get('detail') || ''),
-      start: `${date}T${time}`,
-      reference: String(f.get('reference') || '') || undefined,
-      source: fileName ? 'pdf' : 'manuel',
-    })
-    close()
+    setBusy(true)
+    setError(null)
+    try {
+      await addBooking(trip.id, {
+        kind: f.get('kind') as BookingKind,
+        title: String(f.get('title')),
+        detail: String(f.get('detail') || ''),
+        start: `${date}T${time}`,
+        reference: String(f.get('reference') || '') || undefined,
+        source: fileName ? 'pdf' : 'manuel',
+      })
+      close()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -58,7 +71,7 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
           <div className="stack" style={{ gap: 4 }}>
             <h2 className="display-l">Ajouter une réservation</h2>
             <p className="caption muted" style={{ margin: 0 }}>
-              Vol, train, hôtel, activité… tout est rangé dans {trip.city}.
+              Vol, train, hôtel, activité… tout est rangé dans {trip.title}.
             </p>
           </div>
 
@@ -161,8 +174,13 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
             <span className="overline muted">Référence</span>
             <input className="input" name="reference" placeholder="Facultatif" />
           </label>
+          {error && (
+            <p className="caption form-error" role="alert">
+              {error}
+            </p>
+          )}
           <div className="row" style={{ gap: 8, marginTop: 4 }}>
-            <button type="submit" className="btn btn--primary" style={{ flex: 1 }}>
+            <button type="submit" className="btn btn--primary" style={{ flex: 1 }} disabled={busy}>
               <Check size={16} /> Ajouter au voyage
             </button>
             <button type="button" className="btn btn--ghost" onClick={() => setMode('menu')}>

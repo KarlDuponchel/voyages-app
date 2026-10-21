@@ -1,9 +1,7 @@
 import { BedDouble, ChevronLeft, Globe2, MapPin, Plane, Sparkles } from 'lucide-react'
-import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useTrips } from '../data/store'
+import { Link, useNavigate } from 'react-router-dom'
 import { formatNumber } from '../lib/format'
-import { computeStats } from '../lib/stats'
+import { useStats } from '../lib/useStats'
 import './Stats.css'
 
 const continentColors: Record<string, string> = {
@@ -17,8 +15,7 @@ const continentColors: Record<string, string> = {
 
 export function Stats() {
   const navigate = useNavigate()
-  const { trips } = useTrips()
-  const s = useMemo(() => computeStats(trips), [trips])
+  const s = useStats()
   const continents = [...s.continents].sort((a, b) => b.percent - a.percent)
 
   const fun = [
@@ -29,7 +26,7 @@ export function Stats() {
       Icon: MapPin,
       color: 'var(--accent-sun)',
       value: s.farthest ? `${formatNumber(s.farthest.km)} km` : '—',
-      label: s.farthest ? `le plus loin : ${s.farthest.name}` : 'pas encore de voyage',
+      label: s.farthest ? `le plus loin : ${s.farthest.name}` : s.hasHome ? 'pas encore de voyage' : 'ville de départ à renseigner',
     },
   ]
 
@@ -77,6 +74,12 @@ export function Stats() {
           </div>
         ))}
       </section>
+
+      {!s.hasHome && (
+        <p className="px caption muted" style={{ margin: 0 }}>
+          Pour des distances exactes, indiquez votre ville de départ dans le <Link to="/profil" className="strong">profil</Link>.
+        </p>
+      )}
 
       <section className="px">
         <div className="stats-wrapped">

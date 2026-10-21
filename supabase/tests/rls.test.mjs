@@ -176,7 +176,8 @@ await ok('pays visités (voyage terminé + saisie manuelle)', async () => {
 await denied('Karl ne peut pas se rétrograder (dernier propriétaire)', () =>
   as('karl', `update public.trip_members set role = 'editor' where user_id = '${U.karl}'`), 'propriétaire')
 await ok("Karl supprime son compte → Léa (éditrice) devient propriétaire, pas le lecteur", async () => {
-  await db.exec(`delete from auth.users where id = '${U.karl}'`)
+  await as('karl', 'select public.delete_my_account()')
+  expect((await db.query(`select 1 from public.profiles where id = '${U.karl}'`)).rows.length === 0, 'profil restant')
   const r = await db.query(`select user_id, role from public.trip_members where trip_id = '${trip}' order by role`)
   expect(r.rows.find((m) => m.user_id === U.lea)?.role === 'owner', JSON.stringify(r.rows))
 })

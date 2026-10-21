@@ -5,6 +5,7 @@ import { Cover } from '../components/Cover'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { daysUntil, formatMonthYear, formatNumber, formatRange, parseLocal } from '../lib/format'
+import { tripCountries } from '../lib/trip'
 import './Souvenirs.css'
 
 /** Voyage qui avait lieu il y a un an (à une semaine près), sinon le plus récent. */
@@ -51,7 +52,7 @@ export function Souvenirs() {
                 <Cover colors={t.cover} />
               </span>
             </span>
-            <span className={`caption ${i < 2 ? '' : 'muted'}`}>{t.city}</span>
+            <span className={`caption ${i < 2 ? '' : 'muted'}`}>{t.title}</span>
           </Link>
         ))}
       </section>
@@ -66,7 +67,7 @@ export function Souvenirs() {
             <span className="memory__bottom">
               <span className="stack" style={{ gap: 2 }}>
                 <span className="display-l">
-                  {memory.trip.city}, {memory.trip.country}
+                  {memory.trip.title}, {tripCountries(memory.trip)}
                 </span>
                 <span className="caption" style={{ opacity: 0.8 }}>
                   {formatRange(memory.trip.start, memory.trip.end)} · {memory.trip.photos} photos
@@ -89,7 +90,7 @@ export function Souvenirs() {
             <Link key={t.id} to={`/voyages/${t.id}`} className="memory-card">
               <Cover colors={t.cover} />
               <span className="memory-card__text">
-                <span className="title-m">{t.city}</span>
+                <span className="title-m">{t.title}</span>
                 <span className="caption" style={{ opacity: 0.75 }}>
                   {formatMonthYear(t.start)} · {daysUntil(t.end) >= 0 ? 'bientôt' : `${t.photos} photos`}
                 </span>
