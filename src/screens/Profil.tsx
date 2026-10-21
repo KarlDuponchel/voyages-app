@@ -7,7 +7,6 @@ import { useTrips } from '../data/store'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
 import { useTheme, type ThemeChoice } from '../theme/theme'
-import './Connexion.css'
 import './Profil.css'
 
 const themeOptions: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [

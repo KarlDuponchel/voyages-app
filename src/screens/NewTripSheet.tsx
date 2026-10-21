@@ -7,9 +7,8 @@ import { useTrips } from '../data/store'
 import type { Transport } from '../data/types'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
-import './Connexion.css'
 
-const transports: { value: Transport; label: string }[] = [
+export const transports: { value: Transport; label: string }[] = [
   { value: 'avion', label: 'Avion' },
   { value: 'train', label: 'Train' },
   { value: 'voiture', label: 'Voiture' },

@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, Plus, Users, Wallet } from 'lucide-react'
+import { CalendarDays, ChevronLeft, PenLine, Plus, Users, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
@@ -10,6 +10,7 @@ import { formatDayHeader, formatNumber, formatRange, nightsBetween } from '../li
 import { canEdit, tripCountries } from '../lib/trip'
 import { useStatusBarColor } from '../theme/theme'
 import { AddBookingSheet } from './AddBookingSheet'
+import { EditTripSheet } from './EditTripSheet'
 import { ShareTripSheet } from './ShareTripSheet'
 import './Voyage.css'
 
@@ -32,6 +33,7 @@ export function Voyage() {
   const [tab, setTab] = useState<Tab>('Itinéraire')
   const [adding, setAdding] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [editingTrip, setEditingTrip] = useState(false)
   const trip = trips.find((t) => t.id === tripId)
   useStatusBarColor(trip?.cover[0])
   if (!trip) return status === 'chargement' ? null : <Navigate to="/voyages" replace />
@@ -51,9 +53,16 @@ export function Voyage() {
           <button className="icon-btn icon-btn--glass" onClick={() => navigate(-1)} aria-label="Retour">
             <ChevronLeft size={20} />
           </button>
-          <button className="icon-btn icon-btn--glass" onClick={() => setSharing(true)} aria-label="Voyageurs et invitations">
-            <Users size={20} />
-          </button>
+          <div className="row" style={{ gap: 8 }}>
+            {editable && (
+              <button className="icon-btn icon-btn--glass" onClick={() => setEditingTrip(true)} aria-label="Modifier le voyage">
+                <PenLine size={20} />
+              </button>
+            )}
+            <button className="icon-btn icon-btn--glass" onClick={() => setSharing(true)} aria-label="Voyageurs et invitations">
+              <Users size={20} />
+            </button>
+          </div>
         </div>
         <div className="voyage__title px">
           <span className="overline voyage__country">
@@ -133,6 +142,7 @@ export function Voyage() {
       )}
       <AddBookingSheet trip={trip} open={adding} onClose={() => setAdding(false)} />
       <ShareTripSheet trip={trip} open={sharing} onClose={() => setSharing(false)} />
+      {editable && <EditTripSheet trip={trip} open={editingTrip} onClose={() => setEditingTrip(false)} />}
     </main>
   )
 }

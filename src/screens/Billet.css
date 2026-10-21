@@ -107,3 +107,7 @@
   padding: 12px 14px;
   border-radius: 16px;
 }
+
+.billet__edit {
+  width: calc(100% - 2 * var(--gutter));
+}

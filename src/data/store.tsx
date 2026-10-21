@@ -112,13 +112,19 @@ export type NewTrip = {
   budget?: number
 }
 
+export type TripPatch = Partial<Pick<Trip, 'title' | 'start' | 'end' | 'transport'>> & { budget?: number | null }
+export type BookingPatch = Pick<Booking, 'kind' | 'title' | 'detail' | 'start' | 'end' | 'reference'>
+
 type TripsContextValue = Cache & {
   status: Status
   refresh: () => Promise<void>
   createTrip: (trip: NewTrip) => Promise<string>
   deleteTrip: (tripId: string) => Promise<void>
   leaveTrip: (tripId: string) => Promise<void>
+  updateTrip: (tripId: string, patch: TripPatch) => Promise<void>
   addBooking: (tripId: string, booking: Omit<Booking, 'id'>) => Promise<void>
+  updateBooking: (bookingId: string, patch: BookingPatch) => Promise<void>
+  deleteBooking: (bookingId: string) => Promise<void>
   /** Crée un lien d'invitation et renvoie son adresse */
   createInvitation: (tripId: string, role: Exclude<TripRole, 'owner'>) => Promise<string>
   acceptInvitation: (token: string) => Promise<string>
@@ -126,6 +132,8 @@ type TripsContextValue = Cache & {
   removeCountry: (countryId: string) => Promise<void>
   addDestination: (tripId: string, place: Place) => Promise<void>
   removeDestination: (destinationId: string) => Promise<void>
+  /** Déplace une étape d'un cran vers le haut (-1) ou le bas (+1) */
+  moveDestination: (tripId: string, destinationId: string, direction: -1 | 1) => Promise<void>
 }
 
 const TripsContext = createContext<TripsContextValue | null>(null)
@@ -221,6 +229,39 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
       await refresh()
     },
 
+    updateTrip: async (tripId, patch) => {
+      const row: Record<string, unknown> = {}
+      if (patch.title !== undefined) row.title = patch.title
+      if (patch.start !== undefined) row.start_date = patch.start
+      if (patch.end !== undefined) row.end_date = patch.end
+      if (patch.transport !== undefined) row.transport = patch.transport
+      if (patch.budget !== undefined) row.budget_amount = patch.budget
+      must(await supabase.from('trips').update(row).eq('id', tripId))
+      await refresh()
+    },
+
+    updateBooking: async (bookingId, b) => {
+      must(
+        await supabase
+          .from('bookings')
+          .update({
+            kind: b.kind,
+            title: b.title,
+            detail: b.detail,
+            starts_at: b.start,
+            ends_at: b.end ?? null,
+            reference: b.reference ?? null,
+          })
+          .eq('id', bookingId),
+      )
+      await refresh()
+    },
+
+    deleteBooking: async (bookingId) => {
+      must(await supabase.from('bookings').delete().eq('id', bookingId))
+      await refresh()
+    },
+
     addBooking: async (tripId, b) => {
       const trip = data.trips.find((t) => t.id === tripId)
       must(
@@ -277,6 +318,19 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
 
     removeDestination: async (destinationId) => {
       must(await supabase.from('trip_destinations').delete().eq('id', destinationId))
+      await refresh()
+    },
+
+    moveDestination: async (tripId, destinationId, direction) => {
+      const stops = data.trips.find((t) => t.id === tripId)?.destinations ?? []
+      const i = stops.findIndex((d) => d.id === destinationId)
+      const j = i + direction
+      if (i < 0 || j < 0 || j >= stops.length) return
+      // On renumérote toutes les étapes (0, 1, 2…) après l'échange : les positions restent propres
+      const order = [...stops]
+      ;[order[i], order[j]] = [order[j], order[i]]
+      for (const [position, d] of order.entries())
+        if (d.position !== position) must(await supabase.from('trip_destinations').update({ position }).eq('id', d.id))
       await refresh()
     },
 

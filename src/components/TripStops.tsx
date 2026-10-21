@@ -1,4 +1,4 @@
-import { MapPin, Plus, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, MapPin, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { countryName } from '../data/countries'
 import { useTrips } from '../data/store'
@@ -11,7 +11,7 @@ import './TripStops.css'
 
 /** Villes du voyage, dans l'ordre. Les participants peuvent en ajouter ou en retirer. */
 export function TripStops({ trip }: { trip: Trip }) {
-  const { addDestination, removeDestination } = useTrips()
+  const { addDestination, removeDestination, moveDestination } = useTrips()
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -51,20 +51,38 @@ export function TripStops({ trip }: { trip: Trip }) {
       </div>
 
       <ol className="stops__list">
-        {trip.destinations.map((d) => (
+        {trip.destinations.map((d, i) => (
           <li key={d.id}>
             <MapPin size={14} aria-hidden />
             <span className="strong">{d.city}</span>
             {multiCountry && <span className="caption muted">{countryName(d.countryId)}</span>}
             {editable && trip.destinations.length > 1 && (
-              <button
-                className="stops__remove"
-                onClick={() => run(() => removeDestination(d.id))}
-                disabled={busy}
-                aria-label={`Retirer ${d.city}`}
-              >
-                <X size={14} />
-              </button>
+              <span className="stops__actions">
+                <button
+                  className="stops__btn"
+                  onClick={() => run(() => moveDestination(trip.id, d.id, -1))}
+                  disabled={busy || i === 0}
+                  aria-label={`Monter ${d.city}`}
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button
+                  className="stops__btn"
+                  onClick={() => run(() => moveDestination(trip.id, d.id, 1))}
+                  disabled={busy || i === trip.destinations.length - 1}
+                  aria-label={`Descendre ${d.city}`}
+                >
+                  <ChevronDown size={16} />
+                </button>
+                <button
+                  className="stops__btn"
+                  onClick={() => run(() => removeDestination(d.id))}
+                  disabled={busy}
+                  aria-label={`Retirer ${d.city}`}
+                >
+                  <X size={14} />
+                </button>
+              </span>
             )}
           </li>
         ))}

@@ -44,7 +44,7 @@
 - **Police** : les titres sont en **Bricolage Grotesque**, Sink est retirée partout.
 - **Base Supabase multi-utilisateurs** (projet `qpxcaywcslayfmcjcpgw`, région Europe) : le schéma est dans `supabase/migrations/20261021120000_schema_initial.sql` et expliqué dans [docs/supabase.md](docs/supabase.md).
   - Profils, voyages à plusieurs étapes, membres avec rôles (owner / editor / viewer), invitations par lien (usage unique, 14 jours), réservations avec fuseau horaire, fichiers (bucket privé `trip-files`), pays visités, suppression de compte.
-  - La sécurité par voyage (RLS) est vérifiée par 34 tests : `npm run test:db`.
+  - La sécurité par voyage (RLS) est testée par `npm run test:db`.
 - **App branchée sur Supabase** :
   - connexion par code reçu par e-mail (indispensable pour l'app installée sur iPhone) ;
   - création de voyage avec recherche de ville (Open-Meteo), y compris depuis un bouton flottant sur l'accueil ;
@@ -52,7 +52,9 @@
   - « Voyageurs » : membres, lien d'invitation, quitter ou supprimer le voyage ;
   - profil : prénom, ville de départ (pour les distances), pays visités avant l'app, déconnexion, suppression du compte ;
   - stats, globe et villes calculés à partir des vraies données ; voyages d'exemple retirés ;
-  - copie locale pour consulter l'app hors ligne.
+  - copie locale pour consulter l'app hors ligne ;
+  - **consolidation** : modifier un voyage (crayon en haut de sa page), modifier ou supprimer une réservation (écran du billet, avec une date de fin facultative), réordonner les étapes (flèches).
+  - La sécurité par voyage (RLS) est vérifiée par 37 tests.
 - **Côté Supabase** (fait par Karl) : migration exécutée, modèles d'e-mail avec `{{ .Token }}`, SMTP `noreply@karlduponchel.fr`.
 
 ### Reste à vérifier
@@ -63,8 +65,8 @@
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
-- Modifier ou supprimer une réservation, modifier un voyage (titre, dates, budget), réordonner les étapes.
-- **Supabase CLI** : appliquer les prochaines migrations en ligne de commande plutôt que par copier-coller, et générer les types TypeScript de la base.
+- [x] Modifier ou supprimer une réservation, modifier un voyage (titre, dates, budget), réordonner les étapes.
+- [ ] **Supabase CLI** (à faire par Karl, voir [docs/supabase.md](docs/supabase.md) § Faire évoluer la base) : relier le projet une fois, puis appliquer les prochaines migrations en ligne de commande et générer les types TypeScript.
 - Projet gratuit : Supabase **met en pause** un projet sans activité pendant 7 jours. À surveiller, ou passer en offre payante à l'ouverture.
 
 ### 2. Billets PDF

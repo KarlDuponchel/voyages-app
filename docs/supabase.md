@@ -60,6 +60,30 @@ Les réservations sont enregistrées en **heure locale du lieu**, accompagnée d
 6. **Avant d'ouvrir l'app à d'autres personnes** : branche un service d'envoi d'e-mails (SMTP) dans **Authentication → Emails → SMTP Settings**. Resend, Brevo et d'autres ont une offre gratuite. Sans lui, Supabase n'envoie des e-mails qu'aux membres de l'équipe du projet, et seulement quelques-uns par heure.
 7. Dans **Project Settings → API**, récupère l'**URL du projet** et la clé **anon / publishable**. Ces deux valeurs peuvent figurer dans l'app sans risque, car c'est la RLS qui protège les données. La clé **service_role** ou **secret**, elle, ne doit jamais aller dans l'app ni sur GitHub.
 
+## Faire évoluer la base (Supabase CLI)
+
+La première migration a été collée à la main dans SQL Editor. Pour les suivantes, la ligne de commande évite le copier-coller et garde l'historique des migrations appliquées. À faire une seule fois :
+
+```bash
+npx supabase login
+npx supabase link --project-ref qpxcaywcslayfmcjcpgw
+npx supabase migration repair --status applied 20261021120000
+```
+
+`link` demande le mot de passe de la base (Project Settings → Database). La commande `repair` indique que la première migration est déjà en place.
+
+Ensuite, pour chaque évolution : créer un fichier dans `supabase/migrations/`, lancer `npm run test:db`, puis :
+
+```bash
+npx supabase db push
+```
+
+Et pour générer les types TypeScript de la base :
+
+```bash
+npx supabase gen types typescript --linked > src/data/database.types.ts
+```
+
 ## Côté app
 
 - **Configuration** : l'URL et la clé publique sont dans `.env`. Ce fichier est versionné, car ces valeurs sont publiques, et Vercel n'a donc rien à configurer.
@@ -69,6 +93,7 @@ Les réservations sont enregistrées en **heure locale du lieu**, accompagnée d
 - **Partage** : dans un voyage, le bouton « Voyageurs » affiche les membres, crée un lien d'invitation (« peut modifier » ou « peut seulement voir ») et permet de quitter ou de supprimer le voyage.
 - **Profil** : prénom (« Bonjour … »), ville de départ pour les distances, pays visités avant l'app, déconnexion et suppression du compte.
 
+- **Modifications** : un voyage se modifie avec le crayon en haut de sa page (titre, dates, transport, budget). Les étapes s'ajoutent, se retirent et se réordonnent dans l'onglet Itinéraire. Une réservation se modifie ou se supprime depuis l'écran du billet. Tout cela est réservé aux propriétaires et aux participants : les lecteurs ne voient pas ces boutons, et la base refuse de toute façon.
+
 ### À venir
 - L'envoi des PDF de billets dans le bucket `trip-files`, rangés sous `{trip_id}/{booking_id}/…`.
-- La modification et la suppression d'une réservation, et les voyages à plusieurs étapes dans l'interface (la base les gère déjà).

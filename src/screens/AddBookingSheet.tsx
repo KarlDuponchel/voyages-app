@@ -1,10 +1,9 @@
-import { Check, FileUp, Mail, Plus } from 'lucide-react'
-import { useRef, useState, type FormEvent } from 'react'
-import { bookingKinds } from '../components/BookingCard'
+import { FileUp, Mail, Plus } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { BookingForm } from '../components/BookingForm'
 import { Sheet } from '../components/Sheet'
 import { useTrips } from '../data/store'
-import type { BookingKind, Trip } from '../data/types'
-import { errorMessage } from '../lib/supabase'
+import type { Trip } from '../data/types'
 import './AddBookingSheet.css'
 import './Connexion.css'
 
@@ -18,15 +17,12 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
   const [mode, setMode] = useState<Mode>('menu')
   const [copied, setCopied] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const address = `${trip.id.split('-')[0]}@${EMAIL_DOMAIN}`
 
   const close = () => {
     setMode('menu')
     setFileName(null)
-    setError(null)
     onClose()
   }
 
@@ -37,30 +33,6 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
       setTimeout(() => setCopied(false), 1800)
     } catch {
       // presse-papiers indisponible : l'adresse reste affichée
-    }
-  }
-
-  const submit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const f = new FormData(e.currentTarget)
-    const date = String(f.get('date'))
-    const time = String(f.get('time') || '00:00')
-    setBusy(true)
-    setError(null)
-    try {
-      await addBooking(trip.id, {
-        kind: f.get('kind') as BookingKind,
-        title: String(f.get('title')),
-        detail: String(f.get('detail') || ''),
-        start: `${date}T${time}`,
-        reference: String(f.get('reference') || '') || undefined,
-        source: fileName ? 'pdf' : 'manuel',
-      })
-      close()
-    } catch (err) {
-      setError(errorMessage(err))
-    } finally {
-      setBusy(false)
     }
   }
 
@@ -132,62 +104,26 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
           </button>
         </>
       ) : (
-        <form className="stack add-form" style={{ gap: 12 }} onSubmit={submit}>
+        <div className="stack" style={{ gap: 12 }}>
           <h2 className="display-l">Nouvelle réservation</h2>
           {fileName && (
             <p className="caption add-form__file">
               <FileUp size={14} /> {fileName} — la lecture automatique arrive bientôt, complétez les infos ci-dessous.
             </p>
           )}
-          <fieldset className="add-form__kinds">
-            <legend className="overline muted">Type</legend>
-            {(Object.keys(bookingKinds) as BookingKind[]).map((k, i) => {
-              const { label, Icon, color } = bookingKinds[k]
-              return (
-                <label key={k} style={{ color }}>
-                  <input type="radio" name="kind" value={k} defaultChecked={i === 0} />
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </label>
-              )
-            })}
-          </fieldset>
-          <label className="field">
-            <span className="overline muted">Titre</span>
-            <input className="input" name="title" required placeholder="Paris → Lisbonne, Hôtel Memmo…" />
-          </label>
-          <label className="field">
-            <span className="overline muted">Détail</span>
-            <input className="input" name="detail" placeholder="Compagnie, n° de vol, nombre de nuits…" />
-          </label>
-          <div className="row" style={{ gap: 10, alignItems: 'stretch' }}>
-            <label className="field" style={{ flex: 1.4 }}>
-              <span className="overline muted">Date</span>
-              <input className="input" name="date" type="date" required defaultValue={trip.start} min={trip.start} max={trip.end} />
-            </label>
-            <label className="field" style={{ flex: 1 }}>
-              <span className="overline muted">Heure</span>
-              <input className="input" name="time" type="time" defaultValue="10:00" />
-            </label>
-          </div>
-          <label className="field">
-            <span className="overline muted">Référence</span>
-            <input className="input" name="reference" placeholder="Facultatif" />
-          </label>
-          {error && (
-            <p className="caption form-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="row" style={{ gap: 8, marginTop: 4 }}>
-            <button type="submit" className="btn btn--primary" style={{ flex: 1 }} disabled={busy}>
-              <Check size={16} /> Ajouter au voyage
-            </button>
+          <BookingForm
+            trip={trip}
+            submitLabel="Ajouter au voyage"
+            onSubmit={async (input) => {
+              await addBooking(trip.id, { ...input, source: fileName ? 'pdf' : 'manuel' })
+              close()
+            }}
+          >
             <button type="button" className="btn btn--ghost" onClick={() => setMode('menu')}>
               Retour
             </button>
-          </div>
-        </form>
+          </BookingForm>
+        </div>
       )}
     </Sheet>
   )

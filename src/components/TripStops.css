@@ -41,12 +41,19 @@
   border-left: 1px dashed var(--border-subtle);
 }
 
-.stops__remove {
+.stops__actions {
   margin-left: auto;
+  display: flex;
+}
+.stops__btn {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   color: var(--text-secondary);
+}
+.stops__btn:disabled {
+  opacity: 0.25;
+  cursor: default;
 }

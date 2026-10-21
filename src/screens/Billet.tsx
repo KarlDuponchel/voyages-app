@@ -1,10 +1,12 @@
 import { ChevronLeft, CircleCheck, FileText, Mail, PenLine, Plane, Share } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { bookingKinds } from '../components/BookingCard'
 import { useTrips } from '../data/store'
 import type { Booking } from '../data/types'
 import { formatShortDate, formatTime, parseLocal } from '../lib/format'
+import { canEdit } from '../lib/trip'
+import { EditBookingSheet } from './EditBookingSheet'
 import './Billet.css'
 
 /**
@@ -41,9 +43,11 @@ export function Billet() {
   const { tripId, bookingId } = useParams()
   const navigate = useNavigate()
   const { trips, status } = useTrips()
+  const [editing, setEditing] = useState(false)
   const trip = trips.find((t) => t.id === tripId)
   const booking = trip?.bookings.find((b) => b.id === bookingId)
-  if (!trip || !booking) return status === 'chargement' ? null : <Navigate to="/voyages" replace />
+  // Réservation introuvable (supprimée, ou lien périmé) : retour au voyage s'il existe encore
+  if (!trip || !booking) return status === 'chargement' ? null : <Navigate to={trip ? `/voyages/${trip.id}` : '/voyages'} replace />
 
   const t = booking.ticket
   const kind = bookingKinds[booking.kind]
@@ -132,6 +136,21 @@ export function Billet() {
         <src.Icon size={18} /> {src.text}
         {parseLocal(booking.start) < new Date() && ' · voyage passé'}
       </p>
+
+      {canEdit(trip) && (
+        <>
+          <button className="btn btn--ghost billet__edit" onClick={() => setEditing(true)}>
+            <PenLine size={16} /> Modifier ou supprimer
+          </button>
+          <EditBookingSheet
+            trip={trip}
+            booking={booking}
+            open={editing}
+            onClose={() => setEditing(false)}
+            onDeleted={() => navigate(`/voyages/${trip.id}`, { replace: true })}
+          />
+        </>
+      )}
     </main>
   )
 }

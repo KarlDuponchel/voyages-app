@@ -8,7 +8,6 @@ import type { Trip, TripRole } from '../data/types'
 import { formatRange } from '../lib/format'
 import { errorMessage } from '../lib/supabase'
 import { canEdit } from '../lib/trip'
-import './Connexion.css'
 import './ShareTripSheet.css'
 
 const roleLabel: Record<TripRole, string> = { owner: 'Propriétaire', editor: 'Participant', viewer: 'Lecteur' }

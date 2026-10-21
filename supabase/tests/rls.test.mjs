@@ -157,6 +157,25 @@ await ok("l'inconnu accepte l'invitation lecteur", () => as('inconnu', `select p
 await denied("le lecteur ne peut pas ajouter de réservation", () =>
   as('inconnu', `insert into public.bookings (trip_id, kind, title, starts_at) values ('${trip}', 'hotel', 'x', '2025-05-01')`))
 
+await ok("Léa (éditrice) modifie le voyage, une réservation et l'ordre des étapes", async () => {
+  await as('lea', `update public.trips set title = 'Lisbonne & Porto', budget_amount = 1200 where id = '${trip}'`)
+  await as('lea', `update public.bookings set title = 'Hôtel Memmo', ends_at = '2025-05-04 11:00' where trip_id = '${trip}' and kind = 'hotel'`)
+  await as('lea', `update public.trip_destinations set position = 3 where trip_id = '${trip}'`)
+  const r = await db.query(`select t.title, (select position from public.trip_destinations where trip_id = t.id) pos from public.trips t where id = '${trip}'`)
+  expect(r.rows[0].title === 'Lisbonne & Porto' && r.rows[0].pos === 3, JSON.stringify(r.rows))
+})
+await ok('le lecteur ne peut ni modifier ni supprimer (0 ligne)', async () => {
+  await as('inconnu', `update public.trips set title = 'piraté' where id = '${trip}'`)
+  await as('inconnu', `update public.bookings set title = 'piraté' where trip_id = '${trip}'`)
+  await as('inconnu', `delete from public.bookings where trip_id = '${trip}'`)
+  const r = await db.query(`select (select count(*) from public.bookings where trip_id = '${trip}') n, (select count(*) from public.bookings where title = 'piraté') p, (select title from public.trips where id = '${trip}') t`)
+  expect(Number(r.rows[0].n) === 2 && Number(r.rows[0].p) === 0 && r.rows[0].t !== 'piraté', JSON.stringify(r.rows))
+})
+await ok('Léa supprime une réservation', async () => {
+  await as('lea', `delete from public.bookings where trip_id = '${trip}' and kind = 'hotel'`)
+  const r = await db.query(`select count(*) n from public.bookings where trip_id = '${trip}'`)
+  expect(Number(r.rows[0].n) === 1, JSON.stringify(r.rows))
+})
 await ok('stockage : Léa dépose un PDF dans le dossier du voyage', () =>
   as('lea', `insert into storage.objects (bucket_id, name) values ('trip-files', '${trip}/billet.pdf')`))
 await denied('stockage : le lecteur ne peut pas déposer', () =>
