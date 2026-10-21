@@ -46,7 +46,6 @@
 }
 .ticket__code {
   font-family: var(--font-display);
-  font-synthesis: none;
   font-weight: 800;
   font-size: 36px;
   line-height: 1.1;

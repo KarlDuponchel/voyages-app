@@ -17,11 +17,9 @@ Puis ouvrir http://localhost:5173 (dans Chrome : outils de développement → mo
 Tout est dans **`src/theme/palettes.ts`** : une palette `sombre` et une palette `clair`, avec les mêmes noms que dans Figma.
 Modifiez une valeur, sauvegardez : l'app se met à jour toute seule. Le choix Auto / Clair / Sombre est dans l'onglet **Profil**.
 
-## Police des titres (Sink)
+## Polices
 
-Les titres utilisent **Sink** si elle est disponible, sinon **Bricolage Grotesque**.
-Sur le PC, Sink est déjà installée. Pour l'avoir aussi sur l'iPhone, copiez `Sink.otf` dans `public/fonts/Sink.otf`
-(vérifiez d'abord que sa licence autorise l'usage dans une app).
+Titres en **Bricolage Grotesque**, texte en **DM Sans** (Google Fonts, embarquées dans l'app via `@fontsource` : elles marchent hors ligne).
 
 ## Où sont les choses
 

@@ -1,15 +1,8 @@
 /* Les couleurs viennent de src/theme/palettes.ts (variables --bg-base, --text-primary…). */
 
-/* Police des titres : Sink (installée sur l'appareil, ou fichier public/fonts/Sink.otf),
-   avec Bricolage Grotesque en secours. */
-@font-face {
-  font-family: 'Sink';
-  src: local('Sink'), local('Sink Regular'), url('/fonts/Sink.otf') format('opentype');
-  font-display: swap;
-}
-
+/* Police des titres : Bricolage Grotesque (Google Fonts, embarquée via @fontsource pour marcher hors ligne). */
 :root {
-  --font-display: 'Sink', 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
   --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
   --radius-md: 14px;
   --radius-lg: 20px;
@@ -74,12 +67,6 @@ a {
 }
 
 /* ---------- Typographie (styles des maquettes) ---------- */
-/* Sink n'existe qu'en Regular : on interdit le faux gras généré par le navigateur. */
-.display-xl,
-.display-l,
-.numeric-l {
-  font-synthesis: none;
-}
 .display-xl {
   font-family: var(--font-display);
   font-size: 36px;

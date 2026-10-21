@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false, // enregistré dans src/main.tsx (avec la vérification au retour dans l'app)
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'fonts/*'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Voyages',
         short_name: 'Voyages',
