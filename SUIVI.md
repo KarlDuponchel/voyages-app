@@ -7,7 +7,7 @@
 - **Maquettes Figma** : [App Voyages – Maquettes](https://www.figma.com/design/J8QdhWNMcqYjOMrcb3tMR5)
   - 6 écrans × 2 thèmes (sombre en haut, clair en dessous) : Monde, Voyage, Billet, Souvenirs, Statistiques, Ajout de réservation.
   - Palettes « Couleurs · Sombre » et « Couleurs · Clair », styles de texte, icônes et composants réutilisables.
-  - Titres en **Sink**, texte en **DM Sans**.
+  - Titres en **Bricolage Grotesque** (Sink abandonnée), texte en **DM Sans**.
 - **App V1** (ce dossier), en ligne sur https://voyages-app-chi.vercel.app :
   - Les 6 écrans des maquettes + Profil (choix Auto / Clair / Sombre).
   - Globe 3D interactif, statistiques calculées, ajout manuel de réservations.
@@ -16,12 +16,11 @@
   - Corrigés : texte flou sous la barre d'état iOS ; mise à jour automatique de l'app installée.
 
 ### À finir
-- [ ] **Envoyer sur GitHub** les derniers changements : `vercel.json`, `src/main.tsx`, `vite.config.ts` (`src/styles.css` est déjà parti).
+- [x] **Envoyer sur GitHub** les derniers changements : `vercel.json`, `src/main.tsx`, `vite.config.ts` (`src/styles.css` est déjà parti).
 - [ ] **Vérifier sur l'iPhone** :
-  - [ ] recharger une page comme `/voyages` ne donne plus d'erreur 404 ;
+  - [x] recharger une page comme `/voyages` ne donne plus d'erreur 404 ;
   - [ ] l'app installée se met bien à jour toute seule.
 - [ ] **Retouches Figma** (thème clair) : barre d'état des écrans 02 et 06, QR code du billet 03, texte « PORTUGAL · 7 JOURS ».
-- [ ] **Sink** : vérifier la licence, puis copier `Sink.otf` dans `public/fonts/` pour l'avoir sur l'iPhone.
 
 ### Prochaine étape : Supabase
 1. Créer le compte et le projet sur supabase.com, avec un serveur **en Europe** (à faire par Karl).
@@ -37,4 +36,19 @@
 - Budget partagé (qui a payé quoi).
 - Notifications (rappel d'enregistrement 24 h avant un vol).
 - Bilan annuel des voyages.
-- Ouverture au public : RGPD, CGU, coûts, licence de Sink.
+- Ouverture au public : RGPD, CGU, coûts.
+
+## Session du 21 octobre 2026
+
+### Fait
+- Titres passés en **Bricolage Grotesque** : Sink est retirée partout.
+- **Schéma Supabase multi-utilisateurs** : `supabase/migrations/20261021120000_schema_initial.sql`, expliqué dans [docs/supabase.md](docs/supabase.md).
+  - Profils, voyages à plusieurs étapes, membres avec rôles (owner / editor / viewer), invitations par lien, réservations, fichiers, pays visités.
+  - Sécurité par voyage (RLS) vérifiée par 34 tests : `npm run test:db`.
+
+### À faire par Karl
+- [ ] Créer le projet Supabase (région Europe), puis exécuter la migration (voir [docs/supabase.md](docs/supabase.md) § Mise en place).
+- [ ] Transmettre l'URL du projet et la clé **anon / publishable**, jamais la clé service_role.
+
+### Ensuite
+- Brancher l'app : connexion par lien magique, invitations, remplacement de `store.tsx` (voir [docs/supabase.md](docs/supabase.md) § Côté app).
