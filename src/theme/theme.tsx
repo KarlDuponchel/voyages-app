@@ -15,8 +15,10 @@ function applyPalette(name: PaletteName) {
   for (const [key, value] of Object.entries(gradients)) root.style.setProperty('--gradient-' + key, value)
   root.dataset.theme = name
   root.style.colorScheme = name === 'clair' ? 'light' : 'dark'
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', palette.bgBase)
+  setThemeColor(palette.bgBase)
 }
+
+const setThemeColor = (color: string) => document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color)
 
 function readChoice(): ThemeChoice {
   try {
@@ -61,6 +63,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return <ThemeContext.Provider value={{ choice, active, setChoice }}>{children}</ThemeContext.Provider>
+}
+
+/**
+ * Couleur de la barre d'état pendant l'affichage d'un écran (ex. le haut de la couverture d'un voyage).
+ * Depuis iOS 26, l'app installée floute le haut de l'écran avec cette couleur : avec la couleur de fond
+ * par défaut, on obtenait un voile clair sur les images. On revient à la couleur du thème en quittant l'écran.
+ */
+export function useStatusBarColor(color: string | undefined) {
+  const { active } = useTheme()
+  useLayoutEffect(() => {
+    if (!color) return
+    setThemeColor(color)
+    return () => setThemeColor(palettes[active].bgBase)
+  }, [color, active])
 }
 
 export function useTheme() {
