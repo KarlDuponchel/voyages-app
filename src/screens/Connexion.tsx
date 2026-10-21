@@ -91,7 +91,8 @@ export function Connexion() {
               pattern="[0-9 ]{6,10}"
               required
               autoFocus
-              placeholder="000000"
+              placeholder="Code"
+              maxLength={10}
             />
           </label>
           {error && (

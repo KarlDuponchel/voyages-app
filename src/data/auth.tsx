@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import type { Profile } from './types'
 
 /**
- * Connexion par e-mail : on reçoit un code à 6 chiffres (et un lien magique).
+ * Connexion par e-mail : on reçoit un code (6 à 10 chiffres selon le réglage « Email OTP Length » de Supabase) (et un lien magique).
  * Le code est indispensable sur iPhone : l'app installée sur l'écran d'accueil ne partage pas
  * sa session avec Safari, donc un lien ouvert depuis Mail connecterait Safari, pas l'app.
  */
