@@ -51,7 +51,8 @@ export function Connexion() {
       </div>
 
       {step === 'email' ? (
-        <form onSubmit={submitEmail}>
+        // key : deux formulaires distincts, sinon React réutilise le même champ (l'e-mail apparaîtrait dans le code)
+        <form key="email" onSubmit={submitEmail}>
           <label className="field">
             <span className="overline muted">Adresse e-mail</span>
             <input
@@ -79,7 +80,7 @@ export function Connexion() {
           </p>
         </form>
       ) : (
-        <form onSubmit={submitCode}>
+        <form key="code" onSubmit={submitCode}>
           <label className="field">
             <span className="overline muted">Code reçu à {email}</span>
             <input
