@@ -61,6 +61,13 @@
 - [ ] **Redirect URLs** réglées (Vercel + localhost).
 - [ ] Les e-mails arrivent en spam : vérifier SPF / DKIM / DMARC du domaine, et passer les modèles en français.
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
+- [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
+
+### Pour reprendre
+- Tout est sur `main` (mis en ligne par Vercel) et sur la branche `feat/supabase-multi-utilisateurs`.
+- Tester sur iPhone les nouveautés : modifier un voyage (crayon), modifier ou supprimer une réservation (écran du billet), réordonner les étapes.
+- Prochaine étape conseillée : **2. Billets PDF**, ci-dessous.
+- Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`.
 
 ## Feuille de route conseillée
 
