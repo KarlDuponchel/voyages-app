@@ -17,21 +17,47 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 10px 20px calc(var(--safe-bottom) + 28px);
+  padding: 0 20px calc(var(--safe-bottom) + 28px);
   border-radius: 32px 32px 0 0;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-bottom: 0;
-  animation: sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  overscroll-behavior: contain;
+  /* backwards et non both : une fois monté, le panneau doit pouvoir suivre le doigt (transform) */
+  animation: sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
 }
 
+/* Poignée + croix, toujours visibles en haut même quand le contenu défile */
+.sheet__top {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 -20px -6px;
+  padding: 10px 20px 6px;
+  background: var(--bg-surface);
+  touch-action: none;
+}
 .sheet__grab {
   width: 40px;
   height: 5px;
   border-radius: 3px;
   background: var(--border-subtle);
-  align-self: center;
-  flex: none;
+}
+.sheet__close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
 }
 
 @keyframes sheet-up {
