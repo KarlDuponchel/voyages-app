@@ -64,8 +64,8 @@
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
 ### Pour reprendre (mis à jour le 23/10)
-- `main` est en ligne (Vercel). Les billets PDF sont sur la branche `feat/billets-pdf`, poussée sur GitHub (aperçu Vercel) mais **pas encore fusionnée** dans `main`.
-- À tester sur l'aperçu, sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture. Puis fusionner dans `main`.
+- Tout est sur `main`, mis en ligne par Vercel, billets PDF compris (fusionnés le 23/10).
+- À tester sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture.
 - Toujours à tester (21/10) : modifier un voyage (crayon), modifier ou supprimer une réservation, réordonner les étapes.
 - Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
 - Prochaine étape conseillée : **3. Import automatique par l'IA**, ci-dessous.
