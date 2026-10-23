@@ -27,8 +27,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Tout le site (y compris billets et polices) est mis en cache : l'app marche hors ligne.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,otf,ttf,json}'],
+        // Tout le site (y compris polices et lecteur de PDF) est mis en cache : l'app marche hors ligne.
+        // Les billets eux-mêmes sont copiés à part (src/lib/files.ts).
+        // pdf.js (worker en .mjs, 1,4 Mo) : on relève la limite par défaut de 2 Mo par fichier par sécurité
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,woff,woff2,otf,ttf,json}'],
       },
     }),
   ],

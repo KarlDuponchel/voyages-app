@@ -69,6 +69,18 @@
 - Prochaine étape conseillée : **2. Billets PDF**, ci-dessous.
 - Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`.
 
+## Session du 23 octobre 2026
+
+### Fait (branche `feat/billets-pdf`)
+- **Retiré** : le faux QR code du billet (la référence reste affichée en grand) et l'adresse e-mail de transfert fictive.
+- **Billets PDF et captures** : joindre un fichier à l'ajout d'une réservation ou depuis l'écran du billet ; bouton « Afficher le billet » en plein écran (PDF dessiné par pdf.js, fond blanc pour le QR code) ; partage ou enregistrement du fichier ; suppression.
+- **Hors ligne** : fichiers des voyages à venir copiés sur le téléphone, indication « Disponible hors ligne » par fichier, copie effacée à la déconnexion.
+- Pas de migration : la table `booking_files` et le bucket `trip-files` existaient déjà.
+
+### Reste à vérifier
+- [ ] Sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture du billet.
+- [ ] Après déploiement : l'app installée récupère bien le lecteur de PDF pour le hors ligne (ouvrir l'app une fois avec du réseau).
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
@@ -76,7 +88,7 @@
 - [x] **Supabase CLI** (fait par Karl le 21/10 ; types générés et branchés sur le client, voir [docs/supabase.md](docs/supabase.md) § Faire évoluer la base) : relier le projet une fois, puis appliquer les prochaines migrations en ligne de commande et générer les types TypeScript.
 - Projet gratuit : Supabase **met en pause** un projet sans activité pendant 7 jours. À surveiller, ou passer en offre payante à l'ouverture.
 
-### 2. Billets PDF
+### 2. Billets PDF — fait le 23/10 (branche `feat/billets-pdf`)
 - Joindre un PDF ou une capture à une réservation : le bucket `trip-files` et ses règles de sécurité sont prêts.
 - Consulter le billet hors ligne (le vrai QR code à l'embarquement).
 - C'est la base de l'étape suivante.

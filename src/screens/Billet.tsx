@@ -1,36 +1,16 @@
-import { ChevronLeft, CircleCheck, FileText, Mail, PenLine, Plane, Share } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ChevronLeft, CircleCheck, FileText, Mail, PenLine, Plane, QrCode, Share } from 'lucide-react'
+import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { bookingKinds } from '../components/BookingCard'
+import { BookingFiles } from '../components/BookingFiles'
+import { FileViewer } from '../components/FileViewer'
 import { useTrips } from '../data/store'
-import type { Booking } from '../data/types'
+import type { Booking, BookingFile } from '../data/types'
+import { isPdf } from '../lib/files'
 import { formatShortDate, formatTime, parseLocal } from '../lib/format'
 import { canEdit } from '../lib/trip'
 import { EditBookingSheet } from './EditBookingSheet'
 import './Billet.css'
-
-/**
- * QR code d'illustration, généré à partir de la référence.
- * Le vrai QR sera repris du PDF/e-mail importé quand la lecture automatique sera en place.
- */
-function DemoQr({ seedText }: { seedText: string }) {
-  const cells = useMemo(() => {
-    let seed = [...seedText].reduce((s, c) => s * 31 + c.charCodeAt(0), 7) >>> 0
-    const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 2 ** 32)
-    const n = 25
-    const inFinder = (x: number, y: number) => (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8)
-    const out: string[] = []
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (!inFinder(x, y) && rnd() > 0.52) out.push(`M${x} ${y}h1v1h-1Z`)
-    const finder = (x: number, y: number) => `M${x} ${y}h7v7h-7Z M${x + 1} ${y + 1}v5h5v-5Z M${x + 2} ${y + 2}h3v3h-3Z`
-    return [finder(0, 0), finder(n - 7, 0), finder(0, n - 7), ...out].join(' ')
-  }, [seedText])
-  return (
-    <svg viewBox="-1.5 -1.5 28 28" width="170" height="170" className="qr" role="img" aria-label="QR code">
-      <rect x="-1.5" y="-1.5" width="28" height="28" fill="#fff" rx="1" />
-      <path d={cells} fill="#0A0F1F" fillRule="evenodd" />
-    </svg>
-  )
-}
 
 function sourceLine(b: Booking) {
   const when = b.importedAt ? ` · ${formatShortDate(b.importedAt)}` : ''
@@ -44,6 +24,8 @@ export function Billet() {
   const navigate = useNavigate()
   const { trips, status } = useTrips()
   const [editing, setEditing] = useState(false)
+  const [viewing, setViewing] = useState<BookingFile | null>(null)
+  const [viewerClosed, setViewerClosed] = useState(0)
   const trip = trips.find((t) => t.id === tripId)
   const booking = trip?.bookings.find((b) => b.id === bookingId)
   // Réservation introuvable (supprimée, ou lien périmé) : retour au voyage s'il existe encore
@@ -51,6 +33,8 @@ export function Billet() {
 
   const t = booking.ticket
   const kind = bookingKinds[booking.kind]
+  /** Fichier montré par « Afficher le billet » : le premier PDF, sinon le premier fichier */
+  const mainFile = booking.files.find(isPdf) ?? booking.files[0]
   const src = sourceLine(booking)
   const isFlight = booking.kind === 'vol'
   const title = isFlight ? "Carte d'embarquement" : t ? 'Billet' : kind.label
@@ -121,16 +105,42 @@ export function Billet() {
           {t?.seat && <Info label="Siège" value={t.seat} />}
         </dl>
 
-        {booking.reference && (
+        {(booking.reference || mainFile) && (
           <>
             <div className="ticket__perf" aria-hidden />
-            <div className="ticket__qr">
-              <DemoQr seedText={booking.reference} />
-              <span className="caption ticket__dim">Réf. {booking.reference}</span>
+            <div className="ticket__ref">
+              {booking.reference && (
+                <>
+                  <span className="overline ticket__dim">Référence</span>
+                  <span className="ticket__ref-code">{booking.reference}</span>
+                </>
+              )}
+              {mainFile && (
+                <button className="btn ticket__open" onClick={() => setViewing(mainFile)}>
+                  <QrCode size={18} /> Afficher le billet
+                </button>
+              )}
             </div>
           </>
         )}
       </article>
+
+      <BookingFiles
+        tripId={trip.id}
+        booking={booking}
+        editable={canEdit(trip)}
+        onOpen={setViewing}
+        refreshKey={viewerClosed}
+      />
+      {viewing && (
+        <FileViewer
+          file={viewing}
+          onClose={() => {
+            setViewing(null)
+            setViewerClosed((n) => n + 1)
+          }}
+        />
+      )}
 
       <p className="card billet__source caption muted">
         <src.Icon size={18} /> {src.text}

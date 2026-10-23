@@ -3,7 +3,8 @@ import type { Place } from '../lib/places'
 import { supabase } from '../lib/supabase'
 import { randomCover } from '../lib/trip'
 import type { TablesUpdate } from './database.types'
-import type { Booking, Ticket, Transport, Trip, TripRole } from './types'
+import { deleteBookingFile, prefetchFiles, removeStoredFiles, uploadBookingFile } from '../lib/files'
+import type { Booking, BookingFile, Ticket, Transport, Trip, TripRole } from './types'
 
 /**
  * Voyages de l'utilisateur connecté, lus dans Supabase.
@@ -15,7 +16,8 @@ type Status = 'chargement' | 'a-jour' | 'hors-ligne' | 'erreur'
 
 type Cache = { trips: Trip[]; visitedCountryIds: string[]; manualCountryIds: string[] }
 const EMPTY: Cache = { trips: [], visitedCountryIds: [], manualCountryIds: [] }
-const cacheKey = (userId: string) => `voyages:cache:v2:${userId}`
+// v3 : les réservations ont une liste de fichiers (l'ancienne copie n'en a pas, on l'ignore)
+const cacheKey = (userId: string) => `voyages:cache:v3:${userId}`
 
 function readCache(userId: string): Cache {
   try {
@@ -52,6 +54,7 @@ type TripRow = {
     source: Booking['source']
     imported_at: string | null
     ticket: Ticket | null
+    booking_files: { id: string; storage_path: string; file_name: string; mime_type: string | null; size_bytes: number | null; created_at: string }[]
   }[]
   trip_members: { user_id: string; role: TripRole; profiles: { display_name: string } | null }[]
 }
@@ -59,7 +62,8 @@ type TripRow = {
 const TRIP_SELECT = `
   id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors,
   trip_destinations ( id, position, city, country_code, lat, lng, timezone ),
-  bookings ( id, kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket ),
+  bookings ( id, kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket,
+    booking_files ( id, storage_path, file_name, mime_type, size_bytes, created_at ) ),
   trip_members ( user_id, role, profiles ( display_name ) )
 `
 
@@ -95,6 +99,9 @@ function toTrip(r: TripRow, userId: string): Trip {
         source: b.source,
         importedAt: b.imported_at ?? undefined,
         ticket: b.ticket ?? undefined,
+        files: [...(b.booking_files ?? [])]
+          .sort((x, y) => x.created_at.localeCompare(y.created_at))
+          .map((f) => ({ id: f.id, path: f.storage_path, name: f.file_name, mimeType: f.mime_type ?? undefined, size: f.size_bytes ?? undefined })),
       }))
       .sort((a, b) => a.start.localeCompare(b.start)),
     members: r.trip_members.map((m) => ({ userId: m.user_id, role: m.role, name: m.profiles?.display_name ?? 'Membre' })),
@@ -123,9 +130,13 @@ type TripsContextValue = Cache & {
   deleteTrip: (tripId: string) => Promise<void>
   leaveTrip: (tripId: string) => Promise<void>
   updateTrip: (tripId: string, patch: TripPatch) => Promise<void>
-  addBooking: (tripId: string, booking: Omit<Booking, 'id'>) => Promise<void>
+  /** Renvoie l'identifiant de la réservation créée */
+  addBooking: (tripId: string, booking: Omit<Booking, 'id' | 'files'>) => Promise<string>
   updateBooking: (bookingId: string, patch: BookingPatch) => Promise<void>
   deleteBooking: (bookingId: string) => Promise<void>
+  /** Joint un PDF ou une capture à une réservation */
+  attachFile: (tripId: string, bookingId: string, file: File) => Promise<void>
+  removeFile: (file: BookingFile) => Promise<void>
   /** Crée un lien d'invitation et renvoie son adresse */
   createInvitation: (tripId: string, role: Exclude<TripRole, 'owner'>) => Promise<string>
   acceptInvitation: (token: string) => Promise<string>
@@ -172,6 +183,9 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
         } catch {
           // stockage plein ou bloqué : les données restent en mémoire
         }
+        // Billets des voyages à venir ou en cours : copiés sur le téléphone pour les avoir sans réseau
+        const today = new Date().toLocaleDateString('sv-SE') // AAAA-MM-JJ, date locale
+        prefetchFiles(next.trips.filter((t) => t.end >= today).flatMap((t) => t.bookings.flatMap((b) => b.files)))
       } catch {
         setStatus(navigator.onLine ? 'erreur' : 'hors-ligne')
       } finally {
@@ -221,6 +235,9 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
     },
 
     deleteTrip: async (tripId) => {
+      // Les lignes partent en cascade avec le voyage, mais pas les fichiers du stockage : on les retire d'abord
+      const trip = data.trips.find((t) => t.id === tripId)
+      await removeStoredFiles(trip?.bookings.flatMap((b) => b.files.map((f) => f.path)) ?? [])
       must(await supabase.from('trips').delete().eq('id', tripId))
       await refresh()
     },
@@ -259,13 +276,25 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
     },
 
     deleteBooking: async (bookingId) => {
+      const files = data.trips.flatMap((t) => t.bookings).find((b) => b.id === bookingId)?.files ?? []
+      await removeStoredFiles(files.map((f) => f.path))
       must(await supabase.from('bookings').delete().eq('id', bookingId))
+      await refresh()
+    },
+
+    attachFile: async (tripId, bookingId, file) => {
+      await uploadBookingFile(tripId, bookingId, file)
+      await refresh()
+    },
+
+    removeFile: async (file) => {
+      await deleteBookingFile(file)
       await refresh()
     },
 
     addBooking: async (tripId, b) => {
       const trip = data.trips.find((t) => t.id === tripId)
-      must(
+      const created = must(
         await supabase.from('bookings').insert({
           trip_id: tripId,
           kind: b.kind,
@@ -278,9 +307,12 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
           provider: b.provider ?? null,
           source: b.source,
           ticket: b.ticket ?? null,
-        }),
-      )
+        })
+        .select('id')
+        .single(),
+      ) as { id: string }
       await refresh()
+      return created.id
     },
 
     createInvitation: async (tripId, role) => {

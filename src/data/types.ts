@@ -35,6 +35,17 @@ export type Booking = {
   source: 'email' | 'pdf' | 'manuel'
   importedAt?: string
   ticket?: Ticket
+  /** PDF et captures joints (billet, confirmation…) */
+  files: BookingFile[]
+}
+
+export type BookingFile = {
+  id: string
+  /** Chemin dans le bucket « trip-files » : {trip_id}/{booking_id}/… */
+  path: string
+  name: string
+  mimeType?: string
+  size?: number
 }
 
 /** Une étape du voyage (ville) */

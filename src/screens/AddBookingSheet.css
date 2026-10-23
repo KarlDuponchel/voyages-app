@@ -20,21 +20,6 @@
   place-items: center;
   background: color-mix(in srgb, currentColor 16%, transparent);
 }
-.add-option__address {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 6px 6px 14px;
-  border-radius: var(--radius-md);
-  background: var(--bg-base);
-}
-.add-option__copy {
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
 .add-form__file {
   display: flex;
   gap: 6px;

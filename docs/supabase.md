@@ -99,5 +99,6 @@ Ces types sont branchés sur le client (`createClient<Database>`). Si la base et
 
 - **Modifications** : un voyage se modifie avec le crayon en haut de sa page (titre, dates, transport, budget). Les étapes s'ajoutent, se retirent et se réordonnent dans l'onglet Itinéraire. Une réservation se modifie ou se supprime depuis l'écran du billet. Tout cela est réservé aux propriétaires et aux participants : les lecteurs ne voient pas ces boutons, et la base refuse de toute façon.
 
-### À venir
-- L'envoi des PDF de billets dans le bucket `trip-files`, rangés sous `{trip_id}/{booking_id}/…`.
+- **Billets (PDF et captures)** ([files.ts](../src/lib/files.ts), [BookingFiles.tsx](../src/components/BookingFiles.tsx), [FileViewer.tsx](../src/components/FileViewer.tsx)) : un fichier se joint à l'ajout d'une réservation ou depuis l'écran du billet. Il est rangé dans le bucket privé `trip-files` sous `{trip_id}/{booking_id}/…` (20 Mo maximum, PDF ou image), avec une ligne dans `booking_files`. « Afficher le billet » l'ouvre en plein écran sur fond blanc, pour scanner le QR code. Les PDF sont dessinés par pdf.js, chargé seulement à l'ouverture.
+  - **Hors ligne** : les fichiers des voyages à venir ou en cours sont copiés sur le téléphone (Cache Storage) à chaque mise à jour, et tout fichier ouvert une fois reste disponible. La copie est effacée à la déconnexion.
+  - **Suppression** : supprimer une réservation ou un voyage retire aussi ses fichiers du stockage. Limite connue : si un voyage disparaît parce que son dernier membre supprime son compte, ses fichiers restent dans le stockage (la base ne peut pas les effacer elle-même). À nettoyer plus tard par une tâche planifiée.

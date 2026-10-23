@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { clearFileCache } from '../lib/files'
 import { supabase } from '../lib/supabase'
 import type { TablesUpdate } from './database.types'
 import type { Profile } from './types'
@@ -103,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut: async () => {
       await supabase.auth.signOut()
       localStorage.removeItem(PROFILE_CACHE)
+      await clearFileCache()
     },
     updateProfile: async (patch) => {
       if (!userId) return
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
       await supabase.auth.signOut()
       localStorage.clear()
+      await clearFileCache()
     },
   }
 
