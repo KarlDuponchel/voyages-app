@@ -72,7 +72,7 @@ npx supabase functions deploy extract-booking
 
 ## Mise en route, partie B : e-mails transférés
 
-**1. Un domaine sur Cloudflare.** Cloudflare Email Routing, gratuit, ne fonctionne qu'avec un domaine dont le DNS est géré par Cloudflare. Deux possibilités :
+**1. Un domaine sur Cloudflare** : `tripmates.app`, acheté le 24/10 chez Cloudflare Registrar. Cloudflare Email Routing, gratuit, ne fonctionne qu'avec un domaine dont le DNS est géré par Cloudflare. Deux possibilités :
 - **Recommandé : un domaine dédié à l'app**, acheté chez Cloudflare Registrar (environ 10 € par an). Il servira aussi pour l'ouverture au public.
 - **Ou `karlduponchel.fr` déplacé chez Cloudflare.** Il faut recopier tous les enregistrements DNS existants, en particulier ceux qui servent à l'envoi des e-mails `noreply@` (SPF, DKIM). L'import utilisera seulement un sous-domaine, sans toucher à la réception des e-mails du domaine principal.
 

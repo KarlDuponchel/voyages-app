@@ -99,7 +99,8 @@
 
 ### À faire par Karl (détail dans [docs/import-ia.md](docs/import-ia.md) § Mise en route)
 - [ ] **A** : clé API Anthropic (avec une limite de dépense), `npx supabase db push`, secret `ANTHROPIC_API_KEY`, `npx supabase functions deploy extract-booking`.
-- [ ] **B** : domaine sur Cloudflare, Email Routing sur `import.<domaine>`, secret `INBOUND_SECRET` des deux côtés, déploiement de `inbound-email` et du relais, règle catch-all, `VITE_IMPORT_DOMAIN` dans `.env`.
+- [x] Domaine **tripmates.app** acheté chez Cloudflare (24/10). `karlduponchel.fr` n'est pas utilisé : ses MX servent à la boîte `contact@`.
+- [ ] **B** : Email Routing sur `tripmates.app`, secret `INBOUND_SECRET` des deux côtés, déploiement de `inbound-email` et du relais, règle catch-all (`VITE_IMPORT_DOMAIN=tripmates.app` est déjà dans `.env`).
 - [ ] Ensuite : régénérer les types de la base, fusionner `feat/import-ia` dans `main`.
 
 ## Feuille de route conseillée
