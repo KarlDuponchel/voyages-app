@@ -63,13 +63,13 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
-### Pour reprendre (mis à jour le 23/10)
-- Tout est sur `main`, mis en ligne par Vercel, billets PDF compris (fusionnés le 23/10).
-- À tester sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture.
-- Toujours à tester (21/10) : modifier un voyage (crayon), modifier ou supprimer une réservation, réordonner les étapes.
+### Pour reprendre (mis à jour le 24/10)
+- Tout est sur `main`, mis en ligne par Vercel : billets PDF, import par l'IA (billets et e-mails), tirer pour actualiser.
+- Import par l'IA en service ; domaine **tripmates.app** (adresses d'import), relais Cloudflare `voyages-email`, fonctions Supabase `extract-booking` et `inbound-email` ([docs/import-ia.md](docs/import-ia.md)).
+- À tester sur iPhone : tirer pour actualiser ; lecture d'un billet PDF ; mode avion puis réouverture d'un billet ; modifier un voyage, une réservation, l'ordre des étapes.
 - Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
-- Import par l'IA en ligne depuis le 24/10 : à tester avec de vrais billets et e-mails ([docs/import-ia.md](docs/import-ia.md)). Prochaine étape : **4. Photos et souvenirs**.
-- Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`.
+- Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`, puis régénérer les types. Fonctions : `npm run test:functions`, puis `npx supabase functions deploy <nom>`.
+- Prochaine étape conseillée : **4. Photos et souvenirs**.
 
 ## Session du 23 octobre 2026
 
@@ -96,18 +96,18 @@
 - **Modèle** : `claude-opus-5-5` (effort `medium`, repli automatique en cas de refus), modifiable avec le secret `EXTRACT_MODEL`.
 - **Tests** : 48 tests de sécurité de la base (`npm run test:db`) et 12 tests de la logique serveur avec un faux client Claude (`npm run test:functions`). Écrans vérifiés dans un banc d'essai, avec une fausse réponse de l'IA.
 
-- **Tirer pour actualiser** (branche `feat/pull-to-refresh`) : en haut d'une page, tirer vers le bas puis relâcher recharge voyages, imports et profil. Le geste est ignoré quand un panneau est ouvert, sur le globe et pour les gestes horizontaux ; hors ligne, il affiche « Hors ligne ». Vérifié avec des gestes simulés, à confirmer sur l'iPhone.
+- **Tirer pour actualiser** (fusionné dans `main` le 24/10) : en haut d'une page, tirer vers le bas puis relâcher recharge voyages, imports et profil. Le geste est ignoré quand un panneau est ouvert, sur le globe et pour les gestes horizontaux ; hors ligne, il affiche « Hors ligne ». Vérifié avec des gestes simulés, à confirmer sur l'iPhone.
 
 ### Mise en route (faite le 24/10)
 - [x] Domaine **tripmates.app** acheté chez Cloudflare. `karlduponchel.fr` n'est pas utilisé : ses MX servent à la boîte `contact@`.
 - [x] Migration appliquée (`db push`), secrets `ANTHROPIC_API_KEY` et `INBOUND_SECRET`, fonctions `extract-booking` et `inbound-email` déployées.
 - [x] Relais `voyages-email` déployé, Email Routing actif sur `tripmates.app` (catch-all → relais).
-- [x] Types de la base régénérés ; branche `feat/import-ia` fusionnée dans `main`.
+- [x] Types de la base régénérés ; branches `feat/import-ia` et `feat/pull-to-refresh` fusionnées dans `main`.
 
 ### Reste à vérifier
 - [x] **A** : lecture d'une capture de billet testée par Karl le 24/10 (fonctionne). Reste à tester avec un PDF.
 - [x] **B** : e-mail easyJet transféré et validé le 24/10 (réservation « Paris CDG → Le Caire SPX » ajoutée avec son PDF). Premier essai bloqué : le secret du relais avait été enregistré sous un mauvais nom, il a été recréé.
-- [ ] Relancer `npx wrangler deploy` dans `email-worker` pour appliquer `workers_dev = false` (pas d'adresse web publique pour le relais).
+- [x] Relais redéployé avec `workers_dev = false` (24/10) : plus d'adresse web publique, il ne reçoit que les e-mails.
 - [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`). Premières mesures avec Opus 5.5 : environ 0,03 $ par capture, 0,04 $ par e-mail.
 
 ## Feuille de route conseillée
