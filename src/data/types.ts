@@ -93,3 +93,32 @@ export type Profile = {
   homeLat?: number
   homeLng?: number
 }
+
+/** Réservation proposée par l'IA (billet ou e-mail lu), à valider avant d'être enregistrée */
+export type BookingDraft = {
+  kind: BookingKind
+  title: string
+  detail: string
+  start: string
+  end?: string
+  reference?: string
+  provider?: string
+  /** Ville principale, pour retrouver le voyage */
+  place?: string
+  ticket?: Ticket
+}
+
+/** Pièce jointe d'un e-mail transféré (bucket « imports ») */
+export type ImportFile = { path: string; name: string; mimeType: string; size: number }
+
+/** E-mail transféré à l'adresse d'import, en attente de validation */
+export type PendingImport = {
+  id: string
+  receivedAt: string
+  subject?: string
+  status: 'en_cours' | 'a_valider' | 'erreur'
+  error?: string
+  drafts: BookingDraft[]
+  files: ImportFile[]
+  suggestedTripId?: string
+}

@@ -6,6 +6,9 @@ import { bookingKinds } from './BookingCard'
 
 export type BookingInput = Pick<Booking, 'kind' | 'title' | 'detail' | 'start' | 'end' | 'reference'>
 
+/** Valeurs de départ : une réservation existante, ou une proposition de l'IA */
+export type BookingInitial = Partial<BookingInput>
+
 /** Formulaire d'une réservation, partagé entre l'ajout et la modification. */
 export function BookingForm({
   trip,
@@ -15,7 +18,7 @@ export function BookingForm({
   children,
 }: {
   trip: Trip
-  initial?: Booking
+  initial?: BookingInitial
   submitLabel: string
   onSubmit: (input: BookingInput) => Promise<void>
   /** Boutons ou informations affichés sous le bouton principal */
@@ -23,7 +26,7 @@ export function BookingForm({
 }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [startDate, setStartDate] = useState(initial?.start.slice(0, 10) ?? trip.start)
+  const [startDate, setStartDate] = useState(initial?.start?.slice(0, 10) ?? trip.start)
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -82,7 +85,7 @@ export function BookingForm({
         </label>
         <label className="field" style={{ flex: 1 }}>
           <span className="overline muted">Heure</span>
-          <input className="input" name="time" type="time" defaultValue={initial ? initial.start.slice(11, 16) : '10:00'} />
+          <input className="input" name="time" type="time" defaultValue={initial?.start ? initial.start.slice(11, 16) : '10:00'} />
         </label>
       </div>
       <div className="row" style={{ gap: 10 }}>

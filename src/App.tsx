@@ -5,6 +5,7 @@ import { useAuth } from './data/auth'
 import { TripsProvider } from './data/store'
 import { Billet } from './screens/Billet'
 import { Connexion } from './screens/Connexion'
+import { Imports } from './screens/Imports'
 import { Invitation } from './screens/Invitation'
 import { Monde } from './screens/Monde'
 import { Profil } from './screens/Profil'
@@ -32,6 +33,7 @@ function Shell() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/profil" element={<Profil />} />
         <Route path="/invitation/:token" element={<Invitation />} />
+        <Route path="/imports" element={<Imports />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {!hideTabBar(pathname) && <TabBar />}

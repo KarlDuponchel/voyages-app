@@ -55,3 +55,26 @@
   color: var(--accent-sunset);
   background: color-mix(in srgb, var(--accent-sunset) 12%, transparent);
 }
+
+.profil-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+}
+.profil-address__text {
+  min-width: 0;
+  word-break: break-all;
+  font-weight: 600;
+  user-select: all;
+  -webkit-user-select: all;
+}
+.profil-address__copy {
+  flex: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}

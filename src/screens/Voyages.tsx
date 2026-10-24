@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { ChevronRight, Mail, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Cover } from '../components/Cover'
@@ -7,6 +7,7 @@ import type { Trip } from '../data/types'
 import { daysUntil, formatRange } from '../lib/format'
 import { tripCountries } from '../lib/trip'
 import { NewTripSheet } from './NewTripSheet'
+import './Imports.css'
 import './Voyages.css'
 
 function TripRow({ trip }: { trip: Trip }) {
@@ -34,7 +35,8 @@ function TripRow({ trip }: { trip: Trip }) {
 const statusText = { 'hors-ligne': 'Hors ligne : dernière version enregistrée', erreur: 'Synchronisation impossible pour le moment' } as const
 
 export function Voyages() {
-  const { trips, status } = useTrips()
+  const { trips, status, imports } = useTrips()
+  const toValidate = imports.filter((i) => i.status !== 'erreur').length
   const [creating, setCreating] = useState(false)
   const sorted = [...trips].sort((a, b) => b.start.localeCompare(a.start))
   const upcoming = sorted.filter((t) => daysUntil(t.end) >= 0).reverse()
@@ -53,6 +55,21 @@ export function Voyages() {
           <Plus size={20} />
         </button>
       </header>
+
+      {imports.length > 0 && (
+        <section className="px">
+          <Link to="/imports" className="imports-banner">
+            <Mail size={20} />
+            <span className="stack" style={{ gap: 0, flex: 1 }}>
+              <span className="strong">
+                {toValidate > 0 ? `${toValidate} e-mail${toValidate > 1 ? 's' : ''} à valider` : 'E-mails transférés'}
+              </span>
+              <span className="caption muted">Réservations lues par l'IA, à vérifier avant de les ajouter</span>
+            </span>
+            <ChevronRight size={18} className="muted" aria-hidden />
+          </Link>
+        </section>
+      )}
 
       {(status === 'hors-ligne' || status === 'erreur') && (
         <p className="px caption muted" style={{ margin: 0 }} role="status">

@@ -68,3 +68,49 @@
   outline: 2px solid var(--accent-sunset);
   outline-offset: 2px;
 }
+
+/* Lecture du billet par l'IA */
+.add-reading {
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+}
+.add-reading__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
+  animation: add-reading-pulse 1.4s ease-in-out infinite;
+}
+@keyframes add-reading-pulse {
+  50% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .add-reading__icon {
+    animation: none;
+  }
+}
+
+.add-form__ai,
+.add-form__note {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 0;
+}
+.add-form__ai {
+  color: var(--accent-sunset);
+}
+.add-form__ai svg {
+  flex: none;
+  margin-top: 2px;
+}
+.add-form__note {
+  color: var(--text-secondary);
+}

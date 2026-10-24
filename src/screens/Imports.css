@@ -1,0 +1,100 @@
+.imports__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.imports__card header .overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.imports__reading,
+.imports__ai {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.imports__ai,
+.imports__reading svg {
+  color: var(--accent-sunset);
+}
+
+.imports__new-trip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -4px;
+  color: var(--accent-sunset);
+  font-weight: 600;
+}
+
+.imports__drafts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.imports__drafts li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.imports__drafts li + li {
+  border-top: 1px solid var(--border-subtle);
+}
+.imports__chip {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+.imports__add {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.imports__done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-lagoon);
+  font-weight: 600;
+}
+
+.imports__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 20px;
+}
+.imports__empty svg {
+  color: var(--text-secondary);
+}
+
+.imports__address {
+  word-break: break-all;
+}
+
+/* Bandeau sur l'écran Voyages */
+.imports-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--accent-sunset) 35%, transparent);
+}
+.imports-banner svg {
+  color: var(--accent-sunset);
+  flex: none;
+}

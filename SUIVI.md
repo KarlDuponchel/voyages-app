@@ -68,7 +68,7 @@
 - À tester sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture.
 - Toujours à tester (21/10) : modifier un voyage (crayon), modifier ou supprimer une réservation, réordonner les étapes.
 - Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
-- Prochaine étape conseillée : **3. Import automatique par l'IA**, ci-dessous.
+- Prochaine étape : **mettre en route l'import par l'IA** (24/10, [docs/import-ia.md](docs/import-ia.md)), puis **4. Photos et souvenirs**.
 - Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`.
 
 ## Session du 23 octobre 2026
@@ -79,9 +79,28 @@
 - **Hors ligne** : fichiers des voyages à venir copiés sur le téléphone, indication « Disponible hors ligne » par fichier, copie effacée à la déconnexion.
 - Pas de migration : la table `booking_files` et le bucket `trip-files` existaient déjà.
 
+- **Panneaux** (commit e2187d5) : croix de fermeture, et glissement vers le bas pour fermer.
+
 ### Reste à vérifier
 - [ ] Sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture du billet.
 - [ ] Après déploiement : l'app installée récupère bien le lecteur de PDF pour le hors ligne (ouvrir l'app une fois avec du réseau).
+
+## Session du 24 octobre 2026
+
+### Fait (branche `feat/import-ia`, non fusionnée)
+- **Import automatique par l'IA**, décrit dans [docs/import-ia.md](docs/import-ia.md) :
+  - **A. Lecture d'un billet** : dans « Ajouter → Avec le billet », Claude lit le PDF ou la capture et pré-remplit la réservation (données de la carte d'embarquement comprises). Plusieurs réservations dans un même billet, comme un aller-retour, se valident une à une ; le fichier est joint à chacune.
+  - **B. E-mails transférés** : une adresse personnelle par compte (dans le profil, avec un bouton pour en changer). Les e-mails sont lus par Claude, puis présentés dans « Voyages → E-mails à valider » avec le voyage correspondant proposé. Les pièces jointes sont jointes aux réservations ajoutées.
+  - Rien n'est enregistré sans validation. Les e-mails ne sont acceptés que depuis l'adresse du compte. Limite de 40 lectures par personne sur 24 h.
+- **Serveur** : fonctions Supabase `extract-booking` et `inbound-email`, relais Cloudflare `email-worker/`, migration `20261024100000_import_ia.sql`.
+- **Modèle** : `claude-opus-5-5` (effort `medium`, repli automatique en cas de refus), modifiable avec le secret `EXTRACT_MODEL`.
+- **Tests** : 48 tests de sécurité de la base (`npm run test:db`) et 12 tests de la logique serveur avec un faux client Claude (`npm run test:functions`). Écrans vérifiés dans un banc d'essai, avec une fausse réponse de l'IA.
+- **Pas encore testé** : l'appel réel à Claude et la réception d'un vrai e-mail. Ils demandent la clé API, le déploiement et le domaine.
+
+### À faire par Karl (détail dans [docs/import-ia.md](docs/import-ia.md) § Mise en route)
+- [ ] **A** : clé API Anthropic (avec une limite de dépense), `npx supabase db push`, secret `ANTHROPIC_API_KEY`, `npx supabase functions deploy extract-booking`.
+- [ ] **B** : domaine sur Cloudflare, Email Routing sur `import.<domaine>`, secret `INBOUND_SECRET` des deux côtés, déploiement de `inbound-email` et du relais, règle catch-all, `VITE_IMPORT_DOMAIN` dans `.env`.
+- [ ] Ensuite : régénérer les types de la base, fusionner `feat/import-ia` dans `main`.
 
 ## Feuille de route conseillée
 
@@ -95,7 +114,7 @@
 - Consulter le billet hors ligne (le vrai QR code à l'embarquement).
 - C'est la base de l'étape suivante.
 
-### 3. Import automatique par l'IA (la fonction phare)
+### 3. Import automatique par l'IA (la fonction phare) — développé le 24/10 (branche `feat/import-ia`), mise en route à faire
 - Une adresse de transfert par utilisateur : réception de l'e-mail (Cloudflare Email Routing ou un service d'e-mails entrants), puis une Edge Function Supabase.
 - L'IA (Claude) lit l'e-mail ou le PDF et extrait la réservation : type, dates, horaires, référence, données du billet.
 - On la propose à l'utilisateur pour validation avant de l'enregistrer.

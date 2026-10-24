@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { randomCover } from '../lib/trip'
 import type { TablesUpdate } from './database.types'
 import { deleteBookingFile, prefetchFiles, removeStoredFiles, uploadBookingFile } from '../lib/files'
-import type { Booking, BookingFile, Ticket, Transport, Trip, TripRole } from './types'
+import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, Ticket, Transport, Trip, TripRole } from './types'
 
 /**
  * Voyages de l'utilisateur connecté, lus dans Supabase.
@@ -14,8 +14,16 @@ import type { Booking, BookingFile, Ticket, Transport, Trip, TripRole } from './
 
 type Status = 'chargement' | 'a-jour' | 'hors-ligne' | 'erreur'
 
-type Cache = { trips: Trip[]; visitedCountryIds: string[]; manualCountryIds: string[] }
-const EMPTY: Cache = { trips: [], visitedCountryIds: [], manualCountryIds: [] }
+type Cache = {
+  trips: Trip[]
+  visitedCountryIds: string[]
+  manualCountryIds: string[]
+  /** E-mails transférés en attente de validation */
+  imports: PendingImport[]
+  /** Partie avant « @ » de l'adresse de transfert */
+  importAlias: string | null
+}
+const EMPTY: Cache = { trips: [], visitedCountryIds: [], manualCountryIds: [], imports: [], importAlias: null }
 // v3 : les réservations ont une liste de fichiers (l'ancienne copie n'en a pas, on l'ignore)
 const cacheKey = (userId: string) => `voyages:cache:v3:${userId}`
 
@@ -142,6 +150,12 @@ type TripsContextValue = Cache & {
   acceptInvitation: (token: string) => Promise<string>
   addCountry: (countryId: string) => Promise<void>
   removeCountry: (countryId: string) => Promise<void>
+  /** Nouvelle adresse de transfert (l'ancienne cesse de fonctionner) */
+  regenerateImportAlias: () => Promise<void>
+  /** Joint à une réservation les pièces jointes de l'e-mail dont elle vient */
+  attachImportFiles: (imp: PendingImport, tripId: string, bookingId: string) => Promise<void>
+  /** Supprime l'e-mail (traité ou ignoré) et ses pièces jointes */
+  dismissImport: (imp: PendingImport) => Promise<void>
   addDestination: (tripId: string, place: Place) => Promise<void>
   removeDestination: (destinationId: string) => Promise<void>
   /** Déplace une étape d'un cran vers le haut (-1) ou le bas (+1) */
@@ -149,6 +163,37 @@ type TripsContextValue = Cache & {
 }
 
 const TripsContext = createContext<TripsContextValue | null>(null)
+
+/**
+ * Import par e-mail : lu à part et sans bloquer le reste (si la migration de l'import
+ * n'est pas encore appliquée, l'app fonctionne sans).
+ */
+async function loadImports(): Promise<Pick<Cache, 'imports' | 'importAlias'>> {
+  const [rows, address] = await Promise.all([
+    supabase.from('pending_imports').select('id, received_at, subject, status, error, drafts, files, suggested_trip_id').order('received_at', { ascending: false }),
+    supabase.from('import_addresses').select('alias').maybeSingle(),
+  ])
+  return {
+    imports: (rows.data ?? []).map((r) => ({
+      id: r.id,
+      receivedAt: r.received_at,
+      subject: r.subject ?? undefined,
+      status: r.status as PendingImport['status'],
+      error: r.error ?? undefined,
+      drafts: (Array.isArray(r.drafts) ? r.drafts : []) as unknown as BookingDraft[],
+      files: (Array.isArray(r.files) ? r.files : []) as unknown as ImportFile[],
+      suggestedTripId: r.suggested_trip_id ?? undefined,
+    })),
+    importAlias: address.data?.alias ?? null,
+  }
+}
+
+/** Pièce jointe d'un e-mail → fichier à joindre à la réservation */
+async function importFileAsFile(f: ImportFile): Promise<File> {
+  const { data, error } = await supabase.storage.from('imports').download(f.path)
+  if (error || !data) throw error ?? new Error('Pièce jointe introuvable')
+  return new File([data], f.name, { type: f.mimeType })
+}
 
 const must = <T,>({ data, error }: { data: T; error: unknown }): T => {
   if (error) throw error
@@ -175,6 +220,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
           trips: ((must(trips) ?? []) as unknown as TripRow[]).map((r) => toTrip(r, userId)),
           visitedCountryIds: (must(visited) ?? []).map((c) => c.country_code as string),
           manualCountryIds: (must(manual) ?? []).map((c) => c.country_code as string),
+          ...(await loadImports()),
         }
         setData(next)
         setStatus('a-jour')
@@ -306,6 +352,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
           reference: b.reference ?? null,
           provider: b.provider ?? null,
           source: b.source,
+          imported_at: b.importedAt ?? null,
           ticket: b.ticket ?? null,
         })
         .select('id')
@@ -364,6 +411,25 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
       ;[order[i], order[j]] = [order[j], order[i]]
       for (const [position, d] of order.entries())
         if (d.position !== position) must(await supabase.from('trip_destinations').update({ position }).eq('id', d.id))
+      await refresh()
+    },
+
+    regenerateImportAlias: async () => {
+      must(await supabase.rpc('regenerate_import_alias'))
+      await refresh()
+    },
+
+    attachImportFiles: async (imp, tripId, bookingId) => {
+      for (const f of imp.files) await uploadBookingFile(tripId, bookingId, await importFileAsFile(f))
+      await refresh()
+    },
+
+    dismissImport: async (imp) => {
+      if (imp.files.length > 0) {
+        const { error } = await supabase.storage.from('imports').remove(imp.files.map((f) => f.path))
+        if (error) throw error
+      }
+      must(await supabase.from('pending_imports').delete().eq('id', imp.id))
       await refresh()
     },
 

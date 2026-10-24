@@ -30,16 +30,16 @@ Titres en **Bricolage Grotesque**, texte en **DM Sans** (Google Fonts, embarqué
 | `src/data/` | Connexion, voyages (Supabase + copie hors ligne), liste des pays |
 | `src/lib/` | Calcul des statistiques, formats de dates |
 | `public/logo.svg` | Icône de l'app (régénérer les icônes avec `npm run icons`) |
+| `supabase/` | Schéma de la base et tests de sécurité (`npm run test:db`), voir [docs/supabase.md](docs/supabase.md) |
+| `supabase/functions/` | Fonctions serveur de l'import par l'IA (lecture des billets et des e-mails), voir [docs/import-ia.md](docs/import-ia.md) |
+| `email-worker/` | Relais Cloudflare qui reçoit les e-mails transférés |
 
 ## Installer sur l'iPhone
 
 L'installation complète (icône, plein écran, mode hors ligne) demande une adresse en **https** : il faudra publier l'app
 (Vercel ou Cloudflare Pages, gratuits). Ensuite, dans Safari : Partager → « Sur l'écran d'accueil ».
 
-| `supabase/` | Schéma de la base et tests de sécurité (`npm run test:db`), voir [docs/supabase.md](docs/supabase.md) |
-
 ## Prochaines étapes
 
-- Lecture automatique des e-mails et PDF de réservation
 - Import des photos et vidéos, souvenirs automatiques
 - Budget partagé

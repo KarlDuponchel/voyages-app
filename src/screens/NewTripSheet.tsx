@@ -16,17 +16,31 @@ export const transports: { value: Transport; label: string }[] = [
   { value: 'autre', label: 'Autre' },
 ]
 
-export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * Création d'un voyage. Par défaut, on ouvre le voyage créé ; avec `onCreated`, on reste sur la page
+ * (ex. depuis un e-mail à valider). `defaults` pré-remplit les dates.
+ */
+export function NewTripSheet({
+  open,
+  onClose,
+  onCreated,
+  defaults,
+}: {
+  open: boolean
+  onClose: () => void
+  onCreated?: (tripId: string) => void
+  defaults?: { start?: string; end?: string }
+}) {
   const { createTrip } = useTrips()
   const navigate = useNavigate()
   const [place, setPlace] = useState<Place | null>(null)
-  const [start, setStart] = useState('')
+  const [start, setStart] = useState(defaults?.start ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const close = () => {
     setPlace(null)
-    setStart('')
+    setStart(defaults?.start ?? '')
     setError(null)
     onClose()
   }
@@ -51,7 +65,8 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
         budget: budget > 0 ? budget : undefined,
       })
       close()
-      navigate(`/voyages/${id}`)
+      if (onCreated) onCreated(id)
+      else navigate(`/voyages/${id}`)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -75,7 +90,7 @@ export function NewTripSheet({ open, onClose }: { open: boolean; onClose: () => 
           </label>
           <label className="field" style={{ flex: 1 }}>
             <span className="overline muted">Retour</span>
-            <input className="input" name="end" type="date" required min={start || undefined} />
+            <input className="input" name="end" type="date" required min={start || undefined} defaultValue={defaults?.end} />
           </label>
         </div>
         <div className="row" style={{ gap: 10 }}>

@@ -3,3 +3,6 @@ dist
 dev-dist
 *.local
 .DS_Store
+
+# Généré par les vérifications Deno des fonctions (npm run test:functions)
+deno.lock

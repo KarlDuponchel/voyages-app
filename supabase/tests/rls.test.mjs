@@ -211,6 +211,59 @@ await ok('voyage abandonné par tous ses membres → supprimé', async () => {
   const r = await db.query(`select 1 from public.trips where id = '${id}'`)
   expect(r.rows.length === 0, 'voyage orphelin')
 })
+// ---- Import par l'IA (migration 20261024100000) ----
+await ok("chaque compte a une adresse d'import, y compris un compte créé après la migration", async () => {
+  const r = await db.query(`select count(*) n from public.profiles p left join public.import_addresses a on a.user_id = p.id where a.alias is null`)
+  expect(Number(r.rows[0].n) === 0, 'profil sans adresse')
+  expect((await db.query(`select 1 from public.import_addresses where user_id = '${U.tiers}'`)).rows.length === 1, 'tiers sans adresse')
+})
+await ok("Léa ne voit que sa propre adresse d'import", async () => {
+  const r = await as('lea', 'select user_id from public.import_addresses')
+  expect(r.length === 1 && r[0].user_id === U.lea, JSON.stringify(r))
+})
+await denied("Léa ne peut pas choisir son adresse d'import à la main", () =>
+  as('lea', `update public.import_addresses set alias = 'adresse0choisie' where user_id = '${U.lea}'`), 'permission denied')
+await ok("Léa change d'adresse d'import (l'ancienne ne marche plus)", async () => {
+  const [before] = await as('lea', 'select alias from public.import_addresses')
+  const [{ regenerate_import_alias: alias }] = await as('lea', 'select public.regenerate_import_alias()')
+  expect(alias && alias !== before.alias, `${before.alias} → ${alias}`)
+  expect((await db.query(`select 1 from public.import_addresses where alias = '${before.alias}'`)).rows.length === 0, 'ancienne adresse active')
+})
+
+let imp
+await ok("un e-mail reçu pour Léa (écrit par la fonction serveur) n'est visible que par elle", async () => {
+  ;[{ id: imp }] = (await db.query(`insert into public.pending_imports (user_id, subject, status, drafts) values ('${U.lea}', 'Votre vol', 'a_valider', '[{"title":"CDG → LIS"}]') returning id`)).rows
+  expect((await as('lea', 'select id from public.pending_imports')).length === 1, 'Léa ne le voit pas')
+  expect((await as('inconnu', 'select id from public.pending_imports')).length === 0, 'fuite')
+})
+await denied("Léa ne peut pas modifier les réservations proposées", () =>
+  as('lea', `update public.pending_imports set drafts = '[]' where id = '${imp}'`), 'permission denied')
+await denied("Léa ne peut pas créer un import elle-même", () =>
+  as('lea', `insert into public.pending_imports (user_id) values ('${U.lea}')`), 'permission denied')
+await denied("Léa ne peut pas déclarer sa propre consommation d'IA", () =>
+  as('lea', `insert into public.ai_usage (user_id, source, model) values ('${U.lea}', 'fichier', 'x')`), 'permission denied')
+await ok("pièces jointes : Léa lit les siennes, pas l'inconnu ; elle peut les supprimer", async () => {
+  await db.query(`insert into storage.objects (bucket_id, name) values ('imports', '${U.lea}/${imp}/billet.pdf')`)
+  expect((await as('lea', `select 1 from storage.objects where bucket_id = 'imports'`)).length === 1, 'Léa ne voit pas sa pièce jointe')
+  expect((await as('inconnu', `select 1 from storage.objects where bucket_id = 'imports'`)).length === 0, 'fuite')
+  await as('lea', `delete from storage.objects where bucket_id = 'imports'`)
+  expect((await db.query(`select 1 from storage.objects where bucket_id = 'imports'`)).rows.length === 0, 'non supprimée')
+})
+await ok("l'inconnu ne peut pas supprimer l'import de Léa ; Léa oui", async () => {
+  await as('inconnu', `delete from public.pending_imports where id = '${imp}'`)
+  expect((await db.query(`select 1 from public.pending_imports where id = '${imp}'`)).rows.length === 1, 'supprimé par un autre')
+  await as('lea', `delete from public.pending_imports where id = '${imp}'`)
+  expect((await db.query(`select 1 from public.pending_imports where id = '${imp}'`)).rows.length === 0, 'non supprimé')
+})
+await denied('anon ne lit pas les imports', async () => {
+  await db.exec('set role anon')
+  try {
+    return (await db.query('select * from public.pending_imports')).rows
+  } finally {
+    await db.exec('reset role')
+  }
+}, 'permission denied')
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {

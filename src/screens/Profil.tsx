@@ -1,9 +1,11 @@
-import { Check, LogOut, Monitor, Moon, Plus, Share, SquarePlus, Sun, Trash2, X } from 'lucide-react'
+import { Check, Copy, LogOut, Monitor, Moon, Plus, RefreshCw, Share, SquarePlus, Sun, Trash2, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { PlaceSearch } from '../components/PlaceSearch'
 import { useAuth } from '../data/auth'
 import { allCountries, countryById } from '../data/countries'
 import { useTrips } from '../data/store'
+import { importAddress } from '../lib/importAddress'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
 import { useTheme, type ThemeChoice } from '../theme/theme'
@@ -152,6 +154,76 @@ function Identity() {
   )
 }
 
+/** Adresse de transfert des confirmations de réservation, lues par l'IA */
+function ImportByEmail({ address }: { address: string }) {
+  const { session } = useAuth()
+  const { regenerateImportAlias, imports } = useTrips()
+  const [copied, setCopied] = useState(false)
+  const [confirm, setConfirm] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch {
+      // presse-papiers indisponible : l'adresse reste sélectionnable
+    }
+  }
+
+  return (
+    <div className="card profil-card">
+      <p className="caption muted" style={{ margin: 0 }}>
+        Transférez vos confirmations (vol, train, hôtel…) à cette adresse depuis <span className="strong">{session?.user.email}</span> : l'IA les lit et
+        vous les propose dans « E-mails à valider ».
+      </p>
+      <div className="profil-address">
+        <span className="profil-address__text">{address}</span>
+        <button className="btn btn--accent profil-address__copy" onClick={copy}>
+          {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copiée' : 'Copier'}
+        </button>
+      </div>
+      <p className="caption muted" style={{ margin: 0 }}>
+        Les e-mails envoyés depuis une autre adresse sont ignorés.{' '}
+        {imports.length > 0 && (
+          <Link to="/imports" className="strong">
+            Voir les e-mails à valider
+          </Link>
+        )}
+      </p>
+      {confirm ? (
+        <>
+          <p className="caption" style={{ margin: 0 }}>
+            L'adresse actuelle cessera aussitôt de fonctionner. Utile si elle a circulé.
+          </p>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              className="btn btn--accent"
+              style={{ flex: 1 }}
+              onClick={() =>
+                regenerateImportAlias()
+                  .then(() => setConfirm(false))
+                  .catch((e) => setError(errorMessage(e)))
+              }
+            >
+              Oui, nouvelle adresse
+            </button>
+            <button className="btn btn--ghost" onClick={() => setConfirm(false)}>
+              Annuler
+            </button>
+          </div>
+        </>
+      ) : (
+        <button className="btn btn--ghost" onClick={() => setConfirm(true)}>
+          <RefreshCw size={16} /> Changer d'adresse
+        </button>
+      )}
+      {error && <p className="caption form-error">{error}</p>}
+    </div>
+  )
+}
+
 function Account() {
   const { session, signOut, deleteAccount } = useAuth()
   const [confirm, setConfirm] = useState(false)
@@ -196,6 +268,8 @@ function Account() {
 export function Profil() {
   const { choice, setChoice } = useTheme()
   const { profile } = useAuth()
+  const { importAlias } = useTrips()
+  const address = importAddress(importAlias)
 
   return (
     <main className="screen">
@@ -213,6 +287,13 @@ export function Profil() {
         <h2 className="overline muted">Pays visités</h2>
         <VisitedCountries />
       </section>
+
+      {address && (
+        <section className="px stack" style={{ gap: 10 }}>
+          <h2 className="overline muted">Import par e-mail</h2>
+          <ImportByEmail address={address} />
+        </section>
+      )}
 
       <section className="px stack" style={{ gap: 10 }}>
         <h2 className="overline muted">Apparence</h2>

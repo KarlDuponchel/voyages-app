@@ -19,6 +19,11 @@ La sécurité est appliquée par **Postgres lui-même** (Row Level Security). M�
 | `booking_files` | PDF et captures liés à une réservation (bucket privé `trip-files`) | Les membres |
 | `user_countries` | Pays visités avant l'app, saisis à la main | Soi-même uniquement |
 | `my_visited_countries` (vue) | Pays visités = saisie manuelle + étapes des voyages terminés | Soi-même |
+| `import_addresses` | Adresse de transfert des e-mails (alias aléatoire) | Soi-même uniquement |
+| `pending_imports` | E-mails transférés lus par l'IA, en attente de validation (pièces jointes dans le bucket privé `imports`) | Soi-même ; seules les fonctions serveur écrivent |
+| `ai_usage` | Lectures par l'IA (limite quotidienne, tokens consommés) | Soi-même en lecture ; seules les fonctions serveur écrivent |
+
+L'import par l'IA (fonctions `extract-booking` et `inbound-email`, relais e-mail Cloudflare) est décrit dans [import-ia.md](import-ia.md).
 
 ### Les rôles dans un voyage
 

@@ -1,0 +1,8 @@
+# Relais e-mail : Cloudflare Email Routing → ce Worker → fonction Supabase inbound-email.
+# Le secret partagé se règle à part : npx wrangler secret put INBOUND_SECRET
+name = "voyages-email"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+INBOUND_URL = "https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/inbound-email"

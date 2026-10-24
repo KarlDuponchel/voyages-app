@@ -21,3 +21,10 @@ export const COVERS: [string, string, string][] = [
   ['#4A2318', '#E8875A', '#FFD49A'],
 ]
 export const randomCover = () => COVERS[Math.floor(Math.random() * COVERS.length)]
+
+/** Fuseau d'une réservation proposée : celui de l'étape du même nom, sinon celui de la première étape */
+export function draftTimezone(trip: Trip, draft?: { place?: string }): string | undefined {
+  const place = draft?.place?.toLowerCase()
+  const stop = place ? trip.destinations.find((d) => d.city.toLowerCase() === place) : undefined
+  return (stop ?? trip.destinations[0])?.timezone
+}
