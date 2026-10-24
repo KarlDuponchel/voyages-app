@@ -96,6 +96,8 @@
 - **Modèle** : `claude-opus-5-5` (effort `medium`, repli automatique en cas de refus), modifiable avec le secret `EXTRACT_MODEL`.
 - **Tests** : 48 tests de sécurité de la base (`npm run test:db`) et 12 tests de la logique serveur avec un faux client Claude (`npm run test:functions`). Écrans vérifiés dans un banc d'essai, avec une fausse réponse de l'IA.
 
+- **Tirer pour actualiser** (branche `feat/pull-to-refresh`) : en haut d'une page, tirer vers le bas puis relâcher recharge voyages, imports et profil. Le geste est ignoré quand un panneau est ouvert, sur le globe et pour les gestes horizontaux ; hors ligne, il affiche « Hors ligne ». Vérifié avec des gestes simulés, à confirmer sur l'iPhone.
+
 ### Mise en route (faite le 24/10)
 - [x] Domaine **tripmates.app** acheté chez Cloudflare. `karlduponchel.fr` n'est pas utilisé : ses MX servent à la boîte `contact@`.
 - [x] Migration appliquée (`db push`), secrets `ANTHROPIC_API_KEY` et `INBOUND_SECRET`, fonctions `extract-booking` et `inbound-email` déployées.
@@ -103,10 +105,10 @@
 - [x] Types de la base régénérés ; branche `feat/import-ia` fusionnée dans `main`.
 
 ### Reste à vérifier
-- [ ] **A** : ajouter une réservation avec un vrai billet PDF, puis avec une capture.
-- [ ] **B** : transférer une vraie confirmation **depuis l'adresse du compte** vers l'adresse du profil (`…@tripmates.app`), puis la valider dans « E-mails à valider ».
+- [x] **A** : lecture d'une capture de billet testée par Karl le 24/10 (fonctionne). Reste à tester avec un PDF.
+- [x] **B** : e-mail easyJet transféré et validé le 24/10 (réservation « Paris CDG → Le Caire SPX » ajoutée avec son PDF). Premier essai bloqué : le secret du relais avait été enregistré sous un mauvais nom, il a été recréé.
 - [ ] Relancer `npx wrangler deploy` dans `email-worker` pour appliquer `workers_dev = false` (pas d'adresse web publique pour le relais).
-- [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`).
+- [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`). Premières mesures avec Opus 5.5 : environ 0,03 $ par capture, 0,04 $ par e-mail.
 
 ## Feuille de route conseillée
 

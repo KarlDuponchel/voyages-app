@@ -1,0 +1,76 @@
+/* Indicateur du « tirer pour actualiser » : une pastille qui descend sous la barre d'état */
+.ptr {
+  position: fixed;
+  top: calc(var(--safe-top) + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  /* Cachée au-dessus de l'écran au repos, elle suit le doigt pendant le tirage */
+  transform: translateY(calc(var(--pull) - 52px));
+  opacity: var(--progress);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    opacity 200ms ease-out;
+}
+/* Pendant le tirage, aucune transition : la pastille colle au doigt */
+.ptr--tirage {
+  transition: none;
+}
+.ptr--chargement,
+.ptr--hors-ligne {
+  opacity: 1;
+}
+
+.ptr__bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 11px;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition:
+    color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+/* L'icône tourne avec la distance tirée, puis en continu pendant le chargement */
+.ptr__icon {
+  transform: rotate(calc(var(--progress) * 270deg));
+}
+.ptr--pret .ptr__bubble,
+.ptr--chargement .ptr__bubble {
+  color: var(--accent-sunset);
+  border-color: color-mix(in srgb, var(--accent-sunset) 45%, transparent);
+}
+.ptr--chargement .ptr__icon {
+  animation: ptr-spin 0.8s linear infinite;
+}
+@keyframes ptr-spin {
+  from {
+    transform: rotate(270deg);
+  }
+  to {
+    transform: rotate(630deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptr {
+    transition: opacity 200ms ease-out;
+  }
+  .ptr__icon {
+    transform: none;
+  }
+  .ptr--chargement .ptr__icon {
+    animation: none;
+  }
+}

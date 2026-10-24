@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { PullToRefresh } from './components/PullToRefresh'
 import { TabBar } from './components/TabBar'
 import { useAuth } from './data/auth'
-import { TripsProvider } from './data/store'
+import { TripsProvider, useTrips } from './data/store'
 import { Billet } from './screens/Billet'
 import { Connexion } from './screens/Connexion'
 import { Imports } from './screens/Imports'
@@ -19,11 +20,14 @@ const hideTabBar = (path: string) => path.startsWith('/stats') || path.includes(
 
 function Shell() {
   const { pathname } = useLocation()
+  const { refresh } = useTrips()
+  const { reloadProfile } = useAuth()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
   return (
     <>
+      <PullToRefresh onRefresh={() => Promise.all([refresh(), reloadProfile()])} />
       <Routes>
         <Route path="/" element={<Monde />} />
         <Route path="/voyages" element={<Voyages />} />

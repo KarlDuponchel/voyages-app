@@ -39,6 +39,8 @@ type AuthContextValue = {
   ready: boolean
   session: Session | null
   profile: Profile | null
+  /** Relit le profil sur le serveur (ex. tirer pour actualiser) */
+  reloadProfile: () => Promise<void>
   sendCode: (email: string) => Promise<void>
   verifyCode: (email: string, code: string) => Promise<void>
   signOut: () => Promise<void>
@@ -89,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ready,
     session,
     profile,
+    reloadProfile: loadProfile,
     sendCode: async (email) => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
