@@ -72,13 +72,12 @@ npx supabase functions deploy extract-booking
 
 ## Mise en route, partie B : e-mails transférés
 
-**1. Un domaine sur Cloudflare** : `tripmates.app`, acheté le 24/10 chez Cloudflare Registrar. Cloudflare Email Routing, gratuit, ne fonctionne qu'avec un domaine dont le DNS est géré par Cloudflare. Deux possibilités :
-- **Recommandé : un domaine dédié à l'app**, acheté chez Cloudflare Registrar (environ 10 € par an). Il servira aussi pour l'ouverture au public.
-- **Ou `karlduponchel.fr` déplacé chez Cloudflare.** Il faut recopier tous les enregistrements DNS existants, en particulier ceux qui servent à l'envoi des e-mails `noreply@` (SPF, DKIM). L'import utilisera seulement un sous-domaine, sans toucher à la réception des e-mails du domaine principal.
+**1. Un domaine sur Cloudflare** : `tripmates.app`, acheté le 24/10 chez Cloudflare Registrar. Cloudflare Email Routing, gratuit, ne fonctionne qu'avec un domaine dont le DNS est géré par Cloudflare. Ce domaine servira aussi pour l'ouverture au public.
+- Pourquoi pas `karlduponchel.fr` : Email Routing doit prendre en charge les MX du domaine principal, ce qui couperait la boîte `contact@`. Et sur un sous-domaine, Cloudflare n'autorise pas de règle catch-all.
 
-**2. Activer Email Routing sur un sous-domaine.**
-- Dans Cloudflare, ouvre **Email → Email Routing** et active-le pour `import.<ton-domaine>`.
-- Cloudflare ajoute lui-même les enregistrements MX et TXT de ce sous-domaine.
+**2. Activer Email Routing sur `tripmates.app`.**
+- Dans Cloudflare, ouvre **Compute → Email Service → Email Routing → Onboard Domain** et choisis `tripmates.app`.
+- Cloudflare ajoute lui-même les enregistrements MX, SPF et DKIM. Le domaine est neuf, donc il n'y a aucun conflit : valide avec **Activate**.
 
 **3. Créer un secret partagé** entre le relais et Supabase, par exemple dans PowerShell :
 ```powershell
@@ -101,11 +100,10 @@ npx wrangler deploy
 npx wrangler secret put INBOUND_SECRET
 ```
 
-**7. Brancher le relais.** Dans Cloudflare, ouvre **Email Routing → Routing rules → Catch-all address** du sous-domaine. Choisis l'action **Send to a Worker**, puis `voyages-email`, et active la règle.
+**7. Brancher le relais.** Dans Email Routing (`tripmates.app`), ouvre **Routing rules → Catch-all address**. Choisis l'action **Send to a Worker**, puis `voyages-email`, et active la règle.
 
 **8. Afficher l'adresse dans l'app.**
-- Ajoute la ligne `VITE_IMPORT_DOMAIN=import.<ton-domaine>` dans `.env`, puis mets l'app en ligne.
-- Tant que cette ligne n'existe pas, la fonction est cachée dans l'app.
+- `VITE_IMPORT_DOMAIN=tripmates.app` est déjà dans `.env`. L'adresse apparaît dans l'app une fois la branche mise en ligne.
 
 **9. Tester.**
 - Dans **Profil → Import par e-mail**, copie ton adresse.
