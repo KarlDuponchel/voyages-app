@@ -39,6 +39,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          created_at: string
+          id: number
+          input_tokens: number
+          model: string
+          output_tokens: number
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          input_tokens?: number
+          model: string
+          output_tokens?: number
+          source: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          input_tokens?: number
+          model?: string
+          output_tokens?: number
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_files: {
         Row: {
           booking_id: string
@@ -165,6 +203,86 @@ export type Database = {
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_addresses: {
+        Row: {
+          alias: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          alias?: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_imports: {
+        Row: {
+          drafts: Json
+          error: string | null
+          files: Json
+          from_email: string | null
+          id: string
+          received_at: string
+          status: string
+          subject: string | null
+          suggested_trip_id: string | null
+          user_id: string
+        }
+        Insert: {
+          drafts?: Json
+          error?: string | null
+          files?: Json
+          from_email?: string | null
+          id?: string
+          received_at?: string
+          status?: string
+          subject?: string | null
+          suggested_trip_id?: string | null
+          user_id: string
+        }
+        Update: {
+          drafts?: Json
+          error?: string | null
+          files?: Json
+          from_email?: string | null
+          id?: string
+          received_at?: string
+          status?: string
+          subject?: string | null
+          suggested_trip_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_imports_suggested_trip_id_fkey"
+            columns: ["suggested_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_imports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -408,124 +526,6 @@ export type Database = {
           },
         ]
       }
-      ai_usage: {
-        Row: {
-          created_at: string
-          id: number
-          input_tokens: number
-          model: string
-          output_tokens: number
-          source: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: never
-          input_tokens?: number
-          model: string
-          output_tokens?: number
-          source: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: never
-          input_tokens?: number
-          model?: string
-          output_tokens?: number
-          source?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_usage_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      import_addresses: {
-        Row: {
-          alias: string
-          created_at: string
-          user_id: string
-        }
-        Insert: {
-          alias?: string
-          created_at?: string
-          user_id: string
-        }
-        Update: {
-          alias?: string
-          created_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "import_addresses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pending_imports: {
-        Row: {
-          drafts: Json
-          error: string | null
-          files: Json
-          from_email: string | null
-          id: string
-          received_at: string
-          status: string
-          subject: string | null
-          suggested_trip_id: string | null
-          user_id: string
-        }
-        Insert: {
-          drafts?: Json
-          error?: string | null
-          files?: Json
-          from_email?: string | null
-          id?: string
-          received_at?: string
-          status?: string
-          subject?: string | null
-          suggested_trip_id?: string | null
-          user_id: string
-        }
-        Update: {
-          drafts?: Json
-          error?: string | null
-          files?: Json
-          from_email?: string | null
-          id?: string
-          received_at?: string
-          status?: string
-          subject?: string | null
-          suggested_trip_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pending_imports_suggested_trip_id_fkey"
-            columns: ["suggested_trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pending_imports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_countries: {
         Row: {
           country_code: string
@@ -568,7 +568,6 @@ export type Database = {
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
       delete_my_account: { Args: never; Returns: undefined }
-      regenerate_import_alias: { Args: never; Returns: string }
       invitation_preview: {
         Args: { p_token: string }
         Returns: {
@@ -580,6 +579,7 @@ export type Database = {
           trip_title: string
         }[]
       }
+      regenerate_import_alias: { Args: never; Returns: string }
     }
     Enums: {
       booking_kind:

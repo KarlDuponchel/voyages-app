@@ -68,7 +68,7 @@
 - À tester sur iPhone : joindre un PDF et une capture, « Afficher le billet », mode avion puis réouverture.
 - Toujours à tester (21/10) : modifier un voyage (crayon), modifier ou supprimer une réservation, réordonner les étapes.
 - Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
-- Prochaine étape : **mettre en route l'import par l'IA** (24/10, [docs/import-ia.md](docs/import-ia.md)), puis **4. Photos et souvenirs**.
+- Import par l'IA en ligne depuis le 24/10 : à tester avec de vrais billets et e-mails ([docs/import-ia.md](docs/import-ia.md)). Prochaine étape : **4. Photos et souvenirs**.
 - Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`.
 
 ## Session du 23 octobre 2026
@@ -87,7 +87,7 @@
 
 ## Session du 24 octobre 2026
 
-### Fait (branche `feat/import-ia`, non fusionnée)
+### Fait (branche `feat/import-ia`)
 - **Import automatique par l'IA**, décrit dans [docs/import-ia.md](docs/import-ia.md) :
   - **A. Lecture d'un billet** : dans « Ajouter → Avec le billet », Claude lit le PDF ou la capture et pré-remplit la réservation (données de la carte d'embarquement comprises). Plusieurs réservations dans un même billet, comme un aller-retour, se valident une à une ; le fichier est joint à chacune.
   - **B. E-mails transférés** : une adresse personnelle par compte (dans le profil, avec un bouton pour en changer). Les e-mails sont lus par Claude, puis présentés dans « Voyages → E-mails à valider » avec le voyage correspondant proposé. Les pièces jointes sont jointes aux réservations ajoutées.
@@ -95,13 +95,18 @@
 - **Serveur** : fonctions Supabase `extract-booking` et `inbound-email`, relais Cloudflare `email-worker/`, migration `20261024100000_import_ia.sql`.
 - **Modèle** : `claude-opus-5-5` (effort `medium`, repli automatique en cas de refus), modifiable avec le secret `EXTRACT_MODEL`.
 - **Tests** : 48 tests de sécurité de la base (`npm run test:db`) et 12 tests de la logique serveur avec un faux client Claude (`npm run test:functions`). Écrans vérifiés dans un banc d'essai, avec une fausse réponse de l'IA.
-- **Pas encore testé** : l'appel réel à Claude et la réception d'un vrai e-mail. Ils demandent la clé API, le déploiement et le domaine.
 
-### À faire par Karl (détail dans [docs/import-ia.md](docs/import-ia.md) § Mise en route)
-- [ ] **A** : clé API Anthropic (avec une limite de dépense), `npx supabase db push`, secret `ANTHROPIC_API_KEY`, `npx supabase functions deploy extract-booking`.
-- [x] Domaine **tripmates.app** acheté chez Cloudflare (24/10). `karlduponchel.fr` n'est pas utilisé : ses MX servent à la boîte `contact@`.
-- [ ] **B** : Email Routing sur `tripmates.app`, secret `INBOUND_SECRET` des deux côtés, déploiement de `inbound-email` et du relais, règle catch-all (`VITE_IMPORT_DOMAIN=tripmates.app` est déjà dans `.env`).
-- [ ] Ensuite : régénérer les types de la base, fusionner `feat/import-ia` dans `main`.
+### Mise en route (faite le 24/10)
+- [x] Domaine **tripmates.app** acheté chez Cloudflare. `karlduponchel.fr` n'est pas utilisé : ses MX servent à la boîte `contact@`.
+- [x] Migration appliquée (`db push`), secrets `ANTHROPIC_API_KEY` et `INBOUND_SECRET`, fonctions `extract-booking` et `inbound-email` déployées.
+- [x] Relais `voyages-email` déployé, Email Routing actif sur `tripmates.app` (catch-all → relais).
+- [x] Types de la base régénérés ; branche `feat/import-ia` fusionnée dans `main`.
+
+### Reste à vérifier
+- [ ] **A** : ajouter une réservation avec un vrai billet PDF, puis avec une capture.
+- [ ] **B** : transférer une vraie confirmation **depuis l'adresse du compte** vers l'adresse du profil (`…@tripmates.app`), puis la valider dans « E-mails à valider ».
+- [ ] Relancer `npx wrangler deploy` dans `email-worker` pour appliquer `workers_dev = false` (pas d'adresse web publique pour le relais).
+- [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`).
 
 ## Feuille de route conseillée
 
@@ -115,7 +120,7 @@
 - Consulter le billet hors ligne (le vrai QR code à l'embarquement).
 - C'est la base de l'étape suivante.
 
-### 3. Import automatique par l'IA (la fonction phare) — développé le 24/10 (branche `feat/import-ia`), mise en route à faire
+### 3. Import automatique par l'IA (la fonction phare) — fait le 24/10, à tester avec de vrais billets
 - Une adresse de transfert par utilisateur : réception de l'e-mail (Cloudflare Email Routing ou un service d'e-mails entrants), puis une Edge Function Supabase.
 - L'IA (Claude) lit l'e-mail ou le PDF et extrait la réservation : type, dates, horaires, référence, données du billet.
 - On la propose à l'utilisateur pour validation avant de l'enregistrer.
