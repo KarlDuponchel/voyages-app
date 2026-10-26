@@ -59,21 +59,30 @@ export async function notifyUser(admin: SupabaseClient, userId: string, payload:
   }
 }
 
-/** Texte de la notification après l'analyse d'un e-mail transféré */
+/**
+ * Texte de la notification après l'analyse d'un e-mail transféré (ton « enthousiaste », choisi par Karl
+ * le 26/10 ; à revoir avant l'ouverture au public).
+ */
 export function importNotification(subject: string, drafts: BookingDraft[], failed: boolean): PushPayload {
-  const titleOf = (d: BookingDraft) => d.title
   if (failed || drafts.length === 0)
     return {
-      title: 'E-mail analysé : rien trouvé',
-      body: subject ? `Aucune réservation dans « ${subject} ».` : 'Aucune réservation trouvée dans cet e-mail.',
+      title: '🤔 Rien à se mettre sous la dent',
+      body: subject ? `Pas de réservation dans « ${subject} ».` : 'Pas de réservation dans cet e-mail.',
       url: '/imports',
       tag: 'import',
     }
-  const first = drafts.slice(0, 2).map(titleOf).join(', ')
+  if (drafts.length === 1)
+    return {
+      title: "✈️ Une réservation vient d'atterrir",
+      body: `${drafts[0].title} est prête à rejoindre votre voyage. Un coup d'œil ?`,
+      url: '/imports',
+      tag: 'import',
+    }
+  const first = drafts.slice(0, 2).map((d) => d.title).join(', ')
   const more = drafts.length > 2 ? ` et ${drafts.length - 2} autre${drafts.length > 3 ? 's' : ''}` : ''
   return {
-    title: drafts.length === 1 ? 'Nouvelle réservation à valider' : `${drafts.length} réservations à valider`,
-    body: `${first}${more}. Touchez pour vérifier et ajouter.`,
+    title: `✈️ ${drafts.length} réservations débarquent`,
+    body: `${first}${more} : vérifiez, et c'est rangé.`,
     url: '/imports',
     tag: 'import',
   }

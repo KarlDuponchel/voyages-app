@@ -36,8 +36,8 @@ export function NotificationsSwitch({ compact = false }: { compact?: boolean }) 
       {state === 'actif' && (
         <>
           <p className="caption" style={{ margin: 0 }}>
-            <Check size={14} style={{ verticalAlign: -2, color: 'var(--accent-lagoon)' }} /> Notifications activées sur cet appareil : vous êtes prévenu
-            quand un e-mail transféré a été analysé.
+            <Check size={14} style={{ verticalAlign: -2, color: 'var(--accent-lagoon)' }} /> Notifications activées sur cet appareil : on vous prévient
+            de ce qui compte pour vos voyages.
           </p>
           <button
             className="btn btn--ghost"
@@ -56,7 +56,7 @@ export function NotificationsSwitch({ compact = false }: { compact?: boolean }) 
       {state === 'inactif' && (
         <>
           <p className="caption muted" style={{ margin: 0 }}>
-            Soyez prévenu dès qu'un e-mail transféré a été analysé : une notification vous amène directement aux réservations à valider.
+            Soyez prévenu de ce qui compte pour vos voyages, par exemple dès qu'un e-mail transféré a été lu et que ses réservations vous attendent.
           </p>
           <button className="btn btn--accent" disabled={busy} onClick={() => run(enablePush)}>
             <Bell size={16} /> {busy ? 'Un instant…' : 'Activer les notifications'}

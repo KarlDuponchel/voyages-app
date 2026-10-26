@@ -10,16 +10,17 @@ const draft = (title: string) => ({ kind: 'hotel' as const, title, detail: '', s
 
 Deno.test('texte : une réservation, plusieurs, aucune', () => {
   const one = importNotification('Vos documents', [draft('Yotel New York')], false)
-  assertEquals(one.title, 'Nouvelle réservation à valider')
-  assertMatch(one.body, /Yotel New York/)
+  assertEquals(one.title, "✈️ Une réservation vient d'atterrir")
+  assertEquals(one.body, "Yotel New York est prête à rejoindre votre voyage. Un coup d'œil ?")
   assertEquals(one.url, '/imports')
 
   const many = importNotification('x', [draft('Vol aller'), draft('Vol retour'), draft('Hôtel'), draft('Voiture')], false)
-  assertEquals(many.title, '4 réservations à valider')
-  assertMatch(many.body, /Vol aller, Vol retour et 2 autres/)
+  assertEquals(many.title, '✈️ 4 réservations débarquent')
+  assertEquals(many.body, "Vol aller, Vol retour et 2 autres : vérifiez, et c'est rangé.")
 
   const none = importNotification('Newsletter', [], false)
-  assertMatch(none.body, /Aucune réservation dans « Newsletter »/)
+  assertEquals(none.title, '🤔 Rien à se mettre sous la dent')
+  assertEquals(none.body, 'Pas de réservation dans « Newsletter ».')
 })
 
 Deno.test('envoi chiffré (RFC 8291) avec signature VAPID vers un faux service de notification', async () => {

@@ -190,7 +190,8 @@ export async function extractBookings(
   options: { today: string; trip?: TripContext; extra?: string; model?: string },
 ): Promise<ExtractResult> {
   const model = options.model ?? defaultModel()
-  const response = await client.beta.messages.create(buildRequest(parts, { ...options, model }))
+  // Type explicite : la déduction automatique du SDK varie selon les versions de ses dépendances
+  const response: Anthropic.Beta.BetaMessage = await client.beta.messages.create(buildRequest(parts, { ...options, model }))
 
   if (response.stop_reason === 'refusal') throw new ExtractError("L'IA a refusé de lire ce document.")
   if (response.stop_reason === 'max_tokens') throw new ExtractError('Document trop long pour être lu en une fois.')

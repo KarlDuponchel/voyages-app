@@ -148,6 +148,11 @@
   - après l'analyse, `inbound-email` envoie une notification, par exemple « Nouvelle réservation à valider · Yotel New York », ou « rien trouvé ». Un appui ouvre « E-mails à valider » ;
   - activation dans Profil → Notifications, et une invitation sur l'écran « E-mails à valider » ;
   - à la déconnexion, le téléphone est retiré.
+- **Textes** (ton « enthousiaste », choisi le 26/10, **à revoir avant l'ouverture au public**), dans `supabase/functions/_shared/push.ts` :
+  - « ✈️ Une réservation vient d'atterrir · Yotel New York est prête à rejoindre votre voyage. Un coup d'œil ? »
+  - « ✈️ 3 réservations débarquent · Vol aller, Vol retour et 1 autre : vérifiez, et c'est rangé. »
+  - « 🤔 Rien à se mettre sous la dent · Pas de réservation dans « … ». »
+- Phrase du profil une fois activées, rendue générale pour les futures notifications : « on vous prévient de ce qui compte pour vos voyages ».
 - **Technique** : Web Push (clés VAPID, bibliothèque `@negrel/webpush`), table `push_subscriptions`, `public/push-sw.js`. Détails dans [docs/notifications.md](docs/notifications.md).
 - **Tests** : sécurité de la table (5 tests), texte des notifications, envoi chiffré vers un faux service de notification.
 - **Mise en route le 26/10** : clés générées par Karl (secret `VAPID_KEYS`, clé publique dans `.env`), migration appliquée, `inbound-email` déployée, mise en ligne. **Reste à faire** : activer dans l'app installée (Profil → Notifications), puis transférer un e-mail pour vérifier.
@@ -230,6 +235,7 @@
 - Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
 
 ### 7. Ouverture au public
+- Revoir les textes des notifications (ton choisi provisoirement le 26/10).
 - CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
 - Gestion des quotas et des coûts, nom de domaine, page d'accueil.
 
