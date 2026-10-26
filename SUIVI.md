@@ -59,7 +59,7 @@
 
 ### Reste à vérifier
 - [ ] **Redirect URLs** réglées (Vercel + localhost).
-- [ ] Les e-mails arrivent en spam : vérifier SPF / DKIM / DMARC du domaine, et passer les modèles en français.
+- [x] Les e-mails arrivaient en spam : réglé en passant les modèles en français (Karl, 26/10).
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
@@ -108,7 +108,7 @@
 - [x] **A** : lecture d'une capture de billet testée par Karl le 24/10 (fonctionne). Reste à tester avec un PDF.
 - [x] **B** : e-mail easyJet transféré et validé le 24/10 (réservation « Paris CDG → Le Caire SPX » ajoutée avec son PDF). Premier essai bloqué : le secret du relais avait été enregistré sous un mauvais nom, il a été recréé.
 - [x] Relais redéployé avec `workers_dev = false` (24/10) : plus d'adresse web publique, il ne reçoit que les e-mails.
-- [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`). Premières mesures avec Opus 5.5 : environ 0,03 $ par capture, 0,04 $ par e-mail.
+- [x] Modèle choisi : **Haiku 5.5** depuis le 26/10 (secret `EXTRACT_MODEL=claude-haiku-5-5`). Avec Opus 5.5, c'était environ 0,03 $ par capture et 0,04 $ par e-mail ; Haiku est environ 40 fois moins cher. À surveiller : la qualité de lecture sur les prochains billets (pour revenir à Opus, supprimer le secret).
 
 ## Session du 26 octobre 2026
 
