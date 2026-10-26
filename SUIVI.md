@@ -159,13 +159,23 @@
 - **Ce qu'ils débloquent** :
   - les fonctions qui coûtent de l'argent : lecture par l'IA des billets et des e-mails transférés ;
   - plus de stockage : photos, documents (à préciser avec Karl).
-- **Gratuit** : à définir. Par exemple, quelques lectures par l'IA pour essayer, puis un plafond de stockage par compte.
+- **Gratuit** (orientation validée par Karl le 26/10, chiffres proposés à confirmer) :
+  - **IA** : 5 lectures offertes au total, billets et e-mails confondus, pour essayer.
+  - **Photos** : dans 2 voyages maximum, 250 Mo au total. Avec des photos compressées avant l'envoi (environ 2 000 px, environ 400 Ko), cela fait environ 600 photos.
+  - **Billets et documents** : non comptés dans ce quota, avec un garde-fou d'environ 50 Mo.
+- **Premium** (proposé) :
+  - IA « illimitée », avec un plafond contre les abus (environ 300 lectures par mois) ;
+  - photos dans tous les voyages, 20 Go.
+  - Prix envisagé : 2 à 3 € par mois ou environ 20 € par an. Coûts : environ 0,001 $ par lecture avec Haiku 5.5, et environ 0,02 $ par Go et par mois de stockage au-delà de l'offre Supabase Pro.
+- **Voyage partagé : le propriétaire paie** (validé par Karl le 26/10) :
+  - si le propriétaire est premium, tous les membres ont la lecture par l'IA dans ce voyage ;
+  - les photos de tous les membres comptent dans le stockage du propriétaire ;
+  - les e-mails transférés comptent sur le compte de celui qui transfère, car à la réception on ne sait pas encore à quel voyage ils iront.
 - **Base de données** :
   - une table d'abonnements (offre, statut, date de fin) ;
   - les fonctions `extract-booking` et `inbound-email` vérifient l'offre côté serveur, en remplaçant ou en complétant la limite actuelle de 40 lectures sur 24 h ;
   - le quota de stockage est contrôlé à l'envoi d'un fichier.
 - **Paiement** : Stripe Checkout et le portail client Stripe, avec une Edge Function qui reçoit ses webhooks. L'app est une PWA, hors App Store, donc sans commission Apple.
-- **Voyage partagé** : qui paie quand un voyage est partagé ? Par exemple, les fonctions premium sont ouvertes à tous les membres si le propriétaire est premium. À décider.
 - **Juridique** : CGV, TVA (Stripe Tax), et une mention dans la politique de confidentialité. À regrouper avec l'étape 7.
 
 ### 4. Photos et souvenirs
