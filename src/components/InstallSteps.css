@@ -1,0 +1,58 @@
+.install-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.install-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+.install-steps svg {
+  vertical-align: -2px;
+  color: var(--accent-sunset);
+}
+.install-steps__n {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
+}
+
+/* Message d'accueil (InstallPrompt) */
+.install-prompt__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.install-prompt__icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-sunset) 35%, transparent);
+}
+.install-prompt__kicker {
+  color: var(--accent-sunset);
+}
+.install-prompt__never {
+  align-self: center;
+  padding: 6px 10px;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

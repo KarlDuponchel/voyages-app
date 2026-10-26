@@ -29,16 +29,6 @@
   color: var(--accent-sunset);
 }
 
-.profil-steps {
-  margin: 0;
-  padding-left: 36px;
-  gap: 8px;
-}
-.profil-steps svg {
-  vertical-align: -2px;
-  color: var(--accent-sunset);
-}
-
 .profil-chips {
   display: flex;
   flex-wrap: wrap;

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { InstallPrompt } from './components/InstallPrompt'
 import { PullToRefresh } from './components/PullToRefresh'
 import { TabBar } from './components/TabBar'
 import { useAuth } from './data/auth'
@@ -62,6 +63,8 @@ export function App() {
   return (
     <BrowserRouter>
       <Gate />
+      {/* Aussi avant la connexion : mieux vaut installer l'app d'abord, puis se connecter dedans */}
+      <InstallPrompt />
     </BrowserRouter>
   )
 }

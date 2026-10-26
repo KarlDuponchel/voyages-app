@@ -124,6 +124,14 @@
 - Testé sur iPhone par Karl le 26/10 : zoom du billet, tirer pour actualiser et suppression d'un voyage fonctionnent parfaitement.
 - Ajouts de Karl le 26/10 : Vercel Analytics et Speed Insights (`src/main.tsx`). À citer dans la future politique de confidentialité.
 
+### Onboarding d'installation (branche `feat/onboarding-installation`)
+- **Quand** : un panneau « Installez Voyages » apparaît à la première ouverture dans le navigateur, y compris avant la connexion : mieux vaut installer l'app puis se connecter dedans.
+- **Retenu par appareil** : « Plus tard » (ou fermer le panneau) le repropose dans 7 jours, « Ne plus afficher » jamais.
+- **Jamais** dans l'app installée, ni sur ordinateur.
+- **Étapes selon l'appareil** : Safari sur iPhone (Partager, « Sur l'écran d'accueil », Ajouter) ; autre navigateur sur iPhone (avec le conseil d'ouvrir dans Safari) ; Android, avec le bouton « Installer l'app » quand le navigateur le propose, sinon par le menu.
+- **Profil** : la section « Installer l'app » réutilise les mêmes étapes, et affiche « L'app est installée » dans l'app installée.
+- Vérifié dans le navigateur en se faisant passer pour un iPhone et pour un Android. À tester sur l'iPhone, en ouvrant l'adresse de l'app dans Safari.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
@@ -143,7 +151,7 @@
 
 ### Idées ajoutées par Karl le 26/10
 
-#### Onboarding : installer l'app sur l'écran d'accueil
+#### Onboarding : installer l'app sur l'écran d'accueil — fait le 26/10 (branche `feat/onboarding-installation`)
 - **Quand** : à la première ouverture dans le navigateur, une seule fois par appareil, pas à chaque actualisation.
 - **Comment ne pas le remontrer** : le choix est gardé sur le téléphone (stockage local). « Plus tard » le repropose après quelques jours, la croix le ferme pour de bon.
 - **Jamais dans l'app déjà installée** : en mode plein écran, on sait qu'elle est installée (`display-mode: standalone`, `navigator.standalone` sur iPhone).

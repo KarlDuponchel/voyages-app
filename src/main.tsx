@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
 import { AuthProvider } from './data/auth'
+import { captureInstallPrompt } from './lib/install'
 import { ThemeProvider } from './theme/theme'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -25,6 +26,9 @@ registerSW({
     })
   },
 })
+
+// Android : la proposition d'installation du navigateur arrive tôt, on la garde pour le message d'accueil
+captureInstallPrompt()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

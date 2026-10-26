@@ -1,11 +1,13 @@
-import { Check, Copy, LogOut, Monitor, Moon, Plus, RefreshCw, Share, SquarePlus, Sun, Trash2, X } from 'lucide-react'
+import { Check, Copy, LogOut, Monitor, Moon, Plus, RefreshCw, Sun, Trash2, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { InstallSteps } from '../components/InstallSteps'
 import { PlaceSearch } from '../components/PlaceSearch'
 import { useAuth } from '../data/auth'
 import { allCountries, countryById } from '../data/countries'
 import { useTrips } from '../data/store'
 import { importAddress } from '../lib/importAddress'
+import { installPlatform, isInstalled } from '../lib/install'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
 import { useTheme, type ThemeChoice } from '../theme/theme'
@@ -313,18 +315,16 @@ export function Profil() {
       </section>
 
       <section className="px stack" style={{ gap: 10 }}>
-        <h2 className="overline muted">Installer sur l'iPhone</h2>
-        <ol className="card profil-card profil-steps">
-          <li>
-            Ouvrez l'app dans <span className="strong">Safari</span>.
-          </li>
-          <li>
-            Touchez <Share size={15} aria-label="Partager" /> <span className="strong">Partager</span>.
-          </li>
-          <li>
-            Choisissez <SquarePlus size={15} aria-hidden /> <span className="strong">Sur l'écran d'accueil</span>.
-          </li>
-        </ol>
+        <h2 className="overline muted">Installer l'app</h2>
+        <div className="card profil-card">
+          {isInstalled() ? (
+            <p className="caption muted" style={{ margin: 0 }}>
+              <Check size={14} style={{ verticalAlign: -2, color: 'var(--accent-lagoon)' }} /> L'app est installée sur cet appareil.
+            </p>
+          ) : (
+            <InstallSteps platform={installPlatform()} />
+          )}
+        </div>
       </section>
 
       <section className="px stack" style={{ gap: 10 }}>
