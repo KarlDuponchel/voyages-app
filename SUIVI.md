@@ -58,7 +58,7 @@
 - **Côté Supabase** (fait par Karl) : migration exécutée, modèles d'e-mail avec `{{ .Token }}`, SMTP `noreply@karlduponchel.fr`.
 
 ### Reste à vérifier
-- [ ] **Redirect URLs** réglées (Vercel + localhost).
+- [x] **Redirect URLs** réglées (Vercel + localhost), confirmé par Karl le 26/10. À compléter avec `https://tripmates.app/**` lors du passage sur ce domaine.
 - [x] Les e-mails arrivaient en spam : réglé en passant les modèles en français (Karl, 26/10).
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
@@ -116,7 +116,7 @@
 - Lecture d'un billet PDF par l'IA : OK. Billet ouvert en mode avion : OK. Modifications (voyage, réservation, étapes) : OK.
 - Tirer pour actualiser : l'animation se voit, mais on ne sent pas qu'on tire la page.
 
-### Fait (branche `feat/retours-26-10`)
+### Fait (fusionné dans `main` le 26/10)
 - **Tirer pour actualiser** : le contenu de la page descend maintenant avec le doigt (avec résistance), puis remonte en douceur. La barre d'onglets et le bouton flottant ne bougent pas.
 - **Zoom dans un billet** : pincer zoome seulement le document (jusqu'à 5×), pas toute la page. Un doigt déplace le document zoomé, un double tap zoome à 2,5× ou revient à la taille normale. Les PDF sont dessinés en résolution doublée pour que le QR code reste net.
 - **Suppression d'un voyage** : déplacée dans « Modifier le voyage » (crayon), réservée au propriétaire. La confirmation dit ce qui sera effacé (réservations, fichiers joints, pour combien de voyageurs). Le panneau « Voyageurs » garde « Quitter le voyage ».
