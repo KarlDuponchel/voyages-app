@@ -10,6 +10,7 @@ import { formatRange, formatShortDate, formatTime } from '../lib/format'
 import { importAddress } from '../lib/importAddress'
 import { errorMessage } from '../lib/supabase'
 import { canEdit, draftTimezone } from '../lib/trip'
+import { NotificationsSwitch } from '../components/NotificationsSwitch'
 import { NewTripSheet } from './NewTripSheet'
 import './Imports.css'
 
@@ -224,6 +225,11 @@ export function Imports() {
           </p>
         )}
       </header>
+
+      {/* Invitation à activer les notifications, tant qu'elles ne le sont pas sur cet appareil */}
+      <section className="px">
+        <NotificationsSwitch compact />
+      </section>
 
       {imports.length === 0 ? (
         <section className="px">

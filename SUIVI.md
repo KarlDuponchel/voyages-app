@@ -142,6 +142,16 @@
   - journaux du relais conservés (`[observability]`) : on voit les pièces jointes reçues, transmises et écartées.
 - **Déployé le 26/10** : relais et fonctions `inbound-email` et `extract-booking`. À vérifier : retransférer l'e-mail PerfectStay.
 
+### Notifications : e-mail analysé (branche `feat/notifications`)
+- **Demande de Karl** : être prévenu sur le téléphone quand un e-mail transféré a été analysé, avec un lien vers les réservations à valider.
+- **Fait** :
+  - après l'analyse, `inbound-email` envoie une notification, par exemple « Nouvelle réservation à valider · Yotel New York », ou « rien trouvé ». Un appui ouvre « E-mails à valider » ;
+  - activation dans Profil → Notifications, et une invitation sur l'écran « E-mails à valider » ;
+  - à la déconnexion, le téléphone est retiré.
+- **Technique** : Web Push (clés VAPID, bibliothèque `@negrel/webpush`), table `push_subscriptions`, `public/push-sw.js`. Détails dans [docs/notifications.md](docs/notifications.md).
+- **Tests** : sécurité de la table (5 tests), texte des notifications, envoi chiffré vers un faux service de notification.
+- **À faire par Karl** : générer les clés et les mettre dans le secret `VAPID_KEYS` (Claude n'a pas le droit d'écrire un secret), puis donner la clé publique. Ensuite : migration, déploiement de `inbound-email`, mise en ligne, et activation dans l'app installée.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
@@ -215,7 +225,7 @@
 ### 5. Budget partagé
 - Dépenses par voyage, qui a payé quoi, répartition et soldes entre participants.
 
-### 6. Notifications
+### 6. Notifications — première notification (e-mail analysé) faite le 26/10 ; rappels de vol à venir
 - Web Push : sur iPhone, ça ne marche qu'avec l'app installée sur l'écran d'accueil (iOS 16.4 et plus).
 - Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
 

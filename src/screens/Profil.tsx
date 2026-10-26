@@ -2,12 +2,14 @@ import { Check, Copy, LogOut, Monitor, Moon, Plus, RefreshCw, Sun, Trash2, X } f
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { InstallSteps } from '../components/InstallSteps'
+import { NotificationsSwitch } from '../components/NotificationsSwitch'
 import { PlaceSearch } from '../components/PlaceSearch'
 import { useAuth } from '../data/auth'
 import { allCountries, countryById } from '../data/countries'
 import { useTrips } from '../data/store'
 import { importAddress } from '../lib/importAddress'
 import { installPlatform, isInstalled } from '../lib/install'
+import { PUSH_CONFIGURED } from '../lib/push'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
 import { useTheme, type ThemeChoice } from '../theme/theme'
@@ -294,6 +296,15 @@ export function Profil() {
         <section className="px stack" style={{ gap: 10 }}>
           <h2 className="overline muted">Import par e-mail</h2>
           <ImportByEmail address={address} />
+        </section>
+      )}
+
+      {PUSH_CONFIGURED && (
+        <section className="px stack" style={{ gap: 10 }}>
+          <h2 className="overline muted">Notifications</h2>
+          <div className="card profil-card">
+            <NotificationsSwitch />
+          </div>
         </section>
       )}
 

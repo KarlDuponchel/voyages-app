@@ -7,11 +7,13 @@
  *
  * Contrôles : le secret partagé, l'alias, et l'expéditeur, qui doit être l'adresse du compte
  * (l'utilisateur transfère lui-même l'e-mail). L'IA lit ensuite l'e-mail et ses pièces jointes,
- * et le résultat attend la validation de l'utilisateur dans l'app (table pending_imports).
+ * et le résultat attend la validation de l'utilisateur dans l'app (table pending_imports) ;
+ * une notification prévient son téléphone.
  * On répond toujours vite et sans détail : un e-mail refusé ne doit rien révéler.
  */
 import { aliasOf, emailOf, htmlToText, safeName, sameSecret } from '../_shared/email.ts'
 import { extractBookings, ExtractError, newClient, partFromFile, type Part } from '../_shared/extract.ts'
+import { importNotification, notifyUser } from '../_shared/push.ts'
 import { adminClient, dailyLimit, recordUsage, suggestTrip, today, usedToday } from '../_shared/supabase.ts'
 
 /** Fourni par l'environnement d'exécution Supabase : poursuit un travail après la réponse */
@@ -60,6 +62,7 @@ async function handle(payload: Payload): Promise<void> {
 
   const fail = async (message: string) => {
     await admin.from('pending_imports').update({ status: 'erreur', error: message }).eq('id', importId)
+    await notifyUser(admin, userId, importNotification(subject, [], true))
   }
 
   try {
@@ -117,6 +120,9 @@ async function handle(payload: Payload): Promise<void> {
         suggested_trip_id: suggestTrip(candidates, result.drafts[0]?.start),
       })
       .eq('id', importId)
+
+    // 7. Notification sur le téléphone : un appui ouvre « E-mails à valider »
+    await notifyUser(admin, userId, importNotification(subject, result.drafts, false))
   } catch (e) {
     console.error(e)
     await fail(e instanceof ExtractError ? e.message : "La lecture de l'e-mail a échoué. Ajoutez la réservation à la main.")

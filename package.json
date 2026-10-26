@@ -9,7 +9,7 @@
     "preview": "vite preview --host",
     "icons": "pwa-assets-generator",
     "test:db": "node supabase/tests/rls.test.mjs",
-    "test:functions": "npx -y deno@2.9.6 test --node-modules-dir=none --allow-env supabase/functions/tests/"
+    "test:functions": "npx -y deno@2.9.6 test --node-modules-dir=none --allow-env --allow-net supabase/functions/tests/"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

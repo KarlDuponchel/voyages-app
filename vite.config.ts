@@ -32,6 +32,8 @@ export default defineConfig({
         // pdf.js (worker en .mjs, 1,4 Mo) : on relève la limite par défaut de 2 Mo par fichier par sécurité
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,woff,woff2,otf,ttf,json}'],
+        // Réception des notifications et ouverture de la bonne page au toucher (public/push-sw.js)
+        importScripts: ['/push-sw.js'],
       },
     }),
   ],

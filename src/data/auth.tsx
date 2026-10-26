@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { clearFileCache } from '../lib/files'
+import { disablePush } from '../lib/push'
 import { supabase } from '../lib/supabase'
 import type { TablesUpdate } from './database.types'
 import type { Profile } from './types'
@@ -105,6 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     },
     signOut: async () => {
+      // Ce téléphone ne doit plus recevoir les notifications du compte (à faire avant de perdre la session)
+      await disablePush().catch(() => {})
       await supabase.auth.signOut()
       localStorage.removeItem(PROFILE_CACHE)
       await clearFileCache()

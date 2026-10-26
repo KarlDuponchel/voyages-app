@@ -264,6 +264,26 @@ await denied('anon ne lit pas les imports', async () => {
   }
 }, 'permission denied')
 
+// ---- Notifications (migration 20261027100000) ----
+const endpoint = 'https://web.push.apple.com/abc123'
+await ok("Léa enregistre son téléphone pour les notifications ; elle seule le voit", async () => {
+  await as('lea', `select public.save_push_subscription('${endpoint}', 'cle', 'secret', 'iPhone')`)
+  expect((await as('lea', 'select endpoint from public.push_subscriptions')).length === 1, 'Léa ne voit pas son appareil')
+  expect((await as('inconnu', 'select endpoint from public.push_subscriptions')).length === 0, 'fuite')
+})
+await denied("on ne peut pas inscrire un appareil au nom de quelqu'un d'autre", () =>
+  as('inconnu', `insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ('${U.lea}', 'https://x', 'k', 'a')`), 'permission denied')
+await denied('une adresse non https est refusée', () => as('lea', `select public.save_push_subscription('http://pirate', 'k', 'a')`), 'invalide')
+await ok("le même téléphone, connecté à un autre compte, passe à ce compte", async () => {
+  await as('inconnu', `select public.save_push_subscription('${endpoint}', 'cle2', 'secret2', 'iPhone')`)
+  const r = await db.query(`select user_id from public.push_subscriptions where endpoint = '${endpoint}'`)
+  expect(r.rows.length === 1 && r.rows[0].user_id === U.inconnu, JSON.stringify(r.rows))
+})
+await ok("l'inconnu retire son appareil", async () => {
+  await as('inconnu', `delete from public.push_subscriptions where endpoint = '${endpoint}'`)
+  expect((await db.query(`select 1 from public.push_subscriptions`)).rows.length === 0, 'non retiré')
+})
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {
