@@ -11,7 +11,7 @@ import { App } from './App'
 import { AuthProvider } from './data/auth'
 import { ThemeProvider } from './theme/theme'
 import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 // Mise à jour automatique : l'app installée sur l'iPhone reste ouverte en arrière-plan,
 // on cherche donc une nouvelle version à chaque retour au premier plan. registerSW
