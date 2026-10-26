@@ -235,7 +235,7 @@
 - Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
 
 ### 7. Ouverture au public
-- Revoir les textes des notifications (ton choisi provisoirement le 26/10).
+- Revoir les textes des notifications (ton choisi provisoirement le 26/10). Idée : un emoji selon le type de réservation (🏨 hôtel, 🚆 train, 🎟️ activité, 🍽️ restaurant…) au lieu du ✈️ fixe. Toutes les réservations sont déjà notifiées, quel que soit leur type.
 - CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
 - Gestion des quotas et des coûts, nom de domaine, page d'accueil.
 
