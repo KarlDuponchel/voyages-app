@@ -63,14 +63,14 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
-### Pour reprendre (mis à jour le 24/10)
-- Tout est sur `main`, mis en ligne par Vercel : billets PDF, import par l'IA (billets et e-mails), tirer pour actualiser.
-- Import par l'IA en service ; domaine **tripmates.app** (adresses d'import), relais Cloudflare `voyages-email`, fonctions Supabase `extract-booking` et `inbound-email` ([docs/import-ia.md](docs/import-ia.md)).
-- Testé sur iPhone (24 et 26/10) : tirer pour actualiser, zoom du billet, lecture d'un PDF par l'IA, billet en mode avion, modifications et suppression d'un voyage.
-- Reste à tester : un essai complet à deux (invitation de la copine de Karl), la lecture par Haiku 5.5 sur de prochains billets.
-- Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
-- Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`, puis régénérer les types. Fonctions : `npm run test:functions`, puis `npx supabase functions deploy <nom>`.
-- Prochaine étape : l'**onboarding d'installation** (rapide), puis **4. Photos et souvenirs** (Supabase Storage d'abord), avec les **comptes premium**.
+### Pour reprendre (mis à jour le 26/10, fin de soirée)
+- **Tout est sur `main`**, mis en ligne par Vercel, et tout est déployé côté Supabase et Cloudflare. Aucune branche en attente.
+- **En service** : billets PDF ; import par l'IA (billets et e-mails transférés, modèle **Haiku 5.5**) ; notifications « e-mail analysé » ; tirer pour actualiser ; zoom dans les billets ; onboarding d'installation ; Vercel Analytics et Speed Insights.
+- **Infra** : domaine **tripmates.app** (adresses d'import), relais Cloudflare `voyages-email`, fonctions Supabase `extract-booking` et `inbound-email`. Docs : [import-ia.md](docs/import-ia.md), [notifications.md](docs/notifications.md), [supabase.md](docs/supabase.md).
+- **Reste à tester** : un essai complet à deux (invitation de la copine de Karl), l'onboarding d'installation dans Safari, la lecture par Haiku sur de prochains billets.
+- **Sur un nouveau poste ou dossier** : `npm install` avant tout. Si `npm run test:functions` signale des types `any` inattendus, le cache de Deno est abîmé : `npx -y deno@2.9.6 clean`, puis relancer (c'est arrivé le 26/10).
+- **Évolution de la base** : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, `npx supabase db push`, puis régénérer les types. Fonctions : `npm run test:functions`, puis `npx supabase functions deploy <nom>`. Relais : `npm test` puis `npx wrangler deploy` dans `email-worker`. Claude ne peut pas écrire les secrets (Supabase, Cloudflare) : c'est Karl qui les règle.
+- **Prochaine étape, demain : 4. Photos et souvenirs.** Commencer par proposer à Karl comment elles s'intègrent dans l'app (où on les ajoute, l'onglet Photos d'un voyage, les couvertures, l'onglet Souvenirs), avant de coder. Stockage : Supabase, en offre gratuite pendant le développement (voir la décision du 26/10 plus bas). Ensuite : les comptes premium, qui s'appuient sur les quotas de photos.
 
 ## Session du 23 octobre 2026
 
@@ -124,7 +124,7 @@
 - Testé sur iPhone par Karl le 26/10 : zoom du billet, tirer pour actualiser et suppression d'un voyage fonctionnent parfaitement.
 - Ajouts de Karl le 26/10 : Vercel Analytics et Speed Insights (`src/main.tsx`). À citer dans la future politique de confidentialité.
 
-### Onboarding d'installation (branche `feat/onboarding-installation`)
+### Onboarding d'installation (en ligne le 26/10)
 - **Quand** : un panneau « Installez Voyages » apparaît à la première ouverture dans le navigateur, y compris avant la connexion : mieux vaut installer l'app puis se connecter dedans.
 - **Retenu par appareil** : « Plus tard » (ou fermer le panneau) le repropose dans 7 jours, « Ne plus afficher » jamais.
 - **Jamais** dans l'app installée, ni sur ordinateur.
@@ -142,7 +142,7 @@
   - journaux du relais conservés (`[observability]`) : on voit les pièces jointes reçues, transmises et écartées.
 - **Déployé le 26/10** : relais et fonctions `inbound-email` et `extract-booking`. Vérifié par Karl : l'e-mail PerfectStay retransféré est bien passé.
 
-### Notifications : e-mail analysé (en ligne le 26/10)
+### Notifications : e-mail analysé (en ligne le 26/10, testé sur iPhone par Karl)
 - **Demande de Karl** : être prévenu sur le téléphone quand un e-mail transféré a été analysé, avec un lien vers les réservations à valider.
 - **Fait** :
   - après l'analyse, `inbound-email` envoie une notification, par exemple « Nouvelle réservation à valider · Yotel New York », ou « rien trouvé ». Un appui ouvre « E-mails à valider » ;
@@ -156,6 +156,18 @@
 - **Technique** : Web Push (clés VAPID, bibliothèque `@negrel/webpush`), table `push_subscriptions`, `public/push-sw.js`. Détails dans [docs/notifications.md](docs/notifications.md).
 - **Tests** : sécurité de la table (5 tests), texte des notifications, envoi chiffré vers un faux service de notification.
 - **Mise en route le 26/10** : clés générées par Karl (secret `VAPID_KEYS`, clé publique dans `.env`), migration appliquée, `inbound-email` déployée, mise en ligne. **Reste à faire** : activer dans l'app installée (Profil → Notifications), puis transférer un e-mail pour vérifier.
+
+### Autres décisions et changements du 26/10
+- **Modèle de lecture** : Haiku 5.5 (secret `EXTRACT_MODEL`), environ 40 fois moins cher qu'Opus 5.5.
+- **E-mails de connexion** : ils ne tombent plus en spam depuis le passage des modèles en français.
+- **Redirect URLs** : confirmées par Karl.
+- **Textes des notifications** : ton « enthousiaste », provisoire, à revoir avant l'ouverture au public.
+- **Comptes gratuit et premium** : règles et point d'équilibre notés dans la feuille de route (« Comptes premium »). Le propriétaire d'un voyage paie pour tous ses membres.
+- **Photos : rester sur l'offre gratuite de Supabase pendant le développement.**
+  - Utilisation au 26/10 : 2,7 Mo de fichiers sur 1 Go, et 12 Mo de base sur 500 Mo.
+  - 1 Go représente environ 2 500 photos compressées, et 5 Go de trafic par mois suffisent à deux.
+  - À surveiller : la mise en pause après 7 jours sans activité (il suffit d'ouvrir l'app chaque semaine, la réactivation se fait en un clic) et le plafond de 1 Go.
+  - Passage au Pro sans rien changer au code, juste avant l'ouverture au public.
 
 ## Feuille de route conseillée
 
@@ -176,7 +188,7 @@
 
 ### Idées ajoutées par Karl le 26/10
 
-#### Onboarding : installer l'app sur l'écran d'accueil — fait le 26/10 (branche `feat/onboarding-installation`)
+#### Onboarding : installer l'app sur l'écran d'accueil — fait et en ligne le 26/10
 - **Quand** : à la première ouverture dans le navigateur, une seule fois par appareil, pas à chaque actualisation.
 - **Comment ne pas le remontrer** : le choix est gardé sur le téléphone (stockage local). « Plus tard » le repropose après quelques jours, la croix le ferme pour de bon.
 - **Jamais dans l'app déjà installée** : en mode plein écran, on sait qu'elle est installée (`display-mode: standalone`, `navigator.standalone` sur iPhone).
@@ -222,7 +234,7 @@
   - Bascule vers Cloudflare R2 (sortie de données gratuite) au-delà d'environ 2 000 à 5 000 utilisateurs actifs, quand le trafic coûte plus de 30 $ par mois. Estimation : 10 000 utilisateurs actifs, environ 70 à 90 $ par mois avec Supabase seul contre environ 50 $ avec R2 ; 50 000, environ 400 à 500 $ contre environ 200 $.
   - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
-### 4. Photos et souvenirs
+### 4. Photos et souvenirs — prochaine étape (à démarrer le 27/10)
 - Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
 - Remplace le compteur `photos: 0` et les couvertures en dégradé.
 - Points à anticiper : les quotas de stockage et leur coût.
