@@ -106,7 +106,12 @@ async function handle(payload: Payload): Promise<void> {
       .from('pending_imports')
       .update({
         status: result.drafts.length > 0 ? 'a_valider' : 'erreur',
-        error: result.drafts.length > 0 ? null : "Aucune réservation trouvée dans cet e-mail.",
+        error:
+          result.drafts.length > 0
+            ? null
+            : files.length === 0
+              ? "Aucune réservation trouvée, et aucune pièce jointe lisible (PDF ou image) n'accompagnait l'e-mail. Si la réservation est dans un document, ajoutez-le depuis le voyage."
+              : 'Aucune réservation trouvée dans cet e-mail ni dans ses pièces jointes.',
         drafts: result.drafts,
         files,
         suggested_trip_id: suggestTrip(candidates, result.drafts[0]?.start),

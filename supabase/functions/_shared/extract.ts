@@ -275,7 +275,8 @@ export function normalizeDrafts(raw: unknown): BookingDraft[] {
 
 /** Pièce à partir d'un fichier en base64 ; null si l'IA ne sait pas le lire (ex. HEIC) */
 export function partFromFile(mimeType: string, data: string, name?: string): Part | null {
-  if (mimeType === 'application/pdf') return { type: 'pdf', data, name }
+  // Un PDF mal déclaré (« application/octet-stream ») se reconnaît à son début : « %PDF », soit « JVBERi » en base64
+  if (mimeType === 'application/pdf' || data.startsWith('JVBERi')) return { type: 'pdf', data, name }
   if ((IMAGE_TYPES as readonly string[]).includes(mimeType)) return { type: 'image', mediaType: mimeType as (typeof IMAGE_TYPES)[number], data, name }
   return null
 }

@@ -91,6 +91,8 @@ Deno.test("formats lisibles par l'IA : PDF et images courantes, pas HEIC", () =>
   assertEquals(partFromFile('application/pdf', 'x')?.type, 'pdf')
   assertEquals(partFromFile('image/png', 'x')?.type, 'image')
   assertEquals(partFromFile('image/heic', 'x'), null)
+  // PDF déclaré comme fichier binaire : reconnu à son contenu
+  assertEquals(partFromFile('application/octet-stream', 'JVBERi0xLjQK')?.type, 'pdf')
 })
 
 // ---- Appel (faux client) -------------------------------------------------------------------

@@ -6,5 +6,9 @@ compatibility_date = "2026-10-01"
 # Pas d'adresse web publique (*.workers.dev) : le relais ne sert qu'aux e-mails
 workers_dev = false
 
+# Journaux conservés (pièces jointes reçues, transmises, écartées), consultables dans le tableau de bord
+[observability]
+enabled = true
+
 [vars]
 INBOUND_URL = "https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/inbound-email"
