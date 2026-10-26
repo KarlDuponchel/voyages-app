@@ -66,10 +66,11 @@
 ### Pour reprendre (mis à jour le 24/10)
 - Tout est sur `main`, mis en ligne par Vercel : billets PDF, import par l'IA (billets et e-mails), tirer pour actualiser.
 - Import par l'IA en service ; domaine **tripmates.app** (adresses d'import), relais Cloudflare `voyages-email`, fonctions Supabase `extract-booking` et `inbound-email` ([docs/import-ia.md](docs/import-ia.md)).
-- À tester sur iPhone : tirer pour actualiser ; lecture d'un billet PDF ; mode avion puis réouverture d'un billet ; modifier un voyage, une réservation, l'ordre des étapes.
+- Testé sur iPhone (24 et 26/10) : tirer pour actualiser, zoom du billet, lecture d'un PDF par l'IA, billet en mode avion, modifications et suppression d'un voyage.
+- Reste à tester : un essai complet à deux (invitation de la copine de Karl), la lecture par Haiku 5.5 sur de prochains billets.
 - Sur un nouveau poste ou dossier : `npm install` avant tout (sinon la compilation et `npm run test:db` échouent).
 - Évolution de la base : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, puis `npx supabase db push`, puis régénérer les types. Fonctions : `npm run test:functions`, puis `npx supabase functions deploy <nom>`.
-- Prochaine étape conseillée : **4. Photos et souvenirs**.
+- Prochaine étape : l'**onboarding d'installation** (rapide), puis **4. Photos et souvenirs** (Supabase Storage d'abord), avec les **comptes premium**.
 
 ## Session du 23 octobre 2026
 
@@ -120,7 +121,7 @@
 - **Tirer pour actualiser** : le contenu de la page descend maintenant avec le doigt (avec résistance), puis remonte en douceur. La barre d'onglets et le bouton flottant ne bougent pas.
 - **Zoom dans un billet** : pincer zoome seulement le document (jusqu'à 5×), pas toute la page. Un doigt déplace le document zoomé, un double tap zoome à 2,5× ou revient à la taille normale. Les PDF sont dessinés en résolution doublée pour que le QR code reste net.
 - **Suppression d'un voyage** : déplacée dans « Modifier le voyage » (crayon), réservée au propriétaire. La confirmation dit ce qui sera effacé (réservations, fichiers joints, pour combien de voyageurs). Le panneau « Voyageurs » garde « Quitter le voyage ».
-- Vérifié avec des gestes simulés. Le ressenti du tirage et du pincement reste à confirmer sur l'iPhone.
+- Testé sur iPhone par Karl le 26/10 : zoom du billet, tirer pour actualiser et suppression d'un voyage fonctionnent parfaitement.
 - Ajouts de Karl le 26/10 : Vercel Analytics et Speed Insights (`src/main.tsx`). À citer dans la future politique de confidentialité.
 
 ## Feuille de route conseillée
