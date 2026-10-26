@@ -10,6 +10,8 @@ import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
 import { AuthProvider } from './data/auth'
 import { ThemeProvider } from './theme/theme'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Mise à jour automatique : l'app installée sur l'iPhone reste ouverte en arrière-plan,
 // on cherche donc une nouvelle version à chaque retour au premier plan. registerSW
@@ -29,6 +31,8 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider>
       <AuthProvider>
         <App />
+        <Analytics />
+        <SpeedInsights />
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>,
