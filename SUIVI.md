@@ -177,6 +177,16 @@
   - le quota de stockage est contrôlé à l'envoi d'un fichier.
 - **Paiement** : Stripe Checkout et le portail client Stripe, avec une Edge Function qui reçoit ses webhooks. L'app est une PWA, hors App Store, donc sans commission Apple.
 - **Juridique** : CGV, TVA (Stripe Tax), et une mention dans la politique de confidentialité. À regrouper avec l'étape 7.
+- **Point d'équilibre** (estimation du 26/10) :
+  - **Frais fixes à l'ouverture** : Supabase Pro 25 $ + Vercel Pro 20 $ (obligatoire, l'offre Hobby interdit l'usage commercial) + domaine environ 1 € = **environ 43 € par mois**. Cloudflare reste gratuit. L'IA (Haiku) coûte environ 0,01 $ par abonné et par mois, et le stockage tient dans les volumes inclus jusqu'à quelques milliers d'utilisateurs.
+  - **Net par abonné** (TVA 20 %, Stripe 0,25 € + 1,5 %) : mensuel à 2,50 €, environ 1,79 € ; annuel à 20 €, environ 1,34 € par mois.
+  - **Équilibre : environ 25 à 35 abonnés premium**, soit environ 250 à 350 utilisateurs actifs avec 10 % de premium. Environ 20 à 27 en franchise de TVA. À 3 € par mois ou 25 € par an, environ 20 abonnés.
+  - Ne sont pas comptés : les impôts et les cotisations (selon le statut, voir avec un comptable).
+  - Les deux abonnements Pro ne sont à prendre qu'à l'ouverture au public.
+- **Stockage des photos** (décidé le 26/10) :
+  - Supabase Storage d'abord : l'offre Pro est nécessaire de toute façon, et la sécurité par voyage est déjà en place.
+  - Bascule vers Cloudflare R2 (sortie de données gratuite) au-delà d'environ 2 000 à 5 000 utilisateurs actifs, quand le trafic coûte plus de 30 $ par mois. Estimation : 10 000 utilisateurs actifs, environ 70 à 90 $ par mois avec Supabase seul contre environ 50 $ avec R2 ; 50 000, environ 400 à 500 $ contre environ 200 $.
+  - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
 ### 4. Photos et souvenirs
 - Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
