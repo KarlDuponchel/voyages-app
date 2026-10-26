@@ -10,7 +10,7 @@ import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
 import { AuthProvider } from './data/auth'
 import { ThemeProvider } from './theme/theme'
-import { Analytics } from '@vercel/analytics/next'
+import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Mise à jour automatique : l'app installée sur l'iPhone reste ouverte en arrière-plan,
