@@ -4,11 +4,12 @@ import { createPortal } from 'react-dom'
 import type { BookingFile } from '../data/types'
 import { getFileBlob, isPdf } from '../lib/files'
 import { errorMessage } from '../lib/supabase'
+import { usePinchZoom } from '../lib/usePinchZoom'
 import './FileViewer.css'
 
 /**
  * Affichage plein écran d'un billet (PDF ou image), sur fond blanc pour que le QR code se scanne bien.
- * Marche hors ligne si le fichier a été copié sur le téléphone.
+ * Marche hors ligne si le fichier a été copié sur le téléphone. Le pincement ne zoome que le document.
  */
 export function FileViewer({ file, onClose }: { file: BookingFile; onClose: () => void }) {
   const [blob, setBlob] = useState<Blob | null>(null)
@@ -16,6 +17,9 @@ export function FileViewer({ file, onClose }: { file: BookingFile; onClose: () =
   const [error, setError] = useState<string | null>(null)
   const [rendering, setRendering] = useState(true)
   const pages = useRef<HTMLDivElement>(null)
+  const body = useRef<HTMLDivElement>(null)
+  const zoomed = useRef<HTMLDivElement>(null)
+  usePinchZoom(body, zoomed)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -90,18 +94,22 @@ export function FileViewer({ file, onClose }: { file: BookingFile; onClose: () =
         </button>
       </header>
 
-      <div className="viewer__body">
+      <div ref={body} className="viewer__body">
         {rendering && !error && <p className="caption muted viewer__status">Ouverture…</p>}
         {error && (
           <p className="caption form-error viewer__status" role="alert">
             {error}
           </p>
         )}
-        {imageUrl && <img src={imageUrl} alt={file.name} className="viewer__image" />}
-        <div ref={pages} className="viewer__pages" />
+        <div ref={zoomed} className="viewer__zoom">
+          {imageUrl && <img src={imageUrl} alt={file.name} className="viewer__image" draggable={false} />}
+          <div ref={pages} className="viewer__pages" />
+        </div>
       </div>
 
-      {!error && <p className="caption muted viewer__hint">Montez la luminosité pour faire scanner le QR code.</p>}
+      {!error && (
+        <p className="caption muted viewer__hint">Pincez ou touchez deux fois pour agrandir. Montez la luminosité pour faire scanner le QR code.</p>
+      )}
     </div>,
     document.body,
   )

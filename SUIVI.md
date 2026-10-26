@@ -110,6 +110,19 @@
 - [x] Relais redéployé avec `workers_dev = false` (24/10) : plus d'adresse web publique, il ne reçoit que les e-mails.
 - [ ] Suivre le coût réel des lectures (console.anthropic.com, table `ai_usage`), puis choisir entre Opus 5.5 et Haiku 5.5 (secret `EXTRACT_MODEL`). Premières mesures avec Opus 5.5 : environ 0,03 $ par capture, 0,04 $ par e-mail.
 
+## Session du 26 octobre 2026
+
+### Retours de Karl (tests sur iPhone)
+- Lecture d'un billet PDF par l'IA : OK. Billet ouvert en mode avion : OK. Modifications (voyage, réservation, étapes) : OK.
+- Tirer pour actualiser : l'animation se voit, mais on ne sent pas qu'on tire la page.
+
+### Fait (branche `feat/retours-26-10`)
+- **Tirer pour actualiser** : le contenu de la page descend maintenant avec le doigt (avec résistance), puis remonte en douceur. La barre d'onglets et le bouton flottant ne bougent pas.
+- **Zoom dans un billet** : pincer zoome seulement le document (jusqu'à 5×), pas toute la page. Un doigt déplace le document zoomé, un double tap zoome à 2,5× ou revient à la taille normale. Les PDF sont dessinés en résolution doublée pour que le QR code reste net.
+- **Suppression d'un voyage** : déplacée dans « Modifier le voyage » (crayon), réservée au propriétaire. La confirmation dit ce qui sera effacé (réservations, fichiers joints, pour combien de voyageurs). Le panneau « Voyageurs » garde « Quitter le voyage ».
+- Vérifié avec des gestes simulés. Le ressenti du tirage et du pincement reste à confirmer sur l'iPhone.
+- Ajouts de Karl le 26/10 : Vercel Analytics et Speed Insights (`src/main.tsx`). À citer dans la future politique de confidentialité.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)

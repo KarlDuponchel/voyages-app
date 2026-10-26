@@ -7,7 +7,9 @@ import './PullToRefresh.css'
  *
  * L'app installée sur iPhone n'a pas ce geste nativement, et `overscroll-behavior: none` (styles.css)
  * empêche déjà la page de bouger : on peut donc suivre le doigt avec des écouteurs passifs, sans jamais
- * bloquer le défilement. L'indicateur se superpose à la page (pas de décalage du contenu).
+ * bloquer le défilement. Le contenu de la page descend avec le doigt (avec résistance) pour qu'on sente
+ * qu'on la tire, puis remonte en douceur ; les éléments fixes (barre d'onglets, bouton flottant) ne bougent pas.
+ * Le décalage passe par la variable CSS --ptr-pull sur <html> (voir PullToRefresh.css).
  *
  * Le geste est ignoré quand un panneau est ouvert (il se ferme déjà en glissant vers le bas),
  * sur le globe (qu'on fait tourner au doigt) et dès que le mouvement est plutôt horizontal (stories).
@@ -40,11 +42,20 @@ export function PullToRefresh({ onRefresh }: { onRefresh: () => Promise<unknown>
     let distance = 0
     let busy = false
     let timer: ReturnType<typeof setTimeout> | undefined
+    let release: ReturnType<typeof setTimeout> | undefined
+    const root = document.documentElement
 
     const show = (p: Phase, d: number) => {
       distance = d
       setPhase(p)
       setPull(d)
+      // Décalage du contenu : sans transition pendant le tirage (il colle au doigt), avec au retour
+      root.style.setProperty('--ptr-pull', `${d}px`)
+      root.classList.toggle('ptr-tirage', p === 'tirage')
+      clearTimeout(release)
+      if (d > 0) root.classList.add('ptr-decale')
+      // Une fois revenu en place, on retire le décalage (un transform permanent gênerait les éléments fixes)
+      else release = setTimeout(() => root.classList.remove('ptr-decale'), 320)
     }
     const settle = (delay: number) => {
       timer = setTimeout(() => {
@@ -109,6 +120,9 @@ export function PullToRefresh({ onRefresh }: { onRefresh: () => Promise<unknown>
     window.addEventListener('touchcancel', onCancel, { passive: true })
     return () => {
       clearTimeout(timer)
+      clearTimeout(release)
+      root.classList.remove('ptr-tirage', 'ptr-decale')
+      root.style.removeProperty('--ptr-pull')
       window.removeEventListener('touchstart', onStart)
       window.removeEventListener('touchmove', onMove)
       window.removeEventListener('touchend', onEnd)

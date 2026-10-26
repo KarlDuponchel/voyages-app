@@ -1,4 +1,4 @@
-import { Link2, LogOut, Trash2 } from 'lucide-react'
+import { Link2, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sheet } from '../components/Sheet'
@@ -14,19 +14,19 @@ const roleLabel: Record<TripRole, string> = { owner: 'Propriétaire', editor: 'P
 
 /** Membres du voyage, invitation par lien, départ ou suppression du voyage. */
 export function ShareTripSheet({ trip, open, onClose }: { trip: Trip; open: boolean; onClose: () => void }) {
-  const { createInvitation, leaveTrip, deleteTrip } = useTrips()
+  const { createInvitation, leaveTrip } = useTrips()
   const { session } = useAuth()
   const navigate = useNavigate()
   const [role, setRole] = useState<'editor' | 'viewer'>('editor')
   const [link, setLink] = useState<string | null>(null)
-  const [confirm, setConfirm] = useState<'quitter' | 'supprimer' | null>(null)
+  const [confirmLeave, setConfirmLeave] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const me = session?.user.id
 
   const close = () => {
     setLink(null)
-    setConfirm(null)
+    setConfirmLeave(false)
     setError(null)
     onClose()
   }
@@ -56,9 +56,9 @@ export function ShareTripSheet({ trip, open, onClose }: { trip: Trip; open: bool
       }
     })
 
-  const finish = (action: 'quitter' | 'supprimer') =>
+  const leave = () =>
     run(async () => {
-      await (action === 'quitter' ? leaveTrip(trip.id) : deleteTrip(trip.id))
+      await leaveTrip(trip.id)
       close()
       navigate('/voyages', { replace: true })
     })
@@ -118,36 +118,28 @@ export function ShareTripSheet({ trip, open, onClose }: { trip: Trip; open: bool
       )}
 
       <div className="stack" style={{ gap: 8 }}>
-        {confirm ? (
+        {confirmLeave ? (
           <>
             <p className="caption" style={{ margin: 0 }}>
-              {confirm === 'supprimer'
-                ? 'Le voyage et toutes ses réservations seront supprimés pour tous les voyageurs.'
-                : 'Vous ne verrez plus ce voyage. Il faudra une nouvelle invitation pour le retrouver.'}
+              Vous ne verrez plus ce voyage. Il faudra une nouvelle invitation pour le retrouver.
             </p>
             <div className="row" style={{ gap: 8 }}>
-              <button className="btn btn--accent" style={{ flex: 1 }} onClick={() => finish(confirm)} disabled={busy}>
-                {confirm === 'supprimer' ? 'Oui, supprimer' : 'Oui, quitter'}
+              <button className="btn btn--accent" style={{ flex: 1 }} onClick={leave} disabled={busy}>
+                Oui, quitter
               </button>
-              <button className="btn btn--ghost" onClick={() => setConfirm(null)}>
+              <button className="btn btn--ghost" onClick={() => setConfirmLeave(false)}>
                 Annuler
               </button>
             </div>
           </>
         ) : (
-          <>
-            {trip.members.length > 1 && (
-              <button className="btn btn--ghost" onClick={() => setConfirm('quitter')}>
-                <LogOut size={16} /> Quitter le voyage
-              </button>
-            )}
-            {trip.role === 'owner' && (
-              <button className="btn btn--ghost" onClick={() => setConfirm('supprimer')}>
-                <Trash2 size={16} /> Supprimer le voyage
-              </button>
-            )}
-          </>
+          trip.members.length > 1 && (
+            <button className="btn btn--ghost" onClick={() => setConfirmLeave(true)}>
+              <LogOut size={16} /> Quitter le voyage
+            </button>
+          )
         )}
+        {/* La suppression du voyage se fait depuis « Modifier le voyage » (crayon) */}
       </div>
     </Sheet>
   )

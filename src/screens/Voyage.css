@@ -82,3 +82,9 @@
   gap: 6px;
 }
 
+
+/* Confirmation de suppression du voyage (panneau « Modifier le voyage ») */
+.edit-trip__danger {
+  padding: 14px;
+  border-color: color-mix(in srgb, var(--accent-sunset) 45%, transparent);
+}

@@ -74,3 +74,18 @@
     animation: none;
   }
 }
+
+/* Le contenu de la page suit le doigt. Seulement pendant le geste et le retour (classe ptr-decale) :
+   un transform permanent ferait des enfants des repères pour leurs éléments fixes. */
+html.ptr-decale main.screen > :not(.fab) {
+  transform: translateY(var(--ptr-pull, 0px));
+  transition: transform 300ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+html.ptr-tirage main.screen > :not(.fab) {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.ptr-decale main.screen > :not(.fab) {
+    transition-duration: 120ms;
+  }
+}

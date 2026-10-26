@@ -31,6 +31,19 @@
   overflow: auto;
   padding: 4px 12px 12px;
   -webkit-overflow-scrolling: touch;
+  /* Défilement vertical natif, mais pas de zoom de toute la page : le pincement est géré par usePinchZoom */
+  touch-action: pan-y;
+}
+/* Une fois zoomé, un doigt déplace le document au lieu de faire défiler */
+.viewer__body.is-zoomed {
+  touch-action: none;
+}
+.viewer__zoom {
+  transform-origin: 0 0;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* Pages et images sur fond blanc : le QR code doit rester lisible par les lecteurs */

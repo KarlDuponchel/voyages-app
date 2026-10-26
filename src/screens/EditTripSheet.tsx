@@ -1,21 +1,55 @@
-import { Check } from 'lucide-react'
+import { Check, Trash2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Sheet } from '../components/Sheet'
 import { useTrips } from '../data/store'
 import type { Transport, Trip } from '../data/types'
 import { errorMessage } from '../lib/supabase'
 import { transports } from './NewTripSheet'
 
-/** Titre, dates, transport et budget d'un voyage. Les étapes se gèrent dans l'onglet Itinéraire. */
+/**
+ * Titre, dates, transport et budget d'un voyage (les étapes se gèrent dans l'onglet Itinéraire).
+ * Le propriétaire peut aussi supprimer le voyage, avec ses réservations et leurs fichiers.
+ */
+/**
+ * Ce que la suppression efface, en français correct :
+ * « Ses 3 réservations et 2 fichiers joints seront effacés définitivement, pour les 2 voyageurs. »
+ */
+function deletionSummary(bookings: number, files: number, members: number): string {
+  const forAll = members > 1 ? `, pour les ${members} voyageurs` : ''
+  if (bookings === 0) return `Le voyage sera effacé définitivement${forAll}.`
+  const what = bookings === 1 ? 'Sa réservation' : `Ses ${bookings} réservations`
+  const withFiles = files === 0 ? '' : files === 1 ? ' et son fichier joint' : ` et ${files} fichiers joints`
+  const verb = bookings === 1 && files === 0 ? 'sera effacée' : files === 0 ? 'seront effacées' : 'seront effacés'
+  return `${what}${withFiles} ${verb} définitivement${forAll}.`
+}
+
 export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boolean; onClose: () => void }) {
-  const { updateTrip } = useTrips()
+  const { updateTrip, deleteTrip } = useTrips()
+  const navigate = useNavigate()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const fileCount = trip.bookings.reduce((n, b) => n + b.files.length, 0)
   const [start, setStart] = useState(trip.start)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const close = () => {
     setError(null)
+    setConfirmDelete(false)
     onClose()
+  }
+
+  const remove = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await deleteTrip(trip.id)
+      close()
+      navigate('/voyages', { replace: true })
+    } catch (err) {
+      setError(errorMessage(err))
+      setBusy(false)
+    }
   }
 
   // À chaque ouverture, on repart de la date enregistrée
@@ -92,6 +126,26 @@ export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boole
         <button type="submit" className="btn btn--primary" disabled={busy}>
           <Check size={16} /> {busy ? 'Enregistrement…' : 'Enregistrer'}
         </button>
+
+        {trip.role === 'owner' &&
+          (confirmDelete ? (
+            <div className="card stack edit-trip__danger" style={{ gap: 10 }}>
+              <span className="strong">Supprimer « {trip.title} » ?</span>
+              <span className="caption muted">{deletionSummary(trip.bookings.length, fileCount, trip.members.length)}</span>
+              <div className="row" style={{ gap: 8 }}>
+                <button type="button" className="btn btn--accent" style={{ flex: 1 }} onClick={remove} disabled={busy}>
+                  <Trash2 size={16} /> Oui, supprimer
+                </button>
+                <button type="button" className="btn btn--ghost" onClick={() => setConfirmDelete(false)} disabled={busy}>
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="btn btn--ghost" onClick={() => setConfirmDelete(true)}>
+              <Trash2 size={16} /> Supprimer le voyage
+            </button>
+          ))}
       </form>
     </Sheet>
   )
