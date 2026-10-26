@@ -140,6 +140,34 @@
 - L'IA (Claude) lit l'e-mail ou le PDF et extrait la réservation : type, dates, horaires, référence, données du billet.
 - On la propose à l'utilisateur pour validation avant de l'enregistrer.
 
+### Idées ajoutées par Karl le 26/10
+
+#### Onboarding : installer l'app sur l'écran d'accueil
+- **Quand** : à la première ouverture dans le navigateur, une seule fois par appareil, pas à chaque actualisation.
+- **Comment ne pas le remontrer** : le choix est gardé sur le téléphone (stockage local). « Plus tard » le repropose après quelques jours, la croix le ferme pour de bon.
+- **Jamais dans l'app déjà installée** : en mode plein écran, on sait qu'elle est installée (`display-mode: standalone`, `navigator.standalone` sur iPhone).
+- **Contenu** : un panneau du bas, avec une icône, deux lignes sur les avantages (plein écran, hors ligne, plus tard les notifications), puis des étapes numérotées avec les icônes réelles.
+- **Étapes selon l'appareil** :
+  - iPhone sous Safari : menu, Partager, « Sur l'écran d'accueil », Ajouter ;
+  - iPhone avec un autre navigateur : ouvrir dans Safari ;
+  - Android : le bouton d'installation du navigateur (`beforeinstallprompt`) quand il est disponible.
+- **Après l'installation** : rappeler qu'il faut se reconnecter une fois dans l'app installée, puisqu'elle ne partage pas sa session avec Safari.
+- **Réutiliser** les étapes déjà présentes dans Profil (« Installer sur l'iPhone ») pour ne pas les maintenir deux fois.
+- Modèle visuel : la capture de WikiMasters envoyée par Karl (panneau du bas, étapes 1 à 5, « Plus tard »).
+
+#### Comptes « premium »
+- **Ce qu'ils débloquent** :
+  - les fonctions qui coûtent de l'argent : lecture par l'IA des billets et des e-mails transférés ;
+  - plus de stockage : photos, documents (à préciser avec Karl).
+- **Gratuit** : à définir. Par exemple, quelques lectures par l'IA pour essayer, puis un plafond de stockage par compte.
+- **Base de données** :
+  - une table d'abonnements (offre, statut, date de fin) ;
+  - les fonctions `extract-booking` et `inbound-email` vérifient l'offre côté serveur, en remplaçant ou en complétant la limite actuelle de 40 lectures sur 24 h ;
+  - le quota de stockage est contrôlé à l'envoi d'un fichier.
+- **Paiement** : Stripe Checkout et le portail client Stripe, avec une Edge Function qui reçoit ses webhooks. L'app est une PWA, hors App Store, donc sans commission Apple.
+- **Voyage partagé** : qui paie quand un voyage est partagé ? Par exemple, les fonctions premium sont ouvertes à tous les membres si le propriétaire est premium. À décider.
+- **Juridique** : CGV, TVA (Stripe Tax), et une mention dans la politique de confidentialité. À regrouper avec l'étape 7.
+
 ### 4. Photos et souvenirs
 - Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
 - Remplace le compteur `photos: 0` et les couvertures en dégradé.
