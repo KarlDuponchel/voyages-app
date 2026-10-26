@@ -140,9 +140,9 @@
   - même reconnaissance côté fonction serveur ;
   - message d'erreur plus clair quand aucune pièce jointe n'est lisible ;
   - journaux du relais conservés (`[observability]`) : on voit les pièces jointes reçues, transmises et écartées.
-- **Déployé le 26/10** : relais et fonctions `inbound-email` et `extract-booking`. À vérifier : retransférer l'e-mail PerfectStay.
+- **Déployé le 26/10** : relais et fonctions `inbound-email` et `extract-booking`. Vérifié par Karl : l'e-mail PerfectStay retransféré est bien passé.
 
-### Notifications : e-mail analysé (branche `feat/notifications`)
+### Notifications : e-mail analysé (en ligne le 26/10)
 - **Demande de Karl** : être prévenu sur le téléphone quand un e-mail transféré a été analysé, avec un lien vers les réservations à valider.
 - **Fait** :
   - après l'analyse, `inbound-email` envoie une notification, par exemple « Nouvelle réservation à valider · Yotel New York », ou « rien trouvé ». Un appui ouvre « E-mails à valider » ;
@@ -150,7 +150,7 @@
   - à la déconnexion, le téléphone est retiré.
 - **Technique** : Web Push (clés VAPID, bibliothèque `@negrel/webpush`), table `push_subscriptions`, `public/push-sw.js`. Détails dans [docs/notifications.md](docs/notifications.md).
 - **Tests** : sécurité de la table (5 tests), texte des notifications, envoi chiffré vers un faux service de notification.
-- **À faire par Karl** : générer les clés et les mettre dans le secret `VAPID_KEYS` (Claude n'a pas le droit d'écrire un secret), puis donner la clé publique. Ensuite : migration, déploiement de `inbound-email`, mise en ligne, et activation dans l'app installée.
+- **Mise en route le 26/10** : clés générées par Karl (secret `VAPID_KEYS`, clé publique dans `.env`), migration appliquée, `inbound-email` déployée, mise en ligne. **Reste à faire** : activer dans l'app installée (Profil → Notifications), puis transférer un e-mail pour vérifier.
 
 ## Feuille de route conseillée
 
