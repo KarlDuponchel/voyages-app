@@ -132,7 +132,7 @@
 - **Profil** : la section « Installer l'app » réutilise les mêmes étapes, et affiche « L'app est installée » dans l'app installée.
 - Vérifié dans le navigateur en se faisant passer pour un iPhone et pour un Android. À tester sur l'iPhone, en ouvrant l'adresse de l'app dans Safari.
 
-### Import d'e-mail sans réservation trouvée (branche `fix/import-pieces-jointes`)
+### Import d'e-mail sans réservation trouvée (corrigé et déployé le 26/10)
 - **Constat** : e-mail PerfectStay transféré (hôtel Yotel New York du 14 au 21/11), réponse « aucune réservation ». Haiku n'a reçu que le texte de l'e-mail (environ 3 700 tokens), qui ne contient ni dates ni hôtel. Le bon d'échange PDF ne lui a pas été transmis. Lu directement depuis le voyage, ce même PDF a bien été reconnu par Haiku.
 - **Cause probable** : le relais n'acceptait que les pièces jointes déclarées « PDF » ou « image ». Les PDF déclarés « application/octet-stream », les photos en « image/jpg » et les messages transférés en pièce jointe étaient écartés.
 - **Corrigé** :
@@ -140,7 +140,7 @@
   - même reconnaissance côté fonction serveur ;
   - message d'erreur plus clair quand aucune pièce jointe n'est lisible ;
   - journaux du relais conservés (`[observability]`) : on voit les pièces jointes reçues, transmises et écartées.
-- **À déployer** : `npx wrangler deploy` (dans `email-worker`) et `npx supabase functions deploy inbound-email` et `extract-booking`, puis retransférer l'e-mail PerfectStay.
+- **Déployé le 26/10** : relais et fonctions `inbound-email` et `extract-booking`. À vérifier : retransférer l'e-mail PerfectStay.
 
 ## Feuille de route conseillée
 
