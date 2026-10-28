@@ -5,6 +5,35 @@ Les couleurs reprennent exactement celles de l'app (`src/theme/palettes.ts`) : s
 
 ---
 
+## Prompt de retouche (maquettes déjà faites)
+
+À coller dans le projet existant (Figma Make ou Claude Design), à la place du prompt complet : on garde les écrans, les données et les couleurs, et on ne change que le style.
+
+> Retouche les maquettes existantes **sans repartir de zéro** : garde tous les écrans, leur contenu, les données et les variables de couleur (modes compris). Ne change que le style.
+>
+> **1. Retire le côté « IA générique »** : moins d'arrondis, plus de cartes dans des cartes, dégradés réservés à un ou deux éléments forts, pas de verre dépoli ni d'ombres floues, pas d'icônes rondes dans des pastilles répétées à l'identique, pas d'emojis décoratifs. À la place : hiérarchie typographique marquée (très grand contre très petit), filets fins plutôt que cadres, grille et asymétrie, détails imprimés (perforations, numéros, codes, tampons).
+>
+> **2. Crée une collection de variables « Formes »** avec un mode par direction, et branche-la sur tous les composants :
+>
+> | Variable | Éditorial | Carnet de bord | Signalétique |
+> |---|---|---|---|
+> | radius/sm | 2 px | 4 px | 0 px |
+> | radius/md | 4 px | 6 px | 2 px |
+> | radius/pill | 2 px | 4 px | 0 px |
+> | border/width | 1 px | 1,5 px | 2 px |
+> | shadow | aucune | légère et nette | aucune |
+>
+> Les formes entièrement rondes ne restent que pour les avatars.
+>
+> **3. Décline les écrans Monde, Voyage, Billet, Photos et Souvenirs dans trois directions** :
+> - **Éditorial** (magazine de voyage) : photos plein cadre, titres immenses, légendes, filets, étapes numérotées 01, 02…, listes façon sommaire.
+> - **Carnet de bord** (papeterie) : billet en ticket imprimé avec perforations et talon, tampons pour les pays visités, étiquettes de bagage, léger grain de papier.
+> - **Signalétique** (aéroport, style suisse) : grille stricte, aplats pleins, pictogrammes, grands chiffres (J-17, portes, heures), bandeaux façon tableau des départs.
+>
+> **4. Ajoute un sélecteur de direction** à côté de celui des palettes, pour tout basculer d'un coup, puis une planche qui compare les trois directions sur les écrans Monde, Voyage et Billet, en sombre et en clair.
+
+---
+
 ## Prompt commun
 
 > Crée les maquettes mobiles d'une application de carnet de voyage partagé, en français.
