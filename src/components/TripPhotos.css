@@ -2,12 +2,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
 }
 .photos__thumb {
   position: relative;
   aspect-ratio: 1;
+  /* Arrondi sur chaque miniature (et non sur la grille) : identique qu'il y ait 1 ou 30 photos dans la journée */
+  border-radius: 6px;
   background: var(--bg-elevated);
   overflow: hidden;
   touch-action: manipulation;
