@@ -175,7 +175,8 @@
 - **Prompt de maquettes** pour Figma Make et Claude Design : [docs/prompt-maquettes.md](docs/prompt-maquettes.md). Il reprend les couleurs actuelles en variables à modes (sombre, clair), plus trois palettes alternatives à comparer, et 14 écrans, dont Photos et Souvenirs.
 - **Photos et vidéos d'un voyage, livraison A** (en ligne le 28/10) :
   - **Onglet Photos** : grille groupée par jour de prise de vue (lue dans la photo), badge de durée sur les vidéos. Le bouton flottant « + Photos » ajoute plusieurs éléments d'un coup, avec la progression (« Envoi 3 sur 12 · compression 40 % ») et les erreurs.
-  - **Photos** : réduites à 2 048 px, environ 400 Ko, réenregistrées en JPEG (le lieu GPS est effacé), avec une miniature d'environ 50 Ko.
+  - **Photos** : réduites à 2 048 px, réenregistrées en JPEG (le lieu GPS est effacé), avec une miniature d'environ 50 Ko. Qualité passée de 0,82 à 0,75 le 28/10, après mesure sur de vraies photos (0,5 à 1 Mo à 0,82).
+  - **Première vraie vidéo** (iPhone, 28/10) : bien compressée par Safari, en MP4 960 × 1 280, 2,5 s pour 0,55 Mo (environ 13 Mo par minute).
   - **Vidéos** : recompressées sur le téléphone en 720p H.264 avec Mediabunny ; 30 Mo au plus après compression, 3 minutes au plus. Mediabunny n'est chargé qu'au premier envoi de vidéo et n'est pas dans le cache hors ligne.
   - **Visionneuse plein écran** : glisser d'un élément à l'autre, zoom au pincement, vidéos en lecture, « Ajoutée par … · date », mettre en couverture, partager ou enregistrer, supprimer (l'auteur ou le propriétaire).
   - **Couvertures** : la photo choisie remplace le dégradé dans l'en-tête du voyage, la liste des voyages et Souvenirs (stories, « Il y a 1 an », grille). Le nombre de photos est réel.
@@ -229,7 +230,7 @@
   - plus de stockage : photos, documents (à préciser avec Karl).
 - **Gratuit** (orientation validée par Karl le 26/10, chiffres proposés à confirmer) :
   - **IA** : 5 lectures offertes au total, billets et e-mails confondus, pour essayer.
-  - **Photos** : dans 2 voyages maximum, 250 Mo au total. Avec des photos compressées avant l'envoi (environ 2 000 px, environ 400 Ko), cela fait environ 600 photos.
+  - **Photos** : dans 2 voyages maximum, 250 Mo au total. Mesuré le 28/10 sur de vraies photos d'iPhone : 0,5 à 1 Mo par photo à la qualité 0,82, passée à 0,75 (environ 25 % de moins). 250 Mo représentent donc environ **300 à 400 photos**, jugé correct par Karl pour le gratuit.
   - **Billets et documents** : non comptés dans ce quota, avec un garde-fou d'environ 50 Mo.
 - **Premium** (proposé) :
   - IA « illimitée », avec un plafond contre les abus (environ 300 lectures par mois) ;

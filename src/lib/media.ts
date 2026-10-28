@@ -1,7 +1,7 @@
 /**
  * Préparation des photos et vidéos sur le téléphone, avant l'envoi.
  *
- * - Photos : redimensionnées (2 048 px au plus) et réenregistrées en JPEG, ce qui efface aussi toutes
+ * - Photos : redimensionnées (2 048 px au plus) et réenregistrées en JPEG qualité 0,75 (environ 400 à 800 Ko), ce qui efface aussi toutes
  *   les métadonnées, dont le lieu (GPS). Seule la date de prise de vue est lue avant, pour ranger par jour.
  * - Vidéos : recompressées en 720p H.264 (environ 16 Mo par minute) avec Mediabunny, chargé seulement
  *   quand on choisit une vidéo. 30 Mo au plus après compression.
@@ -83,7 +83,8 @@ export async function preparePhoto(file: File): Promise<Prepared> {
   const takenAt = await readTakenAt(file)
   const img = await loadImage(file)
   const { naturalWidth: w, naturalHeight: h } = img
-  const full = await toJpeg(img, w, h, FULL_SIZE, 0.82)
+  // Qualité 0,75 : environ 25 % plus léger qu'à 0,82, sans différence visible sur un écran de téléphone
+  const full = await toJpeg(img, w, h, FULL_SIZE, 0.75)
   const thumb = await toJpeg(img, w, h, THUMB_SIZE, 0.72)
   const size = fit(w, h, FULL_SIZE)
   return { kind: 'photo', full, thumb, mimeType: 'image/jpeg', ...size, takenAt }
