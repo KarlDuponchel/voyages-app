@@ -173,7 +173,7 @@
 
 ### Fait
 - **Prompt de maquettes** pour Figma Make et Claude Design : [docs/prompt-maquettes.md](docs/prompt-maquettes.md). Il reprend les couleurs actuelles en variables à modes (sombre, clair), plus trois palettes alternatives à comparer, et 14 écrans, dont Photos et Souvenirs.
-- **Photos et vidéos d'un voyage, livraison A** (branche `feat/photos`, **pas encore déployée**) :
+- **Photos et vidéos d'un voyage, livraison A** (en ligne le 28/10) :
   - **Onglet Photos** : grille groupée par jour de prise de vue (lue dans la photo), badge de durée sur les vidéos. Le bouton flottant « + Photos » ajoute plusieurs éléments d'un coup, avec la progression (« Envoi 3 sur 12 · compression 40 % ») et les erreurs.
   - **Photos** : réduites à 2 048 px, environ 400 Ko, réenregistrées en JPEG (le lieu GPS est effacé), avec une miniature d'environ 50 Ko.
   - **Vidéos** : recompressées sur le téléphone en 720p H.264 avec Mediabunny ; 30 Mo au plus après compression, 3 minutes au plus. Mediabunny n'est chargé qu'au premier envoi de vidéo et n'est pas dans le cache hors ligne.
@@ -186,7 +186,7 @@
 - **Reste pour B** : le diaporama « Revivre » dans Souvenirs.
 
 ### À faire pour mettre en ligne
-- [ ] `npx supabase db push` (migration photos), régénérer les types, puis fusionner `feat/photos` dans `main`. **L'ordre compte** : l'app lit la table des photos, donc la migration doit passer avant.
+- [x] Migration photos appliquée (par Karl), types régénérés, requête des voyages vérifiée sur la vraie base, `feat/photos` fusionnée dans `main` (28/10).
 - [ ] Tester sur iPhone : choisir plusieurs photos et une vidéo dans la pellicule, la date de prise de vue, mettre en couverture, supprimer, l'affichage hors ligne.
 
 ## Feuille de route conseillée

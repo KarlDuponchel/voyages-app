@@ -584,9 +584,9 @@ export type Database = {
         Row: {
           budget_amount: number | null
           budget_currency: string
-          cover_photo_id: string | null
           cover_colors: string[] | null
           cover_path: string | null
+          cover_photo_id: string | null
           created_at: string
           created_by: string | null
           end_date: string
@@ -599,9 +599,9 @@ export type Database = {
         Insert: {
           budget_amount?: number | null
           budget_currency?: string
-          cover_photo_id?: string | null
           cover_colors?: string[] | null
           cover_path?: string | null
+          cover_photo_id?: string | null
           created_at?: string
           created_by?: string | null
           end_date: string
@@ -614,9 +614,9 @@ export type Database = {
         Update: {
           budget_amount?: number | null
           budget_currency?: string
-          cover_photo_id?: string | null
           cover_colors?: string[] | null
           cover_path?: string | null
+          cover_photo_id?: string | null
           created_at?: string
           created_by?: string | null
           end_date?: string
