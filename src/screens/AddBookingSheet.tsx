@@ -1,4 +1,4 @@
-import { FileUp, Plus, Sparkles } from 'lucide-react'
+import { FileUp, ImagePlus, Plus, Sparkles } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { BookingForm } from '../components/BookingForm'
 import { Sheet } from '../components/Sheet'
@@ -17,7 +17,18 @@ type Mode = 'menu' | 'lecture' | 'formulaire'
  * Un billet peut contenir plusieurs réservations (aller et retour) : on les valide une à une,
  * et le fichier est joint à chacune.
  */
-export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boolean; onClose: () => void }) {
+export function AddBookingSheet({
+  trip,
+  open,
+  onClose,
+  onAddPhotos,
+}: {
+  trip: Trip
+  open: boolean
+  onClose: () => void
+  /** Photos et vidéos choisies depuis ce menu (l'envoi se fait dans l'onglet Photos) */
+  onAddPhotos?: (files: File[]) => void
+}) {
   const { addBooking, attachFile } = useTrips()
   const [mode, setMode] = useState<Mode>('menu')
   const [file, setFile] = useState<File | null>(null)
@@ -26,6 +37,7 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
   const [index, setIndex] = useState(0)
   const [aiNote, setAiNote] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
+  const photoInput = useRef<HTMLInputElement>(null)
   const created = useRef<string | null>(null)
   /** Lecture en cours ; ignorée si l'utilisateur est passé à la saisie manuelle entre-temps */
   const reading = useRef(0)
@@ -69,9 +81,9 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
       {mode === 'menu' && (
         <>
           <div className="stack" style={{ gap: 4 }}>
-            <h2 className="display-l">Ajouter une réservation</h2>
+            <h2 className="display-l">Ajouter au voyage</h2>
             <p className="caption muted" style={{ margin: 0 }}>
-              Vol, train, hôtel, activité… tout est rangé dans {trip.title}.
+              Billets, réservations, photos… tout est rangé dans {trip.title}.
             </p>
           </div>
 
@@ -81,7 +93,7 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
                 <FileUp size={22} />
               </span>
               <div className="stack" style={{ gap: 2, textAlign: 'left' }}>
-                <span className="strong">Avec le billet (PDF ou capture)</span>
+                <span className="strong">Billet ou réservation (PDF, capture)</span>
                 <span className="caption muted">L'IA le lit et remplit la réservation, vous vérifiez. Le fichier reste joint et consultable hors ligne.</span>
               </div>
             </div>
@@ -110,6 +122,37 @@ export function AddBookingSheet({ trip, open, onClose }: { trip: Trip; open: boo
             <p className="caption form-error" role="alert">
               {fileError}
             </p>
+          )}
+
+          {onAddPhotos && (
+            <>
+              {/* La pellicule s'ouvre dans le geste même (Safari bloque une ouverture différée) */}
+              <button className="add-option" onClick={() => photoInput.current?.click()}>
+                <div className="row" style={{ gap: 14 }}>
+                  <span className="add-option__chip" style={{ color: 'var(--accent-lavender)' }}>
+                    <ImagePlus size={22} />
+                  </span>
+                  <div className="stack" style={{ gap: 2, textAlign: 'left' }}>
+                    <span className="strong">Photos et vidéos</span>
+                    <span className="caption muted">Depuis la pellicule, plusieurs à la fois. Tous les voyageurs les verront.</span>
+                  </div>
+                </div>
+              </button>
+              <input
+                ref={photoInput}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  const files = [...(e.target.files ?? [])]
+                  e.target.value = ''
+                  if (files.length === 0) return
+                  close()
+                  onAddPhotos(files)
+                }}
+              />
+            </>
           )}
 
           <button className="add-option" onClick={() => setMode('formulaire')}>

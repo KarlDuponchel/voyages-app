@@ -183,6 +183,8 @@
   - **Suppression d'un voyage** : ses photos et vidéos sont effacées du stockage.
   - **Base** : migration `20261028100000_photos.sql` (table `trip_photos`, `trips.cover_photo_id`, bucket privé `trip-photos`). 63 tests de sécurité, dont 10 pour les photos.
   - **Vérifié** dans le navigateur : vraie compression d'une photo (4 000 px, 1,5 Mo → 2 048 px, 414 Ko) et d'une vidéo (1080p WebM avec son → MP4 720p, son conservé, 2 secondes pour 6 secondes de vidéo), grille, visionneuse et glissement. Un bug a été trouvé et corrigé : le bouton flottant était mal placé à cause de l'animation de l'onglet.
+- **Ajout rapide** (demande de Karl) : dans un voyage, « + Ajouter » ouvre le menu « Ajouter au voyage » avec trois choix : billet ou réservation (lu par l'IA), photos et vidéos, saisie manuelle. Choisir des photos ouvre la pellicule tout de suite (dans le même geste, comme l'exige Safari), puis bascule sur l'onglet Photos qui les envoie.
+- Miniatures : arrondi sur chaque image, et non plus sur la grille (corrigé après le retour de Karl).
 - **Reste pour B** : le diaporama « Revivre » dans Souvenirs.
 
 ### À faire pour mettre en ligne

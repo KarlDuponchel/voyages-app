@@ -32,6 +32,8 @@ export function Voyage() {
   const { trips, status } = useTrips()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('Itinéraire')
+  /** Photos choisies depuis le menu « Ajouter au voyage », envoyées par l'onglet Photos */
+  const [pendingPhotos, setPendingPhotos] = useState<File[] | null>(null)
   const [adding, setAdding] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [editingTrip, setEditingTrip] = useState(false)
@@ -127,7 +129,7 @@ export function Voyage() {
         </section>
       )}
 
-      {tab === 'Photos' && <TripPhotos trip={trip} />}
+      {tab === 'Photos' && <TripPhotos trip={trip} incoming={pendingPhotos} onIncomingHandled={() => setPendingPhotos(null)} />}
 
       {/* Sur l'onglet Photos, le bouton flottant ajoute des photos (dans TripPhotos) */}
       {editable && tab !== 'Photos' && (
@@ -135,7 +137,15 @@ export function Voyage() {
           <Plus size={20} /> Ajouter
         </button>
       )}
-      <AddBookingSheet trip={trip} open={adding} onClose={() => setAdding(false)} />
+      <AddBookingSheet
+        trip={trip}
+        open={adding}
+        onClose={() => setAdding(false)}
+        onAddPhotos={(files) => {
+          setPendingPhotos(files)
+          setTab('Photos')
+        }}
+      />
       <ShareTripSheet trip={trip} open={sharing} onClose={() => setSharing(false)} />
       {editable && <EditTripSheet trip={trip} open={editingTrip} onClose={() => setEditingTrip(false)} />}
     </main>

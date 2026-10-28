@@ -31,7 +31,16 @@ function Thumb({ photo, onOpen }: { photo: TripPhoto; onOpen: () => void }) {
 }
 
 /** Onglet Photos d'un voyage : grille par jour, ajout (photos et vidéos), visionneuse */
-export function TripPhotos({ trip }: { trip: Trip }) {
+export function TripPhotos({
+  trip,
+  incoming,
+  onIncomingHandled,
+}: {
+  trip: Trip
+  /** Fichiers choisis depuis le menu « Ajouter au voyage » : envoyés dès l'ouverture de l'onglet */
+  incoming?: File[] | null
+  onIncomingHandled?: () => void
+}) {
   const { refresh } = useTrips()
   const [photos, setPhotos] = useState<TripPhoto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +61,16 @@ export function TripPhotos({ trip }: { trip: Trip }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // Un même lot n'est envoyé qu'une fois (l'effet peut s'exécuter deux fois en développement)
+  const handled = useRef<File[] | null>(null)
+  useEffect(() => {
+    if (!incoming || incoming.length === 0 || handled.current === incoming) return
+    handled.current = incoming
+    onIncomingHandled?.()
+    addFiles(incoming)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incoming])
 
   const uploading = jobs.some((j) => j.step !== 'fini' && j.step !== 'erreur')
 
