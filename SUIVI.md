@@ -63,14 +63,29 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
-### Pour reprendre (mis à jour le 26/10, fin de soirée)
-- **Tout est sur `main`**, mis en ligne par Vercel, et tout est déployé côté Supabase et Cloudflare. Aucune branche en attente.
-- **En service** : billets PDF ; import par l'IA (billets et e-mails transférés, modèle **Haiku 5.5**) ; notifications « e-mail analysé » ; tirer pour actualiser ; zoom dans les billets ; onboarding d'installation ; Vercel Analytics et Speed Insights.
-- **Infra** : domaine **tripmates.app** (adresses d'import), relais Cloudflare `voyages-email`, fonctions Supabase `extract-booking` et `inbound-email`. Docs : [import-ia.md](docs/import-ia.md), [notifications.md](docs/notifications.md), [supabase.md](docs/supabase.md).
-- **Reste à tester** : un essai complet à deux (invitation de la copine de Karl), l'onboarding d'installation dans Safari, la lecture par Haiku sur de prochains billets.
-- **Sur un nouveau poste ou dossier** : `npm install` avant tout. Si `npm run test:functions` signale des types `any` inattendus, le cache de Deno est abîmé : `npx -y deno@2.9.6 clean`, puis relancer (c'est arrivé le 26/10).
-- **Évolution de la base** : nouveau fichier dans `supabase/migrations/`, `npm run test:db`, `npx supabase db push`, puis régénérer les types. Fonctions : `npm run test:functions`, puis `npx supabase functions deploy <nom>`. Relais : `npm test` puis `npx wrangler deploy` dans `email-worker`. Claude ne peut pas écrire les secrets (Supabase, Cloudflare) : c'est Karl qui les règle.
-- **Prochaine étape, demain : 4. Photos et souvenirs.** Commencer par proposer à Karl comment elles s'intègrent dans l'app (où on les ajoute, l'onglet Photos d'un voyage, les couvertures, l'onglet Souvenirs), avant de coder. Stockage : Supabase, en offre gratuite pendant le développement (voir la décision du 26/10 plus bas). Ensuite : les comptes premium, qui s'appuient sur les quotas de photos.
+### Pour reprendre (mis à jour le 28/10, fin de soirée)
+- **Tout est sur `main`**, mis en ligne par Vercel, et déployé côté Supabase et Cloudflare. Aucune branche en attente.
+- **En service** :
+  - billets PDF ; import par l'IA (billets et e-mails, Haiku 5.5) ; notifications « e-mail analysé » ;
+  - **photos et vidéos** (compressées sur le téléphone, couvertures) ; **« Revivre »** ; menu « Ajouter au voyage » ;
+  - tirer pour actualiser, zoom dans les billets, onboarding d'installation, Vercel Analytics.
+- **Docs** : [import-ia.md](docs/import-ia.md), [notifications.md](docs/notifications.md), [supabase.md](docs/supabase.md), [prompt-maquettes.md](docs/prompt-maquettes.md).
+- **Commandes** : base `npm run test:db`, puis `npx supabase db push`, puis régénérer les types ; fonctions `npm run test:functions`, puis `npx supabase functions deploy <nom>` ; relais `npm test`, puis `npx wrangler deploy` dans `email-worker`. Si Deno signale des types `any` inattendus : `npx -y deno@2.9.6 clean`. Claude ne peut pas écrire les secrets : c'est Karl qui les règle.
+
+### La suite, dans l'ordre (décidée le 28/10)
+1. **Tester « Revivre » sur l'iPhone** (Karl) : stories, son des vidéos, appui long, glisser pour fermer.
+2. **Test à deux avec Louna** (Karl) : invitation, puis chacun ajoute billets et photos. Tout le partage n'a encore jamais été vécu à deux.
+3. **Direction artistique** : Karl fait les maquettes (prompt de retouche dans [prompt-maquettes.md](docs/prompt-maquettes.md) : Éditorial, Carnet de bord ou Signalétique, moins d'arrondis) ; ensuite, Claude applique la direction choisie, écran par écran.
+4. **Comptes premium** :
+   - **gratuit** : 5 lectures par l'IA, photos dans 2 voyages et 250 Mo (300 à 400 photos) ;
+   - **premium** : 20 Go, IA presque illimitée ;
+   - le propriétaire d'un voyage paie pour tous ;
+   - paiement par Stripe (Checkout et portail client, webhook dans une Edge Function) ;
+   - quotas vérifiés côté serveur (fonctions de lecture, envoi des photos) ;
+   - affichage de la place utilisée dans le profil.
+5. **Budget partagé** : dépenses, qui a payé quoi, soldes.
+6. **Rappels** : notification la veille d'un vol (enregistrement), réservation ajoutée par un autre participant. Les notifications sont déjà en place ; il faudra une tâche planifiée.
+7. **Ouverture au public** : l'app sur `tripmates.app` (et ce domaine dans les Redirect URLs de Supabase), le nom définitif, les CGU et la politique de confidentialité (photos, IA, analytics), Supabase Pro et Vercel Pro, et la révision des textes des notifications.
 
 ## Session du 23 octobre 2026
 
@@ -186,7 +201,14 @@
   - **Vérifié** dans le navigateur : vraie compression d'une photo (4 000 px, 1,5 Mo → 2 048 px, 414 Ko) et d'une vidéo (1080p WebM avec son → MP4 720p, son conservé, 2 secondes pour 6 secondes de vidéo), grille, visionneuse et glissement. Un bug a été trouvé et corrigé : le bouton flottant était mal placé à cause de l'animation de l'onglet.
 - **Ajout rapide** (demande de Karl) : dans un voyage, « + Ajouter » ouvre le menu « Ajouter au voyage » avec trois choix : billet ou réservation (lu par l'IA), photos et vidéos, saisie manuelle. Choisir des photos ouvre la pellicule tout de suite (dans le même geste, comme l'exige Safari), puis bascule sur l'onglet Photos qui les envoie.
 - Miniatures : arrondi sur chaque image, et non plus sur la grille (corrigé après le retour de Karl).
-- **Reste pour B** : le diaporama « Revivre » dans Souvenirs.
+- **« Revivre », livraison B** : diaporama plein écran façon stories.
+  - Barres de progression, 4 s par photo avec un léger zoom lent, vidéos jouées jusqu'au bout (30 s au plus), bouton pour le son.
+  - Appui à droite ou à gauche pour avancer ou reculer, appui long pour la pause, glisser vers le bas pour fermer.
+  - Fin du voyage avec « Revoir » et « Voir les photos ».
+  - **Accès** : stories de Souvenirs (si le voyage a des photos), carte « Il y a 1 an » ou « Dernier voyage », bouton « Revivre » de l'onglet Photos.
+  - Le « + » de Souvenirs (qui annonçait encore « bientôt ») demande maintenant le voyage, puis ouvre son onglet Photos (`?onglet=photos`).
+  - Petites corrections : « Égypte, Égypte » devient « Égypte » quand le titre et le pays sont identiques ; pluriels de « photo » et « voyage ».
+  - Vérifié dans le navigateur avec des gestes simulés ; le ressenti sur iPhone reste à confirmer.
 
 ### À faire pour mettre en ligne
 - [x] Migration photos appliquée (par Karl), types régénérés, requête des voyages vérifiée sur la vraie base, `feat/photos` fusionnée dans `main` (28/10).
@@ -257,7 +279,7 @@
   - Bascule vers Cloudflare R2 (sortie de données gratuite) au-delà d'environ 2 000 à 5 000 utilisateurs actifs, quand le trafic coûte plus de 30 $ par mois. Estimation : 10 000 utilisateurs actifs, environ 70 à 90 $ par mois avec Supabase seul contre environ 50 $ avec R2 ; 50 000, environ 400 à 500 $ contre environ 200 $.
   - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
-### 4. Photos et souvenirs — A (photos et vidéos) développée le 28/10 ; B (« Revivre ») à faire
+### 4. Photos et souvenirs — fait le 28/10 (photos, vidéos, couvertures, « Revivre ») ; quotas avec le premium
 - **Décisions de Karl (28/10)** :
   - **Qui ajoute** : le propriétaire et les participants (les lecteurs regardent seulement).
   - **Qui supprime** : l'auteur de la photo, et le propriétaire du voyage.

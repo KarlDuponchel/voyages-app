@@ -110,3 +110,40 @@
   flex-direction: column;
   gap: 2px;
 }
+
+/* Les stories et la carte « Revivre » sont des boutons quand le voyage a des photos */
+button.story,
+button.memory {
+  text-align: left;
+  font: inherit;
+  width: auto;
+}
+button.memory {
+  width: 100%;
+}
+
+/* Choix du voyage pour ajouter des photos */
+.choose-trip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.choose-trip button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.choose-trip li + li {
+  border-top: 1px solid var(--border-subtle);
+}
+.choose-trip__cover {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 6px;
+  overflow: hidden;
+}

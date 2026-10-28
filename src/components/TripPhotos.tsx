@@ -1,4 +1,4 @@
-import { ImagePlus, Play, Plus } from 'lucide-react'
+import { ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
@@ -6,6 +6,7 @@ import { formatDayHeader } from '../lib/format'
 import { listPhotos, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
 import { canEdit } from '../lib/trip'
 import { PhotoViewer } from './PhotoViewer'
+import { StoryPlayer } from './StoryPlayer'
 import './TripPhotos.css'
 
 type Job = { name: string; step: UploadStep | 'attente' | 'fini' | 'erreur'; progress?: number; error?: string }
@@ -46,6 +47,7 @@ export function TripPhotos({
   const [error, setError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
   const [open, setOpen] = useState<number | null>(null)
+  const [reliving, setReliving] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const editable = canEdit(trip)
 
@@ -161,10 +163,17 @@ export function TripPhotos({
         )}
 
         {photos && photos.length > 0 && (
-          <span className="caption muted">
-            {photos.length - videos} photo{photos.length - videos > 1 ? 's' : ''}
-            {videos > 0 && ` · ${videos} vidéo${videos > 1 ? 's' : ''}`}
-          </span>
+          <div className="row between">
+            <span className="caption muted">
+              {photos.length - videos} photo{photos.length - videos > 1 ? 's' : ''}
+              {videos > 0 && ` · ${videos} vidéo${videos > 1 ? 's' : ''}`}
+            </span>
+            {photos.length > 1 && (
+              <button className="photos__relive caption" onClick={() => setReliving(true)}>
+                <Sparkles size={14} /> Revivre
+              </button>
+            )}
+          </div>
         )}
 
         {days.map(([day, items]) => (
@@ -220,6 +229,7 @@ export function TripPhotos({
           }}
         />
       )}
+      {reliving && <StoryPlayer trip={trip} onClose={() => setReliving(false)} />}
     </>
   )
 }

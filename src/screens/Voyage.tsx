@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, PenLine, Plus, Users, Wallet } from 'lucide-react'
 import { useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
 import { TripCover } from '../components/TripCover'
 import { TripPhotos } from '../components/TripPhotos'
@@ -31,7 +31,9 @@ export function Voyage() {
   const { tripId } = useParams()
   const { trips, status } = useTrips()
   const navigate = useNavigate()
-  const [tab, setTab] = useState<Tab>('Itinéraire')
+  const [search] = useSearchParams()
+  // « ?onglet=photos » : arrivée directe sur les photos (depuis Souvenirs)
+  const [tab, setTab] = useState<Tab>(search.get('onglet') === 'photos' ? 'Photos' : 'Itinéraire')
   /** Photos choisies depuis le menu « Ajouter au voyage », envoyées par l'onglet Photos */
   const [pendingPhotos, setPendingPhotos] = useState<File[] | null>(null)
   const [adding, setAdding] = useState(false)

@@ -61,3 +61,11 @@
     animation: none;
   }
 }
+
+.photos__relive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-sunset);
+  font-weight: 600;
+}
