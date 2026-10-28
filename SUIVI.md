@@ -235,6 +235,13 @@
   - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
 ### 4. Photos et souvenirs — prochaine étape (à démarrer le 27/10)
+- **Décisions de Karl (28/10)** :
+  - **Qui ajoute** : le propriétaire et les participants (les lecteurs regardent seulement).
+  - **Qui supprime** : l'auteur de la photo, et le propriétaire du voyage.
+  - **Vidéos acceptées dès maintenant**, compressées sur le téléphone (720p, environ 16 Mo par minute), avec une limite de **30 Mo par vidéo après compression** (environ 2 minutes). Si le téléphone ne sait pas compresser, l'original est accepté seulement s'il fait moins de 30 Mo.
+  - **Lieu (GPS) retiré** des photos à l'envoi : la compression l'efface, rien n'est gardé, donc aucun consentement n'est nécessaire.
+  - Si on garde un jour la position, ce sera avec un consentement explicite (un réglage désactivé par défaut) et une mention dans la politique de confidentialité.
+- **Plan** : A. photos et vidéos d'un voyage (ajout, grille par jour, visionneuse, couverture) ; B. souvenirs (stories, « il y a 1 an », diaporama « Revivre ») ; C. quotas, avec le premium.
 - Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
 - Remplace le compteur `photos: 0` et les couvertures en dégradé.
 - Points à anticiper : les quotas de stockage et leur coût.
@@ -247,6 +254,10 @@
 - Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
 
 ### 7. Ouverture au public
+- **Photos et vidéos** dans les documents légaux :
+  - **politique de confidentialité** : ce qui est stocké (copies compressées, sans lieu), où (Supabase, Europe), qui les voit (les membres du voyage), durée de conservation, suppression avec le voyage ou le compte ;
+  - **CGU**, et non CGV : l'utilisateur garantit avoir les droits sur ce qu'il publie, et l'accord des personnes photographiées ; il accorde une licence d'hébergement limitée au service.
+  - À faire relire par un juriste.
 - Revoir les textes des notifications (ton choisi provisoirement le 26/10). Idée : un emoji selon le type de réservation (🏨 hôtel, 🚆 train, 🎟️ activité, 🍽️ restaurant…) au lieu du ✈️ fixe. Toutes les réservations sont déjà notifiées, quel que soit leur type.
 - CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
 - Gestion des quotas et des coûts, nom de domaine, page d'accueil.
