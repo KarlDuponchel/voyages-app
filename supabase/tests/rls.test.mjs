@@ -284,6 +284,58 @@ await ok("l'inconnu retire son appareil", async () => {
   expect((await db.query(`select 1 from public.push_subscriptions`)).rows.length === 0, 'non retiré')
 })
 
+// ---- Photos et vidéos (migration 20261028100000) ----
+let t2, photoLea, photoTiers
+const uuid = () => crypto.randomUUID()
+await ok('voyage à trois rôles : Léa propriétaire, tiers participant, inconnu lecteur', async () => {
+  ;[{ id: t2 }] = await as('lea', `insert into public.trips (title, start_date, end_date) values ('Photos', '2025-06-01', '2025-06-10') returning id`)
+  await db.query(`insert into public.trip_members (trip_id, user_id, role) values ('${t2}', '${U.tiers}', 'editor'), ('${t2}', '${U.inconnu}', 'viewer')`)
+})
+const photoRow = (id, kind = 'photo') => `('${id}', '${t2}', '${kind}', '${t2}/${id}/full.jpg', '${t2}/${id}/thumb.jpg', 'image/jpeg', 400000)`
+await ok('Léa et le participant ajoutent chacun une photo (fichiers puis ligne)', async () => {
+  photoLea = uuid()
+  photoTiers = uuid()
+  await as('lea', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${photoLea}/full.jpg'), ('trip-photos', '${t2}/${photoLea}/thumb.jpg')`)
+  await as('lea', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ${photoRow(photoLea)}`)
+  await as('tiers', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${photoTiers}/full.jpg')`)
+  await as('tiers', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ${photoRow(photoTiers)}`)
+})
+await denied('le lecteur ne peut pas ajouter de photo', () =>
+  as('inconnu', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ${photoRow(uuid())}`), 'row-level security')
+await denied('le lecteur ne peut pas envoyer de fichier', () =>
+  as('inconnu', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${uuid()}/full.jpg')`))
+await ok('le lecteur voit les photos ; Karl (hors du voyage) non', async () => {
+  expect((await as('inconnu', `select id from public.trip_photos where trip_id = '${t2}'`)).length === 2, 'le lecteur ne voit pas tout')
+  expect((await as('inconnu', `select 1 from storage.objects where bucket_id = 'trip-photos'`)).length === 3, 'fichiers invisibles')
+  await db.exec(`insert into auth.users (id, email) values ('${U.karl}', 'karl@example.com') on conflict do nothing`)
+  expect((await as('karl', `select id from public.trip_photos`)).length === 0, 'fuite')
+  expect((await as('karl', `select 1 from storage.objects where bucket_id = 'trip-photos'`)).length === 0, 'fuite de fichiers')
+})
+await ok("le participant ne peut pas supprimer la photo de Léa (ni sa ligne, ni son fichier)", async () => {
+  await as('tiers', `delete from public.trip_photos where id = '${photoLea}'`)
+  await as('tiers', `delete from storage.objects where name = '${t2}/${photoLea}/full.jpg'`)
+  expect((await db.query(`select 1 from public.trip_photos where id = '${photoLea}'`)).rows.length === 1, 'ligne supprimée')
+  expect((await db.query(`select 1 from storage.objects where name = '${t2}/${photoLea}/full.jpg'`)).rows.length === 1, 'fichier supprimé')
+})
+await ok("couverture : une photo du voyage, pas une vidéo ni la photo d'un autre voyage", async () => {
+  await as('tiers', `update public.trips set cover_photo_id = '${photoLea}' where id = '${t2}'`)
+  expect((await db.query(`select cover_photo_id from public.trips where id = '${t2}'`)).rows[0].cover_photo_id === photoLea, 'couverture non définie')
+})
+await denied("couverture d'un autre voyage refusée", () => as('tiers', `update public.trips set cover_photo_id = '${uuid()}' where id = '${t2}'`), 'couverture')
+await ok('le propriétaire supprime la photo du participant ; le participant supprime un fichier orphelin', async () => {
+  await as('lea', `delete from storage.objects where name like '${t2}/${photoTiers}/%'`)
+  await as('lea', `delete from public.trip_photos where id = '${photoTiers}'`)
+  expect((await db.query(`select 1 from public.trip_photos where id = '${photoTiers}'`)).rows.length === 0, 'photo restée')
+  const orphan = uuid()
+  await as('tiers', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${orphan}/full.jpg')`)
+  await as('tiers', `delete from storage.objects where name = '${t2}/${orphan}/full.jpg'`)
+  expect((await db.query(`select 1 from storage.objects where name = '${t2}/${orphan}/full.jpg'`)).rows.length === 0, 'orphelin resté')
+})
+await ok("supprimer la photo de couverture remet le dégradé (couverture vide)", async () => {
+  await as('lea', `delete from public.trip_photos where id = '${photoLea}'`)
+  expect((await db.query(`select cover_photo_id from public.trips where id = '${t2}'`)).rows[0].cover_photo_id === null, 'couverture fantôme')
+})
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {
