@@ -1,7 +1,7 @@
 import { Play, Plus, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Cover } from '../components/Cover'
+import { TripCover } from '../components/TripCover'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { daysUntil, formatMonthYear, formatNumber, formatRange, parseLocal } from '../lib/format'
@@ -49,7 +49,7 @@ export function Souvenirs() {
           <Link key={t.id} to={`/voyages/${t.id}`} className="story">
             <span className={`story__ring ${i < 2 ? 'is-new' : ''}`}>
               <span className="story__photo">
-                <Cover colors={t.cover} />
+                <TripCover trip={t} />
               </span>
             </span>
             <span className={`caption ${i < 2 ? '' : 'muted'}`}>{t.title}</span>
@@ -60,7 +60,7 @@ export function Souvenirs() {
       {memory && (
         <section className="px">
           <Link to={`/voyages/${memory.trip.id}`} className="memory">
-            <Cover colors={memory.trip.cover} />
+            <TripCover trip={memory.trip} large />
             <span className="pill memory__tag overline">
               <Sparkles size={14} /> {memory.label}
             </span>
@@ -88,7 +88,7 @@ export function Souvenirs() {
         <div className="memory-grid">
           {sorted.map((t) => (
             <Link key={t.id} to={`/voyages/${t.id}`} className="memory-card">
-              <Cover colors={t.cover} />
+              <TripCover trip={t} />
               <span className="memory-card__text">
                 <span className="title-m">{t.title}</span>
                 <span className="caption" style={{ opacity: 0.75 }}>

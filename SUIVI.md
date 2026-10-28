@@ -169,6 +169,26 @@
   - À surveiller : la mise en pause après 7 jours sans activité (il suffit d'ouvrir l'app chaque semaine, la réactivation se fait en un clic) et le plafond de 1 Go.
   - Passage au Pro sans rien changer au code, juste avant l'ouverture au public.
 
+## Session du 28 octobre 2026
+
+### Fait
+- **Prompt de maquettes** pour Figma Make et Claude Design : [docs/prompt-maquettes.md](docs/prompt-maquettes.md). Il reprend les couleurs actuelles en variables à modes (sombre, clair), plus trois palettes alternatives à comparer, et 14 écrans, dont Photos et Souvenirs.
+- **Photos et vidéos d'un voyage, livraison A** (en ligne le 28/10) :
+  - **Onglet Photos** : grille groupée par jour de prise de vue (lue dans la photo), badge de durée sur les vidéos. Le bouton flottant « + Photos » ajoute plusieurs éléments d'un coup, avec la progression (« Envoi 3 sur 12 · compression 40 % ») et les erreurs.
+  - **Photos** : réduites à 2 048 px, environ 400 Ko, réenregistrées en JPEG (le lieu GPS est effacé), avec une miniature d'environ 50 Ko.
+  - **Vidéos** : recompressées sur le téléphone en 720p H.264 avec Mediabunny ; 30 Mo au plus après compression, 3 minutes au plus. Mediabunny n'est chargé qu'au premier envoi de vidéo et n'est pas dans le cache hors ligne.
+  - **Visionneuse plein écran** : glisser d'un élément à l'autre, zoom au pincement, vidéos en lecture, « Ajoutée par … · date », mettre en couverture, partager ou enregistrer, supprimer (l'auteur ou le propriétaire).
+  - **Couvertures** : la photo choisie remplace le dégradé dans l'en-tête du voyage, la liste des voyages et Souvenirs (stories, « Il y a 1 an », grille). Le nombre de photos est réel.
+  - **Hors ligne** : les miniatures et les photos déjà ouvertes restent sur le téléphone ; les vidéos se lisent avec du réseau.
+  - **Suppression d'un voyage** : ses photos et vidéos sont effacées du stockage.
+  - **Base** : migration `20261028100000_photos.sql` (table `trip_photos`, `trips.cover_photo_id`, bucket privé `trip-photos`). 63 tests de sécurité, dont 10 pour les photos.
+  - **Vérifié** dans le navigateur : vraie compression d'une photo (4 000 px, 1,5 Mo → 2 048 px, 414 Ko) et d'une vidéo (1080p WebM avec son → MP4 720p, son conservé, 2 secondes pour 6 secondes de vidéo), grille, visionneuse et glissement. Un bug a été trouvé et corrigé : le bouton flottant était mal placé à cause de l'animation de l'onglet.
+- **Reste pour B** : le diaporama « Revivre » dans Souvenirs.
+
+### À faire pour mettre en ligne
+- [x] Migration photos appliquée (par Karl), types régénérés, requête des voyages vérifiée sur la vraie base, `feat/photos` fusionnée dans `main` (28/10).
+- [ ] Tester sur iPhone : choisir plusieurs photos et une vidéo dans la pellicule, la date de prise de vue, mettre en couverture, supprimer, l'affichage hors ligne.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
@@ -234,7 +254,14 @@
   - Bascule vers Cloudflare R2 (sortie de données gratuite) au-delà d'environ 2 000 à 5 000 utilisateurs actifs, quand le trafic coûte plus de 30 $ par mois. Estimation : 10 000 utilisateurs actifs, environ 70 à 90 $ par mois avec Supabase seul contre environ 50 $ avec R2 ; 50 000, environ 400 à 500 $ contre environ 200 $.
   - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
-### 4. Photos et souvenirs — prochaine étape (à démarrer le 27/10)
+### 4. Photos et souvenirs — A (photos et vidéos) développée le 28/10 ; B (« Revivre ») à faire
+- **Décisions de Karl (28/10)** :
+  - **Qui ajoute** : le propriétaire et les participants (les lecteurs regardent seulement).
+  - **Qui supprime** : l'auteur de la photo, et le propriétaire du voyage.
+  - **Vidéos acceptées dès maintenant**, compressées sur le téléphone (720p, environ 16 Mo par minute), avec une limite de **30 Mo par vidéo après compression** (environ 2 minutes). Si le téléphone ne sait pas compresser, l'original est accepté seulement s'il fait moins de 30 Mo.
+  - **Lieu (GPS) retiré** des photos à l'envoi : la compression l'efface, rien n'est gardé, donc aucun consentement n'est nécessaire.
+  - Si on garde un jour la position, ce sera avec un consentement explicite (un réglage désactivé par défaut) et une mention dans la politique de confidentialité.
+- **Plan** : A. photos et vidéos d'un voyage (ajout, grille par jour, visionneuse, couverture) ; B. souvenirs (stories, « il y a 1 an », diaporama « Revivre ») ; C. quotas, avec le premium.
 - Import des photos depuis le téléphone, compression avant envoi, stockage par voyage.
 - Remplace le compteur `photos: 0` et les couvertures en dégradé.
 - Points à anticiper : les quotas de stockage et leur coût.
@@ -247,6 +274,10 @@
 - Rappel d'enregistrement 24 h avant un vol, ajout d'une réservation par un autre participant.
 
 ### 7. Ouverture au public
+- **Photos et vidéos** dans les documents légaux :
+  - **politique de confidentialité** : ce qui est stocké (copies compressées, sans lieu), où (Supabase, Europe), qui les voit (les membres du voyage), durée de conservation, suppression avec le voyage ou le compte ;
+  - **CGU**, et non CGV : l'utilisateur garantit avoir les droits sur ce qu'il publie, et l'accord des personnes photographiées ; il accorde une licence d'hébergement limitée au service.
+  - À faire relire par un juriste.
 - Revoir les textes des notifications (ton choisi provisoirement le 26/10). Idée : un emoji selon le type de réservation (🏨 hôtel, 🚆 train, 🎟️ activité, 🍽️ restaurant…) au lieu du ✈️ fixe. Toutes les réservations sont déjà notifiées, quel que soit leur type.
 - CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
 - Gestion des quotas et des coûts, nom de domaine, page d'accueil.

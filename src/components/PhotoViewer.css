@@ -1,0 +1,110 @@
+/* Visionneuse de photos : toujours sur fond noir, quel que soit le thème */
+.viewer-photo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: #f5f1e8;
+  animation: viewer-photo-in 0.2s ease both;
+}
+.viewer-photo__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 10px) 16px 10px;
+}
+.viewer-photo .icon-btn--glass {
+  color: #f5f1e8;
+  background: rgba(255, 255, 255, 0.12);
+}
+.viewer-photo .icon-btn:disabled {
+  opacity: 0.4;
+}
+
+.viewer-photo__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  /* Le pincement et le glissement sont gérés par l'app, pas par Safari */
+  touch-action: none;
+}
+.viewer-photo__zoom {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.viewer-photo__media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.viewer-photo__error {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+/* Flèches : utiles à la souris ; au doigt, on glisse */
+.viewer-photo__nav {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #f5f1e8;
+  background: rgba(255, 255, 255, 0.12);
+}
+.viewer-photo__nav--prev {
+  left: 10px;
+}
+.viewer-photo__nav--next {
+  right: 10px;
+}
+@media (pointer: coarse) {
+  .viewer-photo__nav {
+    display: none;
+  }
+}
+
+.viewer-photo__info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px calc(var(--safe-bottom) + 14px);
+}
+.viewer-photo__info .caption {
+  color: rgba(245, 241, 232, 0.75);
+}
+.viewer-photo__action {
+  color: #f5f1e8;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.viewer-photo__action:first-child {
+  flex: 1;
+}
+
+@keyframes viewer-photo-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer-photo {
+    animation: none;
+  }
+}

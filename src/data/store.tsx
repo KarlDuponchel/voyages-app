@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { randomCover } from '../lib/trip'
 import type { TablesUpdate } from './database.types'
 import { deleteBookingFile, prefetchFiles, removeStoredFiles, uploadBookingFile } from '../lib/files'
+import { removeTripPhotos } from '../lib/photos'
 import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, Ticket, Transport, Trip, TripRole } from './types'
 
 /**
@@ -48,6 +49,8 @@ type TripRow = {
   budget_amount: number | null
   budget_currency: string
   cover_colors: string[] | null
+  cover: { id: string; path: string; thumb_path: string } | null
+  photo_count: { count: number }[] | null
   trip_destinations: { id: string; position: number; city: string; country_code: string; lat: number; lng: number; timezone: string | null }[]
   bookings: {
     id: string
@@ -69,6 +72,8 @@ type TripRow = {
 
 const TRIP_SELECT = `
   id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors,
+  cover:trip_photos!trips_cover_photo_id_fkey ( id, path, thumb_path ),
+  photo_count:trip_photos!trip_photos_trip_id_fkey ( count ),
   trip_destinations ( id, position, city, country_code, lat, lng, timezone ),
   bookings ( id, kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket,
     booking_files ( id, storage_path, file_name, mime_type, size_bytes, created_at ) ),
@@ -89,7 +94,8 @@ function toTrip(r: TripRow, userId: string): Trip {
     budget: r.budget_amount ?? undefined,
     currency: r.budget_currency,
     cover,
-    photos: 0,
+    coverPhoto: r.cover ? { id: r.cover.id, path: r.cover.path, thumbPath: r.cover.thumb_path } : undefined,
+    photos: r.photo_count?.[0]?.count ?? 0,
     destinations: [...r.trip_destinations]
       .sort((a, b) => a.position - b.position)
       .map((d) => ({ id: d.id, position: d.position, city: d.city, countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
@@ -284,6 +290,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
       // Les lignes partent en cascade avec le voyage, mais pas les fichiers du stockage : on les retire d'abord
       const trip = data.trips.find((t) => t.id === tripId)
       await removeStoredFiles(trip?.bookings.flatMap((b) => b.files.map((f) => f.path)) ?? [])
+      await removeTripPhotos(tripId)
       must(await supabase.from('trips').delete().eq('id', tripId))
       await refresh()
     },

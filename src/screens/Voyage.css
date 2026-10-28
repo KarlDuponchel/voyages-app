@@ -2,7 +2,8 @@
   position: relative;
   height: calc(320px + var(--safe-top));
 }
-.voyage__hero > svg {
+.voyage__hero > svg,
+.voyage__hero > .trip-cover {
   position: absolute;
   inset: 0;
 }

@@ -1,7 +1,7 @@
 import { ChevronRight, Mail, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Cover } from '../components/Cover'
+import { TripCover } from '../components/TripCover'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { daysUntil, formatRange } from '../lib/format'
@@ -17,7 +17,7 @@ function TripRow({ trip }: { trip: Trip }) {
   return (
     <Link to={`/voyages/${trip.id}`} className="trip-row card">
       <span className="trip-row__cover">
-        <Cover colors={trip.cover} />
+        <TripCover trip={trip} />
       </span>
       <span className="stack" style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <span className="overline muted">{tripCountries(trip)}</span>

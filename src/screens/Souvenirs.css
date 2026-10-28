@@ -44,7 +44,9 @@
   isolation: isolate;
 }
 .memory > svg,
-.memory-card > svg {
+.memory > .trip-cover,
+.memory-card > svg,
+.memory-card > .trip-cover {
   position: absolute;
   inset: 0;
   z-index: -2;

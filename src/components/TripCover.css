@@ -1,0 +1,35 @@
+.trip-cover {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.trip-cover > svg {
+  position: absolute;
+  inset: 0;
+}
+.trip-cover__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: trip-cover-in 0.3s ease both;
+}
+/* La photo se fond dans le fond de l'app, comme le dégradé illustré */
+.trip-cover__fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, var(--fade-to) 100%);
+}
+@keyframes trip-cover-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trip-cover__photo {
+    animation: none;
+  }
+}

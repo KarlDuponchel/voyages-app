@@ -79,6 +79,9 @@ export type Trip = {
   transport: Transport
   /** Trois couleurs du dégradé de couverture, du haut vers le bas */
   cover: [string, string, string]
+  /** Photo de couverture choisie (sinon le dégradé `cover`) */
+  coverPhoto?: { id: string; path: string; thumbPath: string }
+  /** Nombre de photos et vidéos du voyage */
   photos: number
   bookings: Booking[]
   members: Member[]

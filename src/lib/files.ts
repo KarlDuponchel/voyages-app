@@ -97,12 +97,12 @@ async function openCache(): Promise<Cache | null> {
   }
 }
 
-async function putInCache(path: string, blob: Blob, contentType = blob.type) {
+export async function putInCache(path: string, blob: Blob, contentType = blob.type) {
   const cache = await openCache()
   await cache?.put(cacheUrl(path), new Response(blob, { headers: { 'Content-Type': contentType } })).catch(() => {})
 }
 
-async function dropFromCache(path: string) {
+export async function dropFromCache(path: string) {
   const cache = await openCache()
   await cache?.delete(cacheUrl(path)).catch(() => false)
 }
@@ -112,16 +112,19 @@ export async function isCached(path: string): Promise<boolean> {
   return Boolean(await cache?.match(cacheUrl(path)))
 }
 
-/** Contenu du fichier : copie locale d'abord, sinon téléchargement (puis mise en cache). */
-export async function getFileBlob(file: BookingFile): Promise<Blob> {
+/** Contenu d'un fichier stocké : copie locale d'abord, sinon téléchargement (puis mise en cache). */
+export async function getCachedBlob(bucket: string, path: string, contentType?: string): Promise<Blob> {
   const cache = await openCache()
-  const hit = await cache?.match(cacheUrl(file.path))
+  const hit = await cache?.match(cacheUrl(path))
   if (hit) return hit.blob()
-  const { data, error } = await supabase.storage.from(BUCKET).download(file.path)
+  const { data, error } = await supabase.storage.from(bucket).download(path)
   if (error || !data) throw error ?? new Error('Fichier introuvable')
-  await putInCache(file.path, data, file.mimeType ?? data.type)
+  await putInCache(path, data, contentType ?? data.type)
   return data
 }
+
+/** Contenu d'un billet joint (copie locale d'abord). */
+export const getFileBlob = (file: BookingFile): Promise<Blob> => getCachedBlob(BUCKET, file.path, file.mimeType)
 
 /** Copie à l'avance les fichiers manquants (voyages à venir), sans bloquer ni signaler d'erreur. */
 export async function prefetchFiles(files: BookingFile[]): Promise<void> {
