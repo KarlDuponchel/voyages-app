@@ -11,7 +11,24 @@ Les couleurs reprennent exactement celles de l'app (`src/theme/palettes.ts`) : s
 >
 > **L'app** : « Voyages » (nom provisoire, domaine tripmates.app). Une app web installable sur iPhone (PWA) qui rassemble au même endroit les billets et réservations d'un voyage (vols, trains, hôtels, activités), un globe des pays visités, les photos et souvenirs, et des statistiques. On voyage à plusieurs : un voyage a des membres (propriétaire, participants, lecteurs) invités par lien. L'IA lit les billets PDF et les e-mails de confirmation transférés, et propose les réservations à valider.
 >
-> **Ambiance** : chaleureuse et rêveuse, comme un carnet de voyage moderne. Couchers de soleil, horizon, ciel étoilé en mode sombre, papier crème en mode clair. Généreux en espace, coins arrondis, pas de surcharge. Inspirations : Apple Wallet pour les billets, Airbnb pour les cartes de voyage, Instagram pour les stories de souvenirs.
+> **Ambiance** : un objet de voyage, pas une app générique. Chaleureux, précis, avec du caractère : on doit sentir le papier, l'imprimé, la signalétique. Couleurs de coucher de soleil et de ciel de nuit (voir les variables).
+>
+> **À éviter absolument (le « style IA » générique)** :
+> - de grands arrondis partout, des cartes dans des cartes ;
+> - des dégradés sur tout (le dégradé sunset est réservé à un ou deux éléments forts) ;
+> - le verre dépoli et les ombres floues partout ;
+> - des icônes rondes dans des pastilles teintées répétées à l'identique ;
+> - des tuiles de tableau de bord toutes pareilles, des mises en page centrées et symétriques sans hiérarchie ;
+> - des emojis décoratifs, du violet-bleu par défaut, des blobs pastel.
+>
+> **Préférer** : une hiérarchie typographique marquée (très grand contre très petit), des filets fins plutôt que des cadres, des alignements sur une grille, de l'asymétrie, des détails imprimés (perforations, numéros, codes, tampons), des photos plein cadre, et des données lisibles comme sur un vrai billet.
+>
+> **Trois directions artistiques à proposer, côte à côte**, avec les mêmes écrans et les mêmes couleurs :
+> 1. **« Éditorial »**, un magazine de voyage. Rayons de 0 à 4 px. Grandes photos plein cadre, titres très grands, chapeaux et légendes, colonnes, filets fins de séparation, numérotation des étapes (01, 02…). Les listes ressemblent à un sommaire plutôt qu'à des cartes.
+> 2. **« Carnet de bord »**, de la papeterie de voyage. Rayons de 2 à 6 px. Billets façon ticket imprimé (perforations, talon détachable, codes en chasse fixe), tampons de pays pour les pays visités, étiquettes de bagage. En thème clair, un léger grain de papier ; en sombre, du papier carbone.
+> 3. **« Signalétique »**, inspirée des panneaux d'aéroport et du style suisse. Rayons de 0 à 2 px. Grille stricte, aplats de couleur pleins, pictogrammes simples, grands chiffres (J-17, numéros de porte, heures), bandeaux d'information façon tableau des départs.
+>
+> Inspirations possibles : les guides Monocle et Cereal pour l'éditorial ; les billets de train et les carnets Moleskine pour le carnet ; la signalétique de Schiphol, la typographie suisse et les tableaux Solari pour la signalétique.
 >
 > **Format** : iPhone 15 (390 × 844), avec la barre d'état, la Dynamic Island et l'indicateur d'accueil (zones de sécurité respectées). Barre d'onglets en bas : Monde, Voyages, Souvenirs, Profil. Chaque écran en **thème sombre ET en thème clair**.
 >
@@ -19,7 +36,17 @@ Les couleurs reprennent exactement celles de l'app (`src/theme/palettes.ts`) : s
 > - Titres en **Bricolage Grotesque** : écran 36 px graisse 800, section 28-30 px graisse 700, carte 18 px graisse 600 ; chiffres clés 30 px graisse 700.
 > - Texte en **DM Sans** : corps 15 px, légendes 13 px graisse 500, surtitres 11 px graisse 600 en majuscules espacées.
 >
-> **Formes** : rayons 14 px (petits éléments, champs), 20 px (cartes), 28 px (grandes cartes, billet), 32 px en haut des panneaux du bas ; pastilles entièrement arrondies ; marges latérales de 24 px ; barre d'onglets de 64 px.
+> **Formes, en variables elles aussi** : crée une collection « Formes » avec un mode par direction, pour changer de style aussi simplement que de palette.
+>
+> | Variable | Éditorial | Carnet de bord | Signalétique |
+> |---|---|---|---|
+> | radius/sm (champs, petits boutons) | 2 px | 4 px | 0 px |
+> | radius/md (cartes, panneaux) | 4 px | 6 px | 2 px |
+> | radius/pill (pastilles, filtres) | 2 px | 4 px | 0 px |
+> | border/width (filets) | 1 px | 1,5 px | 2 px |
+> | shadow | aucune | légère, nette (pas floue) | aucune |
+>
+> Marges latérales de 20 à 24 px ; barre d'onglets de 64 px. Les pastilles entièrement rondes ne sont gardées que pour les avatars.
 >
 > **Couleurs : système de variables avec modes, pour tester facilement d'autres palettes.**
 > Crée UNE collection de variables de couleur nommées comme ci-dessous. Chaque palette est un **mode** de cette collection, et tous les écrans n'utilisent QUE ces variables (aucune couleur en dur). Changer de mode doit suffire à changer toute l'app.
@@ -71,22 +98,23 @@ Les couleurs reprennent exactement celles de l'app (`src/theme/palettes.ts`) : s
 > 13. **Installer l'app** (panneau d'accueil) : icône, « Installez Voyages », trois étapes numérotées avec les icônes iOS (Partager, Sur l'écran d'accueil, Ajouter), « Plus tard ».
 > 14. **Notification iOS** sur l'écran verrouillé : « ✈️ Une réservation vient d'atterrir · Yotel New York est prête à rejoindre votre voyage. Un coup d'œil ? ».
 >
-> **Composants à créer** (avec variantes sombre et claire via les variables) : carte, pastille, bouton (principal, accent, discret), bouton icône (normal, verre dépoli sur photo, accent), champ, contrôle segmenté, barre d'onglets, panneau du bas avec poignée et croix, carte de réservation par type, billet, tuile de statistique, bouton flottant, avatar de membre, story.
+> **Composants à créer** (avec variantes sombre et claire via les variables) : carte, pastille, bouton (principal, accent, discret), bouton icône (normal, sur photo, accent), champ, contrôle segmenté, barre d'onglets, panneau du bas avec poignée et croix, carte de réservation par type, billet, tuile de statistique, bouton flottant, avatar de membre, story.
 >
-> Rends une page « Design system » (variables, typographie, composants) puis une page par écran.
+> Rends une page « Design system » (variables de couleur et de forme, typographie, composants), puis une page par direction artistique avec les écrans. Commence par une **planche de comparaison** : les écrans Monde, Voyage et Billet dans les trois directions, en sombre et en clair.
 
 ---
 
 ## Complément pour Figma Make
 
-> Construis-le comme un prototype interactif React. Mets toutes les couleurs dans un seul objet de thème (par exemple `palettes.ts`), avec une entrée par mode et les mêmes clés partout, appliquées en variables CSS. Ajoute en haut à droite un **sélecteur flottant de palette** (liste des huit modes) qui change toute l'app en direct, et retiens le choix. Les onglets du bas, les panneaux et les onglets d'un voyage doivent être cliquables. Pas de serveur : données d'exemple en dur.
+> Construis-le comme un prototype interactif React. Mets toutes les couleurs dans un seul objet de thème (par exemple `palettes.ts`), avec une entrée par mode et les mêmes clés partout, appliquées en variables CSS. Mets aussi les rayons, les filets et les ombres dans un objet `styles.ts`, avec une entrée par direction. Ajoute en haut à droite **deux sélecteurs flottants**, l'un pour la palette (les huit modes), l'autre pour la direction (Éditorial, Carnet de bord, Signalétique). Ils changent toute l'app en direct, et le choix est retenu. Les onglets du bas, les panneaux et les onglets d'un voyage doivent être cliquables. Pas de serveur : données d'exemple en dur.
 
 ## Complément pour Claude Design
 
-> Produis des écrans statiques soignés, cadrés en iPhone 15. Définis les couleurs comme des variables CSS sur `:root`, une classe par mode (`.theme-sombre`, `.theme-clair`, `.theme-mediterranee-sombre`…), et ajoute une petite barre de choix de palette en haut de la page pour basculer tous les écrans d'un coup. Commence par la planche de comparaison des palettes, puis les écrans 2, 4, 5, 8 et 9.
+> Produis des écrans statiques soignés, cadrés en iPhone 15. Définis les couleurs comme des variables CSS sur `:root`, une classe par mode (`.theme-sombre`, `.theme-clair`, `.theme-mediterranee-sombre`…), et fais de même pour les formes (`.style-editorial`, `.style-carnet`, `.style-signaletique`, avec des variables `--radius-sm`, `--radius-md`…). Ajoute une petite barre en haut de la page avec deux choix, palette et direction, pour basculer tous les écrans d'un coup. Commence par la planche de comparaison des directions, puis celle des palettes, puis les écrans 2, 4, 5, 8 et 9.
 
 ---
 
-## Rapporter une palette dans l'app
+## Rapporter une palette ou une direction dans l'app
 
-Une palette retenue se recopie dans `src/theme/palettes.ts`, avec les mêmes noms en camelCase (`bg/base` devient `bgBase`, `accent/sunset` devient `accentSunset`…). L'app se met à jour toute seule.
+- **Une palette retenue** se recopie dans `src/theme/palettes.ts`, avec les mêmes noms en camelCase (`bg/base` devient `bgBase`, `accent/sunset` devient `accentSunset`…). L'app se met à jour toute seule.
+- **Une direction retenue** touche davantage : les rayons (`--radius-md`, `--radius-lg`, `--radius-xl` dans `src/styles.css`), puis la forme des composants (cartes, billet, pastilles). C'est un chantier de mise en forme à prévoir avec Claude, écran par écran.
