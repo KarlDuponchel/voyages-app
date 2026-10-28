@@ -511,10 +511,80 @@ export type Database = {
           },
         ]
       }
+      trip_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          duration_seconds: number | null
+          height: number | null
+          id: string
+          kind: string
+          mime_type: string
+          path: string
+          size_bytes: number
+          storage: string
+          taken_at: string | null
+          thumb_path: string
+          trip_id: string
+          uploaded_by: string | null
+          width: number | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type: string
+          path: string
+          size_bytes?: number
+          storage?: string
+          taken_at?: string | null
+          thumb_path: string
+          trip_id: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string
+          path?: string
+          size_bytes?: number
+          storage?: string
+          taken_at?: string | null
+          thumb_path?: string
+          trip_id?: string
+          uploaded_by?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_photos_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_photos_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           budget_amount: number | null
           budget_currency: string
+          cover_photo_id: string | null
           cover_colors: string[] | null
           cover_path: string | null
           created_at: string
@@ -529,6 +599,7 @@ export type Database = {
         Insert: {
           budget_amount?: number | null
           budget_currency?: string
+          cover_photo_id?: string | null
           cover_colors?: string[] | null
           cover_path?: string | null
           created_at?: string
@@ -543,6 +614,7 @@ export type Database = {
         Update: {
           budget_amount?: number | null
           budget_currency?: string
+          cover_photo_id?: string | null
           cover_colors?: string[] | null
           cover_path?: string | null
           created_at?: string
@@ -555,6 +627,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trips_cover_photo_id_fkey"
+            columns: ["cover_photo_id"]
+            isOneToOne: false
+            referencedRelation: "trip_photos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trips_created_by_fkey"
             columns: ["created_by"]

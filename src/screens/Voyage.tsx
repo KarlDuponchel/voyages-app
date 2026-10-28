@@ -2,7 +2,8 @@ import { CalendarDays, ChevronLeft, PenLine, Plus, Users, Wallet } from 'lucide-
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
-import { Cover } from '../components/Cover'
+import { TripCover } from '../components/TripCover'
+import { TripPhotos } from '../components/TripPhotos'
 import { TripStops } from '../components/TripStops'
 import { useTrips } from '../data/store'
 import type { Booking } from '../data/types'
@@ -48,7 +49,7 @@ export function Voyage() {
   return (
     <main className={`screen voyage ${editable ? 'screen--fab' : ''}`} style={{ paddingTop: 0 }}>
       <section className="voyage__hero">
-        <Cover colors={trip.cover} skyline fadeTo="var(--bg-base)" />
+        <TripCover trip={trip} large skyline fadeTo="var(--bg-base)" />
         <div className="voyage__nav">
           <button className="icon-btn icon-btn--glass" onClick={() => navigate(-1)} aria-label="Retour">
             <ChevronLeft size={20} />
@@ -126,16 +127,10 @@ export function Voyage() {
         </section>
       )}
 
-      {tab === 'Photos' && (
-        <section className="px fade-in">
-          <div className="card voyage__empty">
-            <span className="strong">{trip.photos > 0 ? `${trip.photos} photos` : 'Pas encore de photos'}</span>
-            <span className="caption muted">L'import des photos et vidéos arrive dans une prochaine version.</span>
-          </div>
-        </section>
-      )}
+      {tab === 'Photos' && <TripPhotos trip={trip} />}
 
-      {editable && (
+      {/* Sur l'onglet Photos, le bouton flottant ajoute des photos (dans TripPhotos) */}
+      {editable && tab !== 'Photos' && (
         <button className="fab btn btn--accent" onClick={() => setAdding(true)}>
           <Plus size={20} /> Ajouter
         </button>

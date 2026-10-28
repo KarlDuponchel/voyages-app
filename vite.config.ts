@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      // Nom fixe pour l'exclure du cache hors ligne (voir workbox.globIgnores)
+      output: { manualChunks: { mediabunny: ['mediabunny'] } },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -34,6 +40,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,woff,woff2,otf,ttf,json}'],
         // Réception des notifications et ouverture de la bonne page au toucher (public/push-sw.js)
         importScripts: ['/push-sw.js'],
+        // Compression vidéo (Mediabunny, 740 Ko) : chargée seulement pour envoyer une vidéo, donc avec du réseau
+        globIgnores: ['**/mediabunny-*.js'],
       },
     }),
   ],
