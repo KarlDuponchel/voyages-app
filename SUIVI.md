@@ -75,10 +75,10 @@
 
 **Avant le premier vrai paiement** (dans cet ordre)
 1. **Médiateur de la consommation** : obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
-2. **Open-Meteo remplacé par notre propre base de villes** (décision de Karl, 03/11 ; détail dans [docs/lieux.md](docs/lieux.md)). **Code fait et testé**, pas encore en ligne. À faire, **dans cet ordre** :
+2. ~~**Open-Meteo remplacé par notre propre base de villes**~~ : **en ligne le 03/11** (décision de Karl ; détail dans [docs/lieux.md](docs/lieux.md)). Historique :
    1. ~~appliquer la migration `20261103110000_lieux.sql`~~ et ~~charger les villes~~ : **faits le 03/11 par Claude** (226 024 lieux, 241 804 noms, 71 Mo). Recherches vérifiées en ligne.
    2. ~~appliquer `20261103120000_lieux_rapide.sql`~~ : **fait le 03/11 par Claude**, avec l'accord de Karl. Mesuré en ligne : de 1 à 31 ms par recherche (contre 200 à 850 ms), mêmes résultats.
-   3. **Reste : Deploy dans Dokploy** : l'app appellera `search_places` au lieu d'Open-Meteo. Vérifier ensuite la création d'un voyage sur `tripmates.app`.
+   3. ~~Deploy dans Dokploy~~ : fait par Karl le 03/11 ; l'app en ligne appelle `search_places`, Open-Meteo n'est plus utilisé (vérifié par Claude).
 3. **Supabase Pro** (25 $ par mois, 100 Go de stockage) : l'offre gratuite plafonne le stockage à 1 Go pour tout le projet, alors que le Premium promet 20 Go par abonné.
 4. **Stripe en réel** :
    - en mode réel : produit Premium et ses deux prix (2,50 €/mois, 20 €/an), webhook vers `https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/stripe-webhook` avec les 4 événements (`checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`) ;
@@ -98,7 +98,7 @@
 ### Engagements des pages légales et obligations, par ordre d'importance (02/11)
 Ce que les CGV, la politique de confidentialité ou les licences promettent, et qui n'est pas encore fait.
 1. **Médiateur de la consommation** — *avant le premier paiement réel*. Obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
-2. **Open-Meteo : usage commercial** — *réglé dans le code le 03/11 (base de villes GeoNames chez nous), reste à mettre en ligne* — L'API gratuite de recherche de ville est réservée à l'usage non commercial, et une app avec abonnement est commerciale (conditions d'Open-Meteo, lues le 02/11). Choix à faire par Karl : formule payante Open-Meteo (« API Standard »), ou autre service de recherche de ville (à étudier par Claude : il faut le nom, le pays, les coordonnées et le fuseau horaire). Le crédit CC BY est affiché sous les résultats depuis le 02/11.
+2. ~~**Open-Meteo : usage commercial**~~ — *réglé et en ligne le 03/11 (base de villes GeoNames chez nous)* — L'API gratuite de recherche de ville est réservée à l'usage non commercial, et une app avec abonnement est commerciale (conditions d'Open-Meteo, lues le 02/11). Choix à faire par Karl : formule payante Open-Meteo (« API Standard »), ou autre service de recherche de ville (à étudier par Claude : il faut le nom, le pays, les coordonnées et le fuseau horaire). Le crédit CC BY est affiché sous les résultats depuis le 02/11.
 3. **Rappel avant le renouvellement annuel** (article L. 215-1 du Code de la consommation, promis par les CGV) — *avant la première souscription annuelle*. Stripe → Settings → Billing → Subscriptions and emails : activer l'e-mail avant renouvellement, et les reçus.
 4. ~~**Mesure d'audience Umami**~~ — **en service le 02/11** sur `https://stats.tripmates.app` (Dokploy). Les deux valeurs `VITE_UMAMI_*` sont dans le `.env` du dépôt, comme les autres valeurs publiques. Vérifié par Claude : script chargé et visites envoyées depuis l'accueil et les pages légales.
 5. **Droit d'accès et de portabilité** — *à la première demande* (réponse sous un mois). Au début, à la main : exporter les lignes de la personne (profil, voyages, réservations, photos) depuis Supabase. Plus tard : un bouton « Télécharger mes données » dans le profil.
@@ -109,14 +109,23 @@ Ce que les CGV, la politique de confidentialité ou les licences promettent, et 
 
 Fait le 02/11 : acceptation des CGV et de la politique de confidentialité indiquée sur l'écran de connexion (liens ouverts dans un nouvel onglet) ; Open-Meteo décrit correctement (OpenMeteo GmbH, Suisse, journaux 90 jours) et crédité ; Cloudflare décrit comme proxy du site.
 
-### Pour reprendre (mis à jour le 02/11)
-- **Design « Wayfarer » en cours sur la branche `feat/design-wayfarer`** (02/11, soir) : couleurs, polices et style appliqués à toute l'app, sans toucher aux blocs. Détails dans « Refonte du design », séance du 02/11.
-  - **À faire par Karl** : regarder la branche sur l'iPhone (clair et sombre), valider le thème sombre et le corail foncé des textes, puis la fusionner.
-  - **Nom de l'app : Tripmates** (décision de Karl, 02/11), en production sur https://tripmates.app. Renommée dans l'app sur la branche.
-  - **Depuis (02/11, nuit)** : thème sombre désactivé, page d'accueil publique et pages légales faites. Voir « Accueil public et pages légales » dans la séance du 02/11.
-  - **Avant de fusionner** : vérifier sur la preview Vercel que `/`, `/cgv`, `/monde` et une ancienne app installée (qui s'ouvre sur `/`) se comportent bien.
-- **Depuis le 02/11, en ligne** : partage public, Explorer, réactions, premium (Stripe en sandbox), code d'accès. Détails dans la séance du 02/11, plus bas.
-- **Ensuite** : étape 9 (VPS avec Dokploy, en même temps que `tripmates.app`), puis étape 10 (Stripe en réel).
+### Pour reprendre (mis à jour le 03/11)
+- **Tripmates est en ligne et ouvert au public** sur https://tripmates.app (VPS OVH avec Dokploy, derrière Cloudflare). Tout est sur `main`. État détaillé et prochaines étapes : « Ouverture au public : où on en est », juste au-dessus.
+- **Pas encore de vente du Premium** : il manque le médiateur de la consommation et Supabase Pro (voir la liste « Avant le premier vrai paiement »).
+- **Déploiement** : un push sur `main` ne se déploie pas tout seul (déploiement automatique de Dokploy à réparer) : cliquer sur Deploy dans Dokploy après chaque push.
+- **Fait le 03/11** (en plus de la séance du 02/11) :
+  - **recherche de villes dans notre propre base** (GeoNames, 226 024 lieux) au lieu d'Open-Meteo : en ligne, de 1 à 31 ms par recherche ; voir [docs/lieux.md](docs/lieux.md) ;
+  - bouton « Passer Premium » quand l'offre gratuite bloque l'ajout de photos (seulement pour le propriétaire du voyage) ;
+  - « Gérer l'abonnement » affiché seulement avec un abonnement en cours (un client Stripe existe dès qu'un paiement est commencé) ;
+  - **barre d'onglets** plus basse, réduite à une pilule d'icônes au défilement vers le bas et remise en grand en remontant ;
+  - **animations de la page d'accueil** : haut de page à l'ouverture, blocs qui apparaissent au défilement ;
+  - balises iPhone sur la page d'accueil, pour que l'app installée depuis cette page s'ouvre en plein écran ;
+  - acceptation des CGV sur l'écran de connexion ; e-mails de connexion et d'inscription aux couleurs de l'app ; Umami en service ; pages légales complètes sauf le médiateur.
+  - **En attente d'un Deploy** (poussés, pas encore en ligne le 03/11) : barre d'onglets, animations de l'accueil, « Gérer l'abonnement ».
+- **À vérifier sur iPhone** après le Deploy :
+  - l'app installée depuis la page d'accueil s'ouvre bien en plein écran, sans les barres de Safari (constaté par Karl le 03/11 avec l'ancienne installation) ;
+  - la barre d'onglets réduite et les animations de l'accueil sont fluides.
+- **Fonctions à venir** (feuille de route) : budget partagé, rappels (veille d'un vol, réservation ajoutée par un autre), bouton « Télécharger mes données ».
 
 ### Pour reprendre (28/10, fin de soirée)
 - **Tout est sur `main`**, mis en ligne par Vercel, et déployé côté Supabase et Cloudflare. Aucune branche en attente.
