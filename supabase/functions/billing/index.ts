@@ -68,6 +68,9 @@ Deno.serve(async (req) => {
     return json({ url: session.url })
   } catch (e) {
     console.error(e)
-    return json({ error: 'Paiement indisponible pour le moment. Réessayez plus tard.' }, 500)
+    // En mode test (sandbox), on montre l'erreur de Stripe pour régler la configuration sans fouiller les journaux
+    const testMode = Deno.env.get('STRIPE_SECRET_KEY')?.startsWith('sk_test_')
+    const detail = testMode && e instanceof Error ? ` (${e.message})` : ''
+    return json({ error: `Paiement indisponible pour le moment. Réessayez plus tard.${detail}` }, 500)
   }
 })
