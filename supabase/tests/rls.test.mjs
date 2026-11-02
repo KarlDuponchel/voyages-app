@@ -336,6 +336,89 @@ await ok("supprimer la photo de couverture remet le dégradé (couverture vide)"
   expect((await db.query(`select cover_photo_id from public.trips where id = '${t2}'`)).rows[0].cover_photo_id === null, 'couverture fantôme')
 })
 
+// ---- Partage public et réactions (migration 20261102100000) ----
+let porto, lisbonne, pubLea, privTiers
+await ok('Léa et le participant ajoutent une photo à Porto', async () => {
+  ;[{ id: porto }] = await as('lea', `insert into public.trip_destinations (trip_id, city, country_code, lat, lng) values ('${t2}', 'Porto', '620', 41.15, -8.61) returning id`)
+  const [{ id: t3 }] = await as('karl', `insert into public.trips (title, start_date, end_date) values ('Ailleurs', '2025-07-01', '2025-07-05') returning id`)
+  ;[{ id: lisbonne }] = await as('karl', `insert into public.trip_destinations (trip_id, city, country_code, lat, lng) values ('${t3}', 'Lisbonne', '620', 38.72, -9.14) returning id`)
+  pubLea = uuid()
+  privTiers = uuid()
+  await as('lea', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${pubLea}/full.jpg'), ('trip-photos', '${t2}/${pubLea}/thumb.jpg')`)
+  await as('lea', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes, taken_at) values ('${pubLea}', '${t2}', 'photo', '${t2}/${pubLea}/full.jpg', '${t2}/${pubLea}/thumb.jpg', 'image/jpeg', 400000, '2025-06-03 18:42')`)
+  await as('tiers', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${privTiers}/full.jpg')`)
+  await as('tiers', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ${photoRow(privTiers)}`)
+})
+await ok('une photo est privée par défaut : Karl ne la voit pas', async () => {
+  expect((await as('karl', 'select * from public.public_photos()')).length === 0, 'fuite')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/%'`)).length === 0, 'fuite de fichiers')
+})
+await denied("le participant ne peut pas publier la photo de Léa", () => as('tiers', `select public.publish_photo('${pubLea}', '${porto}')`), "auteur")
+await denied("la ville doit être une étape du voyage", () => as('lea', `select public.publish_photo('${pubLea}', '${lisbonne}')`), 'étape')
+await denied('on ne publie pas en écrivant directement dans la table', () =>
+  as('lea', `insert into public.photo_shares (photo_id, trip_id, author_id, city, country_code, lat, lng) values ('${pubLea}', '${t2}', '${U.lea}', 'Paris', '250', 48.85, 2.35)`), 'permission denied')
+await ok('Léa publie sa photo à Porto', () => as('lea', `select public.publish_photo('${pubLea}', '${porto}', '  Coucher de soleil  ')`))
+await ok("Karl la voit : ville, mois, auteur, sans rien du voyage", async () => {
+  const r = await as('karl', 'select * from public.public_photos()')
+  expect(r.length === 1 && r[0].city === 'Porto' && r[0].author_name === 'lea' && r[0].caption === 'Coucher de soleil', JSON.stringify(r))
+  expect(new Date(r[0].taken_month).toISOString().startsWith('2025-06-01'), 'mois : ' + r[0].taken_month)
+  expect(!('trip_id' in r[0]) && !('title' in r[0]), 'le voyage fuit')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 2, 'fichiers publics illisibles')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${privTiers}/%'`)).length === 0, 'fichier privé lisible')
+  expect((await as('karl', 'select 1 from public.photo_shares')).length === 0, 'table lisible directement')
+  expect((await as('karl', 'select 1 from public.trip_photos')).length === 0, 'ligne privée lisible')
+})
+await ok('filtres par pays et ville, et villes du globe', async () => {
+  expect((await as('karl', `select 1 from public.public_photos('620', 'porto')`)).length === 1, 'filtre ville')
+  expect((await as('karl', `select 1 from public.public_photos('250')`)).length === 0, 'filtre pays')
+  const [p] = await as('karl', 'select * from public.public_places()')
+  expect(p.city === 'Porto' && Number(p.photo_count) === 1 && p.cover_thumb_path === `${t2}/${pubLea}/thumb.jpg`, JSON.stringify(p))
+})
+await ok('les membres du voyage voient quelles photos sont publiques', async () => {
+  expect((await as('inconnu', `select photo_id from public.photo_shares`)).length === 1, 'badge invisible')
+})
+await ok("Karl réagit « J'adore », puis passe à « Wishlist »", async () => {
+  await as('karl', `insert into public.photo_reactions (photo_id, kind) values ('${pubLea}', 'jadore')`)
+  await as('karl', `insert into public.photo_reactions (photo_id, kind) values ('${pubLea}', 'wishlist') on conflict (photo_id, user_id) do update set kind = excluded.kind`)
+  await as('tiers', `insert into public.photo_reactions (photo_id, kind) values ('${pubLea}', 'jaime')`)
+  const [r] = await as('karl', 'select reactions, my_reaction from public.public_photos()')
+  expect(r.my_reaction === 'wishlist' && r.reactions.wishlist === 1 && r.reactions.jaime === 1 && !r.reactions.jadore, JSON.stringify(r))
+  expect((await as('karl', 'select 1 from public.public_photos(p_wishlist => true)')).length === 1, 'wishlist vide')
+  expect((await as('lea', 'select 1 from public.public_photos(p_wishlist => true)')).length === 0, 'wishlist de Léa non vide')
+  expect((await as('lea', 'select 1 from public.photo_reactions')).length === 0, 'réactions des autres lisibles')
+})
+await denied('on ne réagit pas à une photo privée', () => as('karl', `insert into public.photo_reactions (photo_id, kind) values ('${privTiers}', 'jaime')`), 'row-level security')
+await denied("on ne réagit pas au nom d'un autre", () => as('karl', `insert into public.photo_reactions (photo_id, user_id, kind) values ('${pubLea}', '${U.lea}', 'jaime')`), 'row-level security')
+await denied('réaction inconnue refusée', () => as('lea', `insert into public.photo_reactions (photo_id, kind) values ('${pubLea}', 'grr')`), 'check')
+await ok('une photo masquée par la modération disparaît pour Karl, pas pour Léa', async () => {
+  await db.query(`update public.photo_shares set hidden_at = now() where photo_id = '${pubLea}'`)
+  expect((await as('karl', 'select 1 from public.public_photos()')).length === 0, 'encore visible')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 0, 'fichier encore lisible')
+  expect((await as('lea', `select 1 from public.trip_photos where id = '${pubLea}'`)).length === 1, "Léa l'a perdue")
+  await db.query(`update public.photo_shares set hidden_at = null where photo_id = '${pubLea}'`)
+})
+await ok("le participant ne peut pas dépublier ; Léa dépublie, Karl perd l'accès et les réactions partent", async () => {
+  await as('tiers', `delete from public.photo_shares where photo_id = '${pubLea}'`)
+  expect((await db.query(`select 1 from public.photo_shares`)).rows.length === 1, 'dépubliée par le participant')
+  await as('lea', `delete from public.photo_shares where photo_id = '${pubLea}'`)
+  expect((await as('karl', 'select 1 from public.public_photos()')).length === 0, 'encore publique')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 0, 'fichier encore lisible')
+  expect((await db.query(`select 1 from public.photo_reactions`)).rows.length === 0, 'réactions orphelines')
+})
+await ok('supprimer la photo du voyage la retire du partage', async () => {
+  await as('lea', `select public.publish_photo('${pubLea}', '${porto}')`)
+  await as('lea', `delete from public.trip_photos where id = '${pubLea}'`)
+  expect((await db.query(`select 1 from public.photo_shares`)).rows.length === 0, 'partage fantôme')
+})
+await denied('anon ne voit pas les photos publiques', async () => {
+  await db.exec('set role anon')
+  try {
+    return (await db.query('select * from public.public_photos()')).rows
+  } finally {
+    await db.exec('reset role')
+  }
+}, 'permission denied')
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {
