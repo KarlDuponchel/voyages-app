@@ -65,8 +65,7 @@ const session = { access_token: token, refresh_token: 'r', expires_at: exp, expi
 
 for (const shot of shots) {
   await send('Runtime.evaluate', {
-    expression: `localStorage.setItem('voyages:acces', '2786dac2f071901ded30244346c7d6c055d1071678061e7b2a19fb0ac59e595f');
-      localStorage.setItem('voyages:installation', '{"never":true}');
+    expression: `localStorage.setItem('voyages:installation', '{"never":true}');
       localStorage.setItem('voyages:vue-monde', ${JSON.stringify(shot.vue ?? 'globe')});
       localStorage.setItem('sb-localhost-auth-token', ${JSON.stringify(JSON.stringify(session))});`,
   })

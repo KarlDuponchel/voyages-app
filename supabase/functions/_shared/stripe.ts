@@ -30,6 +30,22 @@ export async function stripeApi<T>(method: 'GET' | 'POST', path: string, params:
   return data as T
 }
 
+/**
+ * Acceptation obligatoire des CGV au paiement, avec la demande de démarrage immédiat
+ * (article L. 221-25 du Code de la consommation : en cas de rétractation, la période utilisée reste due).
+ * Stripe exige aussi l'adresse des CGV dans ses réglages (Paramètres → Informations publiques).
+ */
+export function checkoutConsent(cgvUrl: string) {
+  return {
+    consent_collection: { terms_of_service: 'required' },
+    custom_text: {
+      terms_of_service_acceptance: {
+        message: `J'accepte les [conditions générales de vente](${cgvUrl}) et je demande que le Premium commence immédiatement. Si je me rétracte dans les 14 jours, la période déjà utilisée reste due.`,
+      },
+    },
+  }
+}
+
 const hex = (buf: ArrayBuffer) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
 
 /** Signature d'un webhook (en-tête Stripe-Signature « t=…,v1=… »), à 5 minutes près */

@@ -5,7 +5,7 @@
  *         POST { action: 'portal' } → { url } du portail client (carte, factures, résiliation).
  * La table subscriptions n'est mise à jour que par stripe-webhook, une fois le paiement confirmé.
  */
-import { stripeApi } from '../_shared/stripe.ts'
+import { checkoutConsent, stripeApi } from '../_shared/stripe.ts'
 import { adminClient, corsHeaders, json, userClient } from '../_shared/supabase.ts'
 
 const appUrl = () => (Deno.env.get('APP_URL') || 'https://voyages-app-chi.vercel.app').replace(/\/$/, '')
@@ -30,6 +30,7 @@ Deno.serve(async (req) => {
         customer: sub.stripe_customer_id,
         return_url: `${appUrl()}/profil`,
         locale: 'fr',
+      ...checkoutConsent(`${appUrl()}/cgv`),
       })
       return json({ url: portal.url })
     }

@@ -3,7 +3,7 @@
  * Lancer : npm run test:functions
  */
 import { assert, assertEquals } from 'jsr:@std/assert@1.0.13'
-import { formBody, subscriptionRow, verifySignature } from '../_shared/stripe.ts'
+import { checkoutConsent, formBody, subscriptionRow, verifySignature } from '../_shared/stripe.ts'
 import { allowanceMessage } from '../_shared/supabase.ts'
 
 async function sign(payload: string, secret: string, t: number) {
@@ -44,4 +44,12 @@ Deno.test('formulaire Stripe : objets et listes imbriqués, valeurs vides ignor�
 Deno.test('messages de quota : gratuit (passer premium) et premium (limite mensuelle)', () => {
   assert(allowanceMessage({ allowed: false, used: 5, limit: 5, premium: false }).includes('5 lectures offertes'))
   assert(allowanceMessage({ allowed: false, used: 300, limit: 300, premium: true }).includes('300 lectures par l’IA sur 30 jours'))
+})
+
+Deno.test('paiement : CGV à accepter, avec le lien et la demande de démarrage immédiat', () => {
+  const body = formBody(checkoutConsent('https://tripmates.app/cgv')).map(decodeURIComponent)
+  assert(body.includes('consent_collection[terms_of_service]=required'))
+  const message = body.find((p) => p.startsWith('custom_text[terms_of_service_acceptance][message]='))
+  assert(message?.includes('(https://tripmates.app/cgv)'), 'lien vers les CGV')
+  assert(message?.includes('commence immédiatement'), 'démarrage immédiat demandé')
 })

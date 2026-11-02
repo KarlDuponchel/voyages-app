@@ -63,6 +63,28 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
+### Ouverture au public : la liste (décidée le 02/11 au soir)
+Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite. Fait dans le code, sur `feat/design-wayfarer` :
+- **code d'accès retiré** (`AccessGate`) : l'app est ouverte à tous ;
+- **paiement** : case obligatoire « J'accepte les CGV et je demande que le Premium commence immédiatement » dans Stripe Checkout (`checkoutConsent` dans `supabase/functions/_shared/stripe.ts`), avec un test.
+
+À faire par Karl, dans cet ordre :
+1. **Regarder la preview Vercel** de `feat/design-wayfarer` : `/`, `/cgv`, `/monde`, connexion, et l'app installée sur l'iPhone (elle doit s'ouvrir sur l'app, pas sur l'accueil).
+2. **Fusionner la suppression de compte** (branche `claude/modest-poitras-1ed45c`, fonction `delete-account` et migration), puis l'appliquer et la déployer : c'est ce que promet la politique de confidentialité.
+3. **Hébergement commercial** : Vercel Hobby interdit l'usage commercial. Passer à Vercel Pro, ou faire l'étape 9 (Dokploy), **avant le premier paiement réel**.
+4. **Domaine** : `tripmates.app` vers l'app ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
+5. **Pages légales** : compléter ce qui est surligné en jaune (éditeur, SIRET, TVA, médiateur de la consommation), créer `contact@tripmates.app` (Cloudflare Email Routing), faire relire.
+6. **Stripe en réel** (détail à l'étape 10) :
+   - activer le compte (SIRET, compte bancaire) ;
+   - **adresse des CGV** dans Paramètres → Informations publiques (`https://tripmates.app/cgv`), **en test comme en réel, avant de déployer `billing`**, sinon Stripe refuse de créer le paiement ;
+   - recréer le produit, les deux prix, le portail client et le webhook en mode réel ;
+   - activer dans Stripe l'**e-mail avant le renouvellement** des abonnements (Paramètres → Facturation → Abonnements et e-mails) : il couvre le rappel obligatoire avant l'échéance annuelle promis par les CGV ; et les reçus par e-mail ;
+   - remplacer les 4 secrets Stripe, effacer les abonnements de test (`delete from subscriptions where status <> 'offert';`) ;
+   - déployer `billing` (`npx supabase functions deploy billing`) ;
+   - un vrai paiement avec sa carte, puis remboursement et résiliation.
+7. **Fusionner `feat/design-wayfarer` dans `main`**, puis déclarer le site dans Google Search Console.
+8. **E-mails** : les codes de connexion partent de `noreply@karlduponchel.fr` ; mieux vaut une adresse `@tripmates.app`.
+
 ### Pour reprendre (mis à jour le 02/11)
 - **Design « Wayfarer » en cours sur la branche `feat/design-wayfarer`** (02/11, soir) : couleurs, polices et style appliqués à toute l'app, sans toucher aux blocs. Détails dans « Refonte du design », séance du 02/11.
   - **À faire par Karl** : regarder la branche sur l'iPhone (clair et sombre), valider le thème sombre et le corail foncé des textes, puis la fusionner.
