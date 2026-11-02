@@ -89,8 +89,8 @@
 - **Cloudflare → Caching → Browser Cache TTL → « Respect Existing Headers »** : sinon les fichiers (service worker des notifications, icônes) restent jusqu'à 4 heures en cache chez les visiteurs.
 - **Test complet d'un nouvel utilisateur** sur iPhone, avec une adresse neuve : e-mail reçu et code, installation sur l'écran d'accueil, un voyage, un billet, puis suppression du compte (vérifier dans Supabase que ses fichiers ont disparu).
 - **Réinstaller l'app** sur les téléphones de Karl et Louna depuis `tripmates.app`, puis réactiver les notifications ; rediriger puis fermer l'ancienne adresse Vercel ([docs/hebergement.md](docs/hebergement.md), bascule).
-- **E-mails** : expéditeur `noreply@tripmates.app` au lieu de `noreply@karlduponchel.fr` (domaine `tripmates.app` à vérifier dans Resend) ; redirection `contact@tripmates.app` dans Cloudflare Email Routing.
-- **Google Search Console** : ajouter `tripmates.app` et envoyer le sitemap.
+- ~~**E-mails**~~ : **fait le 02/11 par Karl** : expéditeur `noreply@tripmates.app` (domaine vérifié dans Resend) et redirection `contact@tripmates.app` (Cloudflare Email Routing).
+- **Google Search Console** : ajouter `tripmates.app` (propriété de type « Domaine », vérifiée par un enregistrement TXT chez Cloudflare) et envoyer `https://tripmates.app/sitemap.xml`. Le référencement est prêt et vérifié en ligne le 02/11 : sitemap (4 pages), `robots.txt` (app exclue), URL canonique, Open Graph et image de partage, données structurées `Organization`, `WebSite` et `WebApplication` avec les prix, `noindex` sur l'app. Faire de même dans Bing Webmaster Tools (import depuis Search Console).
 
 ### Engagements des pages légales et obligations, par ordre d'importance (02/11)
 Ce que les CGV, la politique de confidentialité ou les licences promettent, et qui n'est pas encore fait.
