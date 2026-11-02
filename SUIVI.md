@@ -70,7 +70,7 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
 
 À faire par Karl, dans cet ordre :
 1. **Regarder la preview Vercel** de `feat/design-wayfarer` : `/`, `/cgv`, `/monde`, connexion, et l'app installée sur l'iPhone (elle doit s'ouvrir sur l'app, pas sur l'accueil).
-2. **Fusionner la suppression de compte** (branche `claude/modest-poitras-1ed45c`, fonction `delete-account` et migration), puis l'appliquer et la déployer : c'est ce que promet la politique de confidentialité.
+2. **Suppression de compte** : fusionnée dans `feat/design-wayfarer` le 02/11. Reste à appliquer la migration (`npx supabase db push --linked`) et à déployer `delete-account` et `stripe-webhook`, **au moment de fusionner dans `main`** : la migration retire `delete_my_account()`, que l'app actuellement en ligne appelle encore. Marche à suivre dans « Suppression de compte complète », plus bas.
 3. **Hébergement commercial** : Vercel Hobby interdit l'usage commercial. Passer à Vercel Pro, ou faire l'étape 9 (Dokploy), **avant le premier paiement réel**.
 4. **Domaine** : `tripmates.app` vers l'app ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
 5. **Pages légales** : compléter ce qui est surligné en jaune (éditeur, SIRET, TVA, médiateur de la consommation), créer `contact@tripmates.app` (Cloudflare Email Routing), faire relire.
@@ -382,7 +382,7 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
   - prévenir 30 jours avant un changement de prix ;
   - suppression des comptes inactifs depuis 3 ans, avec un e-mail d'avertissement ;
   - exporter ses données sur demande (droit d'accès et de portabilité) : à la main au début.
-- **Trouvé en écrivant la politique de confidentialité** : supprimer son compte n'efface ni les voyages créés (`created_by` passe à `null`), ni les fichiers des billets et des photos dans le stockage. Les voyages dont la personne était seule membre restent donc en base, invisibles. **À corriger avant l'ouverture** (supprimer les voyages sans membre et leurs fichiers). En attendant, la page le dit honnêtement.
+- **Trouvé en écrivant la politique de confidentialité** : supprimer son compte laissait les fichiers des billets et des photos dans le stockage, et l'abonnement Stripe actif. (Les voyages dont la personne était seule membre, eux, étaient déjà supprimés par la base.) Corrigé par la fonction `delete-account`, voir « Suppression de compte complète » ; la politique de confidentialité décrit le nouveau fonctionnement.
 
 ### Idées pour la suite du partage
 - **Globe** : un point par ville qui a des photos publiques, qui ouvre Explorer sur cette ville.
