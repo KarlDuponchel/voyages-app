@@ -69,3 +69,24 @@
   color: var(--accent-sunset);
   font-weight: 600;
 }
+
+/* Photo rendue publique par son auteur */
+.photos__public {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.photos__explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-sunset);
+}

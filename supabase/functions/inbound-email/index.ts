@@ -14,7 +14,7 @@
 import { aliasOf, emailOf, htmlToText, safeName, sameSecret } from '../_shared/email.ts'
 import { extractBookings, ExtractError, newClient, partFromFile, type Part } from '../_shared/extract.ts'
 import { importNotification, notifyUser } from '../_shared/push.ts'
-import { adminClient, dailyLimit, recordUsage, suggestTrip, today, usedToday } from '../_shared/supabase.ts'
+import { adminClient, aiAllowance, allowanceMessage, dailyLimit, recordUsage, suggestTrip, today, usedToday } from '../_shared/supabase.ts'
 
 /** Fourni par l'environnement d'exécution Supabase : poursuit un travail après la réponse */
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void }
@@ -66,6 +66,12 @@ async function handle(payload: Payload): Promise<void> {
   }
 
   try {
+    // Les e-mails comptent sur le compte de celui qui transfère (le voyage n'est pas encore connu)
+    const allowance = await aiAllowance(admin, userId)
+    if (!allowance.allowed) {
+      await fail(`${allowanceMessage(allowance)} Cet e-mail n'a pas été lu.`)
+      return
+    }
     if ((await usedToday(admin, userId)) >= dailyLimit()) {
       await fail(`Limite de ${dailyLimit()} lectures par l’IA sur 24 h atteinte : cet e-mail n'a pas été lu.`)
       return

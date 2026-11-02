@@ -1,13 +1,15 @@
-import { ChevronLeft, ChevronRight, ImageIcon, Share, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Globe, ImageIcon, Share, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../data/auth'
 import type { Trip } from '../data/types'
 import { getCachedBlob } from '../lib/files'
 import { deletePhoto, setCover, usePhotoUrl, videoUrl, type TripPhoto } from '../lib/photos'
+import { unpublishPhoto } from '../lib/sharing'
 import { errorMessage } from '../lib/supabase'
 import { canEdit } from '../lib/trip'
 import { usePinchZoom } from '../lib/usePinchZoom'
+import { PublishPanel } from './PublishPanel'
 import './PhotoViewer.css'
 
 /** Distance horizontale (px) au-delà de laquelle un glissement passe à l'élément suivant */
@@ -66,6 +68,8 @@ export function PhotoViewer({
   const resetZoom = usePinchZoom(stage, zoomed)
   const swipe = useRef<{ x: number; y: number } | null>(null)
   const [confirm, setConfirm] = useState(false)
+  /** Panneau de publication, ou confirmation du retrait */
+  const [sharing, setSharing] = useState<'publier' | 'retirer' | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -73,11 +77,14 @@ export function PhotoViewer({
   const author = trip.members.find((m) => m.userId === photo.uploadedBy)?.name
   const canDelete = photo.uploadedBy === me || trip.role === 'owner'
   const isCover = trip.coverPhoto?.id === photo.id
+  const isAuthor = !!me && photo.uploadedBy === me
+  const canUnpublish = !!photo.share && (isAuthor || trip.role === 'owner')
 
   const go = (i: number) => {
     if (i < 0 || i >= photos.length) return
     resetZoom()
     setConfirm(false)
+    setSharing(null)
     setError(null)
     onIndex(i)
   }
@@ -185,8 +192,48 @@ export function PhotoViewer({
         <span className="caption">
           {author ? `Ajoutée par ${author}` : 'Ajoutée par un voyageur'} · {date}
         </span>
+        {photo.share && (
+          <span className="caption viewer-photo__public">
+            <Globe size={13} /> {photo.share.hidden ? `Masquée après des signalements · ${photo.share.city}` : `Publique · ${photo.share.city}`}
+            {photo.share.caption && ` · « ${photo.share.caption} »`}
+          </span>
+        )}
         {error && <span className="caption form-error">{error}</span>}
-        {confirm ? (
+        {sharing === 'publier' ? (
+          <PublishPanel
+            trip={trip}
+            photo={photo}
+            onCancel={() => setSharing(null)}
+            onDone={async () => {
+              setSharing(null)
+              await onChanged()
+            }}
+            onUnpublish={canUnpublish ? () => setSharing('retirer') : undefined}
+          />
+        ) : sharing === 'retirer' ? (
+          <div className="stack" style={{ gap: 8 }}>
+            <span className="caption">Elle redevient visible des seuls voyageurs ; ses réactions sont effacées.</span>
+            <div className="row" style={{ gap: 8 }}>
+              <button
+                className="btn btn--accent"
+                style={{ flex: 1 }}
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    await unpublishPhoto(photo.id)
+                    setSharing(null)
+                    await onChanged()
+                  })
+                }
+              >
+                Retirer du public
+              </button>
+              <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing(null)} disabled={busy}>
+                Annuler
+              </button>
+            </div>
+          </div>
+        ) : confirm ? (
           <div className="row" style={{ gap: 8 }}>
             <button className="btn btn--accent" style={{ flex: 1 }} onClick={remove} disabled={busy}>
               <Trash2 size={16} /> Supprimer pour tous
@@ -208,8 +255,19 @@ export function PhotoViewer({
                   })
                 }
               >
-                <ImageIcon size={16} /> {isCover ? 'Couverture du voyage' : 'Mettre en couverture'}
+                <ImageIcon size={16} /> {isCover ? 'En couverture' : 'Couverture'}
               </button>
+            )}
+            {isAuthor ? (
+              <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing('publier')} disabled={busy}>
+                <Globe size={16} /> {photo.share ? 'Publique' : 'Rendre publique'}
+              </button>
+            ) : (
+              canUnpublish && (
+                <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing('retirer')} disabled={busy}>
+                  <Globe size={16} /> Retirer
+                </button>
+              )
             )}
             {canDelete && (
               <button className="btn btn--ghost viewer-photo__action" onClick={() => setConfirm(true)} disabled={busy} aria-label="Supprimer">

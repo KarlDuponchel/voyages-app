@@ -422,3 +422,12 @@ verify_jwt = false
 
 [functions.inbound-email]
 verify_jwt = false
+
+[functions.billing]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.notify-reaction]
+verify_jwt = false

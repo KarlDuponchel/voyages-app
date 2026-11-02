@@ -4,7 +4,7 @@
  */
 import { assert, assertEquals, assertMatch } from 'jsr:@std/assert@1.0.13'
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
-import { importNotification } from '../_shared/push.ts'
+import { importNotification, reactionNotification } from '../_shared/push.ts'
 
 const draft = (title: string) => ({ kind: 'hotel' as const, title, detail: '', start: '2026-11-14T15:00' })
 
@@ -21,6 +21,23 @@ Deno.test('texte : une réservation, plusieurs, aucune', () => {
   const none = importNotification('Newsletter', [], false)
   assertEquals(none.title, '🤔 Rien à se mettre sous la dent')
   assertEquals(none.body, 'Pas de réservation dans « Newsletter ».')
+})
+
+Deno.test('réactions : une seule (selon son type), deux personnes, plusieurs', () => {
+  const one = reactionNotification('Porto', [{ name: 'Marie', kind: 'jadore' }])
+  assertEquals(one.title, '😍 Marie adore votre photo')
+  assertEquals(one.body, "Votre photo de Porto a conquis quelqu'un.")
+  assertEquals(one.url, '/explorer?ville=Porto')
+  assertEquals(reactionNotification('Kyoto', [{ name: 'Tom', kind: 'wishlist' }]).title, '🧳 Tom rêve de Kyoto')
+
+  const two = reactionNotification('São Paulo', [{ name: 'Marie', kind: 'jaime' }, { name: 'Tom', kind: 'waouh' }])
+  assertEquals(two.title, '✨ Votre photo de São Paulo plaît')
+  assertEquals(two.body, 'Marie et Tom ont réagi.')
+  assertEquals(two.url, '/explorer?ville=S%C3%A3o%20Paulo')
+
+  const many = reactionNotification('Porto', ['A', 'B', 'C', 'D'].map((name) => ({ name, kind: 'jaime' as const })))
+  assertEquals(many.body, 'A, B et 2 autres ont réagi.')
+  assertEquals(reactionNotification('Porto', ['A', 'B', 'C'].map((name) => ({ name, kind: 'jaime' as const }))).body, 'A, B et 1 autre ont réagi.')
 })
 
 Deno.test('envoi chiffré (RFC 8291) avec signature VAPID vers un faux service de notification', async () => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { dropFromCache, getCachedBlob, putInCache } from './files'
 import { isVideoFile, MediaError, preparePhoto, prepareVideo } from './media'
+import type { PhotoShare } from './sharing'
 import { supabase } from './supabase'
 
 /**
@@ -25,6 +26,8 @@ export type TripPhoto = {
   date: string
   uploadedBy?: string
   caption?: string
+  /** Rendue publique par son auteur */
+  share?: PhotoShare
 }
 
 type Row = {
@@ -41,6 +44,7 @@ type Row = {
   created_at: string
   uploaded_by: string | null
   caption: string | null
+  photo_shares: { city: string; destination_id: string | null; caption: string | null; hidden_at: string | null } | null
 }
 
 const toPhoto = (r: Row): TripPhoto => ({
@@ -56,18 +60,31 @@ const toPhoto = (r: Row): TripPhoto => ({
   date: r.taken_at ?? r.created_at,
   uploadedBy: r.uploaded_by ?? undefined,
   caption: r.caption ?? undefined,
+  share: r.photo_shares
+    ? {
+        city: r.photo_shares.city,
+        destinationId: r.photo_shares.destination_id ?? undefined,
+        caption: r.photo_shares.caption ?? undefined,
+        hidden: r.photo_shares.hidden_at !== null,
+      }
+    : undefined,
 })
 
 export async function listPhotos(tripId: string): Promise<TripPhoto[]> {
   const { data, error } = await supabase
     .from('trip_photos')
-    .select('id, kind, path, thumb_path, mime_type, width, height, duration_seconds, size_bytes, taken_at, created_at, uploaded_by, caption')
+    .select(
+      'id, kind, path, thumb_path, mime_type, width, height, duration_seconds, size_bytes, taken_at, created_at, uploaded_by, caption, photo_shares ( city, destination_id, caption, hidden_at )',
+    )
     .eq('trip_id', tripId)
   if (error) throw error
   return ((data ?? []) as Row[]).map(toPhoto).sort((a, b) => a.date.localeCompare(b.date))
 }
 
 export type UploadStep = 'preparation' | 'envoi'
+
+/** Espace photos plein, ou voyage en dehors de l'offre gratuite : inutile d'essayer les fichiers suivants */
+export class QuotaError extends Error {}
 
 /** Prépare (compresse) puis envoie une photo ou une vidéo ; les fichiers d'abord, la ligne ensuite */
 export async function uploadMedia(tripId: string, file: File, onStep: (step: UploadStep, progress?: number) => void): Promise<void> {
@@ -77,6 +94,11 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
   const ext = prepared.kind === 'video' ? (prepared.mimeType === 'video/quicktime' ? 'mov' : 'mp4') : 'jpg'
   const path = `${tripId}/${id}/original.${ext}`
   const thumbPath = `${tripId}/${id}/miniature.jpg`
+
+  // Le quota se vérifie avec le poids après compression ; la base le revérifie avec les vrais fichiers
+  const size = prepared.full.size + prepared.thumb.size
+  const quota = await supabase.rpc('photo_quota_check', { p_trip: tripId, p_bytes: size })
+  if (!quota.error && quota.data) throw new QuotaError(quota.data)
 
   onStep('envoi')
   const up1 = await supabase.storage.from(BUCKET).upload(thumbPath, prepared.thumb, { contentType: 'image/jpeg' })
@@ -98,12 +120,12 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
     width: prepared.width,
     height: prepared.height,
     duration_seconds: prepared.durationSeconds ?? null,
-    size_bytes: prepared.full.size + prepared.thumb.size,
+    size_bytes: size,
     taken_at: prepared.takenAt ?? null,
   })
   if (row.error) {
     await supabase.storage.from(BUCKET).remove([path, thumbPath])
-    throw row.error
+    throw row.error.hint === 'quota' ? new QuotaError(row.error.message) : row.error
   }
   // Déjà sur le téléphone : la miniature s'affiche tout de suite, même hors ligne
   await putInCache(thumbPath, prepared.thumb, 'image/jpeg')
@@ -112,7 +134,7 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
 
 /** Message lisible pour une erreur d'envoi */
 export function uploadError(e: unknown): string {
-  if (e instanceof MediaError) return e.message
+  if (e instanceof MediaError || e instanceof QuotaError) return e.message
   if (!navigator.onLine) return 'Pas de connexion.'
   return e instanceof Error ? e.message : 'Envoi impossible.'
 }

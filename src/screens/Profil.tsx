@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { InstallSteps } from '../components/InstallSteps'
 import { NotificationsSwitch } from '../components/NotificationsSwitch'
+import { PlanCard } from '../components/PlanCard'
 import { PlaceSearch } from '../components/PlaceSearch'
 import { useAuth } from '../data/auth'
 import { allCountries, countryById } from '../data/countries'
@@ -285,6 +286,11 @@ export function Profil() {
       <section className="px stack" style={{ gap: 10 }}>
         <h2 className="overline muted">Vous</h2>
         <Identity />
+      </section>
+
+      <section className="px stack" style={{ gap: 10 }}>
+        <h2 className="overline muted">Offre</h2>
+        <PlanCard />
       </section>
 
       <section className="px stack" style={{ gap: 10 }}>

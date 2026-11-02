@@ -11,8 +11,8 @@ const migration = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort().map(
 
 // Imitation minimale de l'environnement Supabase
 await db.exec(`
-  create role anon nologin; create role authenticated nologin;
-  grant usage on schema public to anon, authenticated;
+  create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
+  grant usage on schema public to anon, authenticated, service_role;
   alter default privileges in schema public grant all on tables to anon, authenticated;
   alter default privileges in schema public grant all on functions to anon, authenticated;
   create schema auth;
@@ -24,7 +24,7 @@ await db.exec(`
   create schema storage;
   grant usage on schema storage to anon, authenticated;
   create table storage.buckets (id text primary key, name text, public bool, file_size_limit bigint, allowed_mime_types text[]);
-  create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text, owner uuid);
+  create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text, owner uuid, metadata jsonb);
   alter table storage.objects enable row level security;
   grant all on storage.objects to authenticated;
 `)
@@ -334,6 +334,265 @@ await ok('le propriétaire supprime la photo du participant ; le participant sup
 await ok("supprimer la photo de couverture remet le dégradé (couverture vide)", async () => {
   await as('lea', `delete from public.trip_photos where id = '${photoLea}'`)
   expect((await db.query(`select cover_photo_id from public.trips where id = '${t2}'`)).rows[0].cover_photo_id === null, 'couverture fantôme')
+})
+
+// ---- Partage public et réactions (migration 20261102100000) ----
+let porto, lisbonne, pubLea, privTiers
+await ok('Léa et le participant ajoutent une photo à Porto', async () => {
+  ;[{ id: porto }] = await as('lea', `insert into public.trip_destinations (trip_id, city, country_code, lat, lng) values ('${t2}', 'Porto', '620', 41.15, -8.61) returning id`)
+  const [{ id: t3 }] = await as('karl', `insert into public.trips (title, start_date, end_date) values ('Ailleurs', '2025-07-01', '2025-07-05') returning id`)
+  ;[{ id: lisbonne }] = await as('karl', `insert into public.trip_destinations (trip_id, city, country_code, lat, lng) values ('${t3}', 'Lisbonne', '620', 38.72, -9.14) returning id`)
+  pubLea = uuid()
+  privTiers = uuid()
+  await as('lea', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${pubLea}/full.jpg'), ('trip-photos', '${t2}/${pubLea}/thumb.jpg')`)
+  await as('lea', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes, taken_at) values ('${pubLea}', '${t2}', 'photo', '${t2}/${pubLea}/full.jpg', '${t2}/${pubLea}/thumb.jpg', 'image/jpeg', 400000, '2025-06-03 18:42')`)
+  await as('tiers', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${t2}/${privTiers}/full.jpg')`)
+  await as('tiers', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ${photoRow(privTiers)}`)
+})
+await ok('une photo est privée par défaut : Karl ne la voit pas', async () => {
+  expect((await as('karl', 'select * from public.public_photos()')).length === 0, 'fuite')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/%'`)).length === 0, 'fuite de fichiers')
+})
+await denied("le participant ne peut pas publier la photo de Léa", () => as('tiers', `select public.publish_photo('${pubLea}', '${porto}')`), "auteur")
+await denied("la ville doit être une étape du voyage", () => as('lea', `select public.publish_photo('${pubLea}', '${lisbonne}')`), 'étape')
+await denied('on ne publie pas en écrivant directement dans la table', () =>
+  as('lea', `insert into public.photo_shares (photo_id, trip_id, author_id, city, country_code, lat, lng) values ('${pubLea}', '${t2}', '${U.lea}', 'Paris', '250', 48.85, 2.35)`), 'permission denied')
+await ok('Léa publie sa photo à Porto', () => as('lea', `select public.publish_photo('${pubLea}', '${porto}', '  Coucher de soleil  ')`))
+await ok("Karl la voit : ville, mois, auteur, sans rien du voyage", async () => {
+  const r = await as('karl', 'select * from public.public_photos()')
+  expect(r.length === 1 && r[0].city === 'Porto' && r[0].author_name === 'lea' && r[0].caption === 'Coucher de soleil', JSON.stringify(r))
+  expect(new Date(r[0].taken_month).toISOString().startsWith('2025-06-01'), 'mois : ' + r[0].taken_month)
+  expect(!('trip_id' in r[0]) && !('title' in r[0]), 'le voyage fuit')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 2, 'fichiers publics illisibles')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${privTiers}/%'`)).length === 0, 'fichier privé lisible')
+  expect((await as('karl', 'select 1 from public.photo_shares')).length === 0, 'table lisible directement')
+  expect((await as('karl', 'select 1 from public.trip_photos')).length === 0, 'ligne privée lisible')
+})
+await ok('filtres par pays et ville, et villes du globe', async () => {
+  expect((await as('karl', `select 1 from public.public_photos('620', 'porto')`)).length === 1, 'filtre ville')
+  expect((await as('karl', `select 1 from public.public_photos('250')`)).length === 0, 'filtre pays')
+  const [p] = await as('karl', 'select * from public.public_places()')
+  expect(p.city === 'Porto' && Number(p.photo_count) === 1 && p.cover_thumb_path === `${t2}/${pubLea}/thumb.jpg`, JSON.stringify(p))
+})
+await ok('les membres du voyage voient quelles photos sont publiques', async () => {
+  expect((await as('inconnu', `select photo_id from public.photo_shares`)).length === 1, 'badge invisible')
+})
+await ok("Karl réagit « J'adore », puis passe à « Wishlist »", async () => {
+  await as('karl', `select public.react_to_photo('${pubLea}', 'jadore')`)
+  await as('karl', `select public.react_to_photo('${pubLea}', 'wishlist')`)
+  await as('tiers', `select public.react_to_photo('${pubLea}', 'jaime')`)
+  await as('inconnu', `select public.react_to_photo('${pubLea}', 'waouh')`)
+  await as('inconnu', `select public.react_to_photo('${pubLea}', null)`)
+  const [r] = await as('karl', 'select reactions, my_reaction from public.public_photos()')
+  expect(r.my_reaction === 'wishlist' && r.reactions.wishlist === 1 && r.reactions.jaime === 1 && !r.reactions.jadore, JSON.stringify(r))
+  expect((await as('karl', 'select 1 from public.public_photos(p_wishlist => true)')).length === 1, 'wishlist vide')
+  expect((await as('lea', 'select 1 from public.public_photos(p_wishlist => true)')).length === 0, 'wishlist de Léa non vide')
+  expect((await as('lea', 'select 1 from public.photo_reactions')).length === 0, 'réactions des autres lisibles')
+})
+await denied('on ne réagit pas à une photo privée', () => as('karl', `insert into public.photo_reactions (photo_id, kind) values ('${privTiers}', 'jaime')`), 'row-level security')
+await denied("on ne réagit pas au nom d'un autre", () => as('karl', `insert into public.photo_reactions (photo_id, user_id, kind) values ('${pubLea}', '${U.lea}', 'jaime')`), 'row-level security')
+await denied('réaction inconnue refusée', () => as('lea', `insert into public.photo_reactions (photo_id, kind) values ('${pubLea}', 'grr')`), 'check')
+await ok('une photo masquée par la modération disparaît pour Karl, pas pour Léa', async () => {
+  await db.query(`update public.photo_shares set hidden_at = now() where photo_id = '${pubLea}'`)
+  expect((await as('karl', 'select 1 from public.public_photos()')).length === 0, 'encore visible')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 0, 'fichier encore lisible')
+  expect((await as('lea', `select 1 from public.trip_photos where id = '${pubLea}'`)).length === 1, "Léa l'a perdue")
+  await db.query(`update public.photo_shares set hidden_at = null where photo_id = '${pubLea}'`)
+})
+await ok("le participant ne peut pas dépublier ; Léa dépublie, Karl perd l'accès et les réactions partent", async () => {
+  await as('tiers', `delete from public.photo_shares where photo_id = '${pubLea}'`)
+  expect((await db.query(`select 1 from public.photo_shares`)).rows.length === 1, 'dépubliée par le participant')
+  await as('lea', `delete from public.photo_shares where photo_id = '${pubLea}'`)
+  expect((await as('karl', 'select 1 from public.public_photos()')).length === 0, 'encore publique')
+  expect((await as('karl', `select 1 from storage.objects where name like '${t2}/${pubLea}/%'`)).length === 0, 'fichier encore lisible')
+  expect((await db.query(`select 1 from public.photo_reactions`)).rows.length === 0, 'réactions orphelines')
+})
+await ok('supprimer la photo du voyage la retire du partage', async () => {
+  await as('lea', `select public.publish_photo('${pubLea}', '${porto}')`)
+  await as('lea', `delete from public.trip_photos where id = '${pubLea}'`)
+  expect((await db.query(`select 1 from public.photo_shares`)).rows.length === 0, 'partage fantôme')
+})
+await denied('anon ne voit pas les photos publiques', async () => {
+  await db.exec('set role anon')
+  try {
+    return (await db.query('select * from public.public_photos()')).rows
+  } finally {
+    await db.exec('reset role')
+  }
+}, 'permission denied')
+
+/// ---- Modération : signalements, blocages, limite de publications ----
+const photoIn = async (user, tripId) => {
+  const id = uuid()
+  await as(user, `insert into storage.objects (bucket_id, name) values ('trip-photos', '${tripId}/${id}/full.jpg')`)
+  await as(user, `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ('${id}', '${tripId}', 'photo', '${tripId}/${id}/full.jpg', '${tripId}/${id}/thumb.jpg', 'image/jpeg', 1000)`)
+  return id
+}
+let m1, mKarl, t3
+await ok('Léa publie une photo ; Karl en publie une de son voyage', async () => {
+  m1 = await photoIn('lea', t2)
+  await as('lea', `select public.publish_photo('${m1}', '${porto}')`)
+  ;[{ trip_id: t3 }] = (await db.query(`select trip_id from public.trip_destinations where id = '${lisbonne}'`)).rows
+  mKarl = await photoIn('karl', t3)
+  await as('karl', `select public.publish_photo('${mKarl}', '${lisbonne}')`)
+})
+await ok("villes tendances : activité récente d'abord, chiffres et miniatures, blocages respectés", async () => {
+  await as('tiers', `select public.react_to_photo('${mKarl}', 'jadore')`)
+  await as('inconnu', `select public.react_to_photo('${mKarl}', 'waouh')`)
+  const rows = await as('tiers', 'select * from public.public_trending_places()')
+  expect(rows.length === 2 && rows[0].city === 'Lisbonne' && rows[1].city === 'Porto', JSON.stringify(rows))
+  const [lis] = rows
+  expect(Number(lis.photo_count) === 1 && Number(lis.traveler_count) === 1 && Number(lis.reaction_count) === 2 && Number(lis.recent_count) === 3, JSON.stringify(lis))
+  expect(lis.thumb_paths.length === 1 && lis.thumb_paths[0] === `${t3}/${mKarl}/thumb.jpg`, JSON.stringify(lis.thumb_paths))
+  await as('lea', `insert into public.user_blocks (blocked_id) values ('${U.karl}')`)
+  const leaRows = await as('lea', 'select city from public.public_trending_places()')
+  expect(leaRows.length === 1 && leaRows[0].city === 'Porto', JSON.stringify(leaRows))
+  await as('lea', `delete from public.user_blocks where blocked_id = '${U.karl}'`)
+  await as('tiers', `select public.react_to_photo('${mKarl}', null)`)
+  await as('inconnu', `select public.react_to_photo('${mKarl}', null)`)
+})
+await denied('on ne signale pas sa propre photo', () => as('lea', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'spam')`), 'row-level security')
+await ok('Karl signale la photo de Léa ; il ne voit que son signalement', async () => {
+  await as('karl', `insert into public.photo_reports (photo_id, reason, details) values ('${m1}', 'spam', 'publicité')`)
+  expect((await as('karl', 'select 1 from public.photo_reports')).length === 1, 'signalement invisible')
+  expect((await as('lea', 'select 1 from public.photo_reports')).length === 0, "Léa voit qui l'a signalée")
+})
+await denied('un seul signalement par personne', () => as('karl', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'autre')`), 'duplicate')
+await denied('motif inconnu refusé', () => as('tiers', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'moche')`), 'check')
+await ok('à 3 signalements, la photo est masquée pour tous les autres', async () => {
+  await as('tiers', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'personne')`)
+  expect((await db.query(`select hidden_at from public.photo_shares where photo_id = '${m1}'`)).rows[0].hidden_at === null, 'masquée trop tôt')
+  await as('inconnu', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'inapproprie')`)
+  const [row] = (await db.query(`select hidden_at, hidden_reason from public.photo_shares where photo_id = '${m1}'`)).rows
+  expect(row.hidden_at && row.hidden_reason === 'signalements', JSON.stringify(row))
+  expect((await as('karl', `select 1 from public.public_photos() where photo_id = '${m1}'`)).length === 0, 'encore visible')
+})
+await denied('une photo masquée ne peut plus être signalée', async () => {
+  await db.query(`insert into auth.users (id, email) values ('55555555-5555-5555-5555-555555555555', 'cinq@example.com')`)
+  U.cinq = '55555555-5555-5555-5555-555555555555'
+  return as('cinq', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'spam')`)
+}, 'row-level security')
+await ok("republier ne démasque pas une photo masquée", async () => {
+  await as('lea', `select public.publish_photo('${m1}', '${porto}', 'autre légende')`)
+  expect((await db.query(`select hidden_at from public.photo_shares where photo_id = '${m1}'`)).rows[0].hidden_at !== null, 'démasquée')
+  await db.query(`update public.photo_shares set hidden_at = null, hidden_reason = null where photo_id = '${m1}'`)
+})
+await ok('Karl bloque Léa : chacun ne voit plus les photos de l’autre ; le participant voit les deux', async () => {
+  await as('karl', `insert into public.user_blocks (blocked_id) values ('${U.lea}')`)
+  const karlSees = (await as('karl', 'select photo_id from public.public_photos()')).map((r) => r.photo_id)
+  const leaSees = (await as('lea', 'select photo_id from public.public_photos()')).map((r) => r.photo_id)
+  const tiersSees = (await as('tiers', 'select photo_id from public.public_photos()')).map((r) => r.photo_id)
+  expect(!karlSees.includes(m1) && !leaSees.includes(mKarl) && tiersSees.length === 2, JSON.stringify({ karlSees, leaSees, tiersSees }))
+  expect((await as('lea', 'select 1 from public.user_blocks')).length === 0, 'Léa voit qui la bloque')
+})
+await denied("on ne bloque pas au nom d'un autre", () => as('lea', `insert into public.user_blocks (blocker_id, blocked_id) values ('${U.karl}', '${U.tiers}')`), 'row-level security')
+await ok('Karl débloque Léa', async () => {
+  await as('karl', `delete from public.user_blocks where blocked_id = '${U.lea}'`)
+  expect((await as('karl', `select 1 from public.public_photos() where photo_id = '${m1}'`)).length === 1, 'toujours bloquée')
+})
+await denied('au plus 30 nouvelles publications par jour', async () => {
+  // 29 de plus que m1, publiées aujourd'hui
+  await db.query(`create temp table ids as select gen_random_uuid() as id from generate_series(1, 29)`)
+  await db.query(`insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes, uploaded_by)
+    select id, '${t2}', 'photo', '${t2}/' || id || '/f.jpg', '${t2}/' || id || '/t.jpg', 'image/jpeg', 1, '${U.lea}' from ids`)
+  await db.query(`insert into public.photo_shares (photo_id, trip_id, author_id, city, country_code, lat, lng)
+    select id, '${t2}', '${U.lea}', 'Porto', '620', 41.15, -8.61 from ids`)
+  const extra = await photoIn('lea', t2)
+  return as('lea', `select public.publish_photo('${extra}', '${porto}')`)
+}, '30 photos')
+await ok('nettoyage des photos de modération', async () => {
+  await db.query(`delete from public.trip_photos where size_bytes <= 1000 and trip_id in ('${t2}', '${t3}')`)
+  expect((await db.query('select 1 from public.photo_shares')).rows.length === 0, 'partages restants')
+})
+
+// ---- Premium et quotas (migration 20261102110000) ----
+const MB = 1024 * 1024
+const newTrip = async (user, title) => (await as(user, `insert into public.trips (title, start_date, end_date) values ('${title}', '2025-08-01', '2025-08-05') returning id`))[0].id
+const addPhoto = async (user, tripId, { bytes = 400000, stored } = {}) => {
+  const id = uuid()
+  const meta = stored ? `'{"size": ${stored}}'` : 'null'
+  await as(user, `insert into storage.objects (bucket_id, name, metadata) values ('trip-photos', '${tripId}/${id}/full.jpg', ${meta})`)
+  await as(user, `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ('${id}', '${tripId}', 'photo', '${tripId}/${id}/full.jpg', '${tripId}/${id}/thumb.jpg', 'image/jpeg', ${bytes})`)
+  return id
+}
+async function asService(sql) {
+  await db.exec('set role service_role')
+  try {
+    return (await db.query(sql)).rows
+  } finally {
+    await db.exec('reset role')
+  }
+}
+let q1, q2, q3
+await ok('offre gratuite de Léa : 1 voyage avec photos, 250 Mo, 5 lectures', async () => {
+  const [{ my_plan: p }] = await as('lea', 'select public.my_plan()')
+  expect(!p.premium && p.photoTrips === 1 && p.photoTripsLimit === 2 && p.photoBytesLimit === 250 * MB && p.aiLimit === 5 && !p.aiMonthly, JSON.stringify(p))
+})
+await ok('gratuit : photos dans un 2e voyage, pas dans un 3e', async () => {
+  q1 = await newTrip('lea', 'Quota 1')
+  q2 = await newTrip('lea', 'Quota 2')
+  await addPhoto('lea', q1)
+  const [{ photo_quota_check: msg }] = await as('lea', `select public.photo_quota_check('${q2}', 1000)`)
+  expect(msg?.includes('2 voyages'), 'message : ' + msg)
+  expect((await as('lea', `select public.photo_quota_check('${q1}', 1000) as m`))[0].m === null, 'voyage existant bloqué')
+})
+await denied('3e voyage : la ligne est refusée (même sans fichier)', () => {
+  const id = uuid()
+  return as('lea', `insert into public.trip_photos (id, trip_id, kind, path, thumb_path, mime_type, size_bytes) values ('${id}', '${q2}', 'photo', '${q2}/${id}/full.jpg', '${q2}/${id}/thumb.jpg', 'image/jpeg', 1000)`)
+}, 'gratuite')
+await denied("3e voyage : le fichier aussi, avant même l'envoi", () =>
+  as('lea', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${q2}/${uuid()}/full.jpg')`), 'row-level security')
+await denied('le poids compté est celui du fichier stocké, pas celui annoncé', () => addPhoto('lea', q1, { bytes: 1000, stored: 260 * MB }), 'plein')
+await ok('espace plein : message pour le propriétaire, et pour un participant', async () => {
+  await db.query(`insert into public.trip_members (trip_id, user_id, role) values ('${q1}', '${U.tiers}', 'editor')`)
+  const [{ m: mine }] = await as('lea', `select public.photo_quota_check('${q1}', ${251 * MB}) as m`)
+  const [{ m: theirs }] = await as('tiers', `select public.photo_quota_check('${q1}', ${251 * MB}) as m`)
+  expect(mine.includes('Votre espace photos est plein (250 Mo)') && theirs.includes('propriétaire'), mine + ' / ' + theirs)
+  expect((await as('karl', `select public.photo_quota_check('${q1}', 1) as m`))[0].m === null, 'un étranger apprend quelque chose')
+})
+await ok("les photos d'un participant comptent chez le propriétaire", async () => {
+  await addPhoto('tiers', q1, { bytes: 5 * MB })
+  const [{ my_plan: lea }] = await as('lea', 'select public.my_plan()')
+  const [{ my_plan: tiers }] = await as('tiers', 'select public.my_plan()')
+  expect(lea.photoBytes === 400000 * 2 + 5 * MB && tiers.photoBytes === 0, `${lea.photoBytes} / ${tiers.photoBytes}`)
+})
+await denied("on ne s'offre pas le premium", () => as('lea', `insert into public.subscriptions (user_id, status) values ('${U.lea}', 'offert')`), 'permission denied')
+await ok('premium (offert) : photos dans le 3e voyage, 20 Go, 300 lectures sur 30 jours', async () => {
+  await db.query(`insert into public.subscriptions (user_id, status) values ('${U.lea}', 'offert')`)
+  await addPhoto('lea', q2)
+  q3 = await newTrip('lea', 'Quota 3')
+  await addPhoto('lea', q3)
+  const [{ my_plan: p }] = await as('lea', 'select public.my_plan()')
+  expect(p.premium && p.photoTripsLimit === null && p.photoBytesLimit === 20 * 1024 * MB && p.aiLimit === 300 && p.aiMonthly && !p.managedByStripe, JSON.stringify(p))
+})
+await ok("abonnement résilié et échu : retour au gratuit (les photos restent, l'ajout est bloqué)", async () => {
+  await db.query(`update public.subscriptions set status = 'canceled', current_period_end = now() - interval '10 days', stripe_customer_id = 'cus_1' where user_id = '${U.lea}'`)
+  const [{ my_plan: p }] = await as('lea', 'select public.my_plan()')
+  expect(!p.premium && p.photoTrips === 4 && p.managedByStripe, JSON.stringify(p))
+  expect((await as('lea', `select public.photo_quota_check('${q3}', 1) as m`))[0].m !== null, 'ajout encore possible')
+  expect((await as('lea', `select count(*)::int as n from public.trip_photos where trip_id = '${q3}'`))[0].n === 1, 'photos perdues')
+})
+await ok("paiement en retard : premium jusqu'à 3 jours après l'échéance", async () => {
+  await db.query(`update public.subscriptions set status = 'past_due', current_period_end = now() - interval '1 day' where user_id = '${U.lea}'`)
+  expect((await as('lea', 'select public.my_plan()'))[0].my_plan.premium, 'grâce non appliquée')
+  await db.query(`update public.subscriptions set current_period_end = now() - interval '4 days' where user_id = '${U.lea}'`)
+  expect(!(await as('lea', 'select public.my_plan()'))[0].my_plan.premium, 'grâce trop longue')
+})
+await denied("l'app ne peut pas lire les droits à l'IA d'un autre", () => as('lea', `select public.ai_allowance('${U.tiers}')`), 'permission denied')
+await ok("IA : 5 lectures en gratuit ; dans le voyage d'un propriétaire premium, 300", async () => {
+  await db.query(`insert into public.ai_usage (user_id, source, model) select '${U.tiers}', 'fichier', 'm' from generate_series(1, 5)`)
+  const [{ a: free }] = await asService(`select public.ai_allowance('${U.tiers}') as a`)
+  expect(!free.allowed && free.used === 5 && free.limit === 5, JSON.stringify(free))
+  await db.query(`update public.subscriptions set status = 'active', current_period_end = now() + interval '20 days' where user_id = '${U.lea}'`)
+  const [{ a: inTrip }] = await asService(`select public.ai_allowance('${U.tiers}', '${q1}') as a`)
+  expect(inTrip.allowed && inTrip.premium && inTrip.limit === 300, JSON.stringify(inTrip))
+  const [{ a: elsewhere }] = await asService(`select public.ai_allowance('${U.tiers}') as a`)
+  expect(!elsewhere.allowed, 'premium hors du voyage')
+})
+await ok('premium : seules les lectures des 30 derniers jours comptent', async () => {
+  await db.query(`insert into public.ai_usage (user_id, source, model, created_at) select '${U.lea}', 'email', 'm', now() - interval '40 days' from generate_series(1, 300)`)
+  const [{ a }] = await asService(`select public.ai_allowance('${U.lea}') as a`)
+  expect(a.allowed && a.used === 0, JSON.stringify(a))
 })
 
 await denied('anon ne lit rien', async () => {
