@@ -7,6 +7,8 @@
 -- Les autres ne voient que la photo, la ville, le mois de prise de vue et l'auteur (nom, avatar) :
 -- jamais le voyage (titre, dates, membres). Dépublier est immédiat : aucun fichier n'est copié.
 -- Réactions : une par personne et par photo (J'aime, J'adore, Waouh, Wishlist).
+-- Modération : signalements (masquage automatique à 3 personnes), blocage d'un utilisateur,
+-- et au plus 30 nouvelles publications par jour et par personne.
 -- =====================================================================
 
 create table public.photo_shares (
@@ -85,6 +87,82 @@ create policy "trip-photos : voir les photos publiques" on storage.objects for s
   using (bucket_id = 'trip-photos' and private.is_public_photo(private.photo_id_from_path(name)));
 
 -- ---------------------------------------------------------------------
+-- Modération
+-- ---------------------------------------------------------------------
+-- Signalement d'une photo publique, une fois par personne ; à 3 personnes, elle est masquée en
+-- attendant une décision (tableau de bord Supabase : voir docs/partage.md)
+create table public.photo_reports (
+  photo_id uuid not null references public.photo_shares (photo_id) on delete cascade,
+  reporter_id uuid not null references public.profiles (id) on delete cascade default auth.uid(),
+  reason text not null check (reason in ('inapproprie', 'personne', 'droits', 'spam', 'autre')),
+  details text check (details is null or char_length(details) <= 500),
+  created_at timestamptz not null default now(),
+  primary key (photo_id, reporter_id)
+);
+
+create function private.hide_reported_photo()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if (select count(*) from public.photo_reports r where r.photo_id = new.photo_id) >= 3 then
+    update public.photo_shares set hidden_at = now(), hidden_reason = 'signalements'
+    where photo_id = new.photo_id and hidden_at is null;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger photo_reports_hide after insert on public.photo_reports
+  for each row execute function private.hide_reported_photo();
+
+-- Signaler : une photo publique, pas la sienne
+create function private.can_report(p_photo uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.photo_shares s
+    where s.photo_id = p_photo and s.hidden_at is null and s.author_id <> (select auth.uid())
+  );
+$$;
+
+-- Bloquer quelqu'un : on ne voit plus ses photos, il ne voit plus les nôtres
+create table public.user_blocks (
+  blocker_id uuid not null references public.profiles (id) on delete cascade default auth.uid(),
+  blocked_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (blocker_id, blocked_id),
+  check (blocker_id <> blocked_id)
+);
+
+revoke all on function private.can_report(uuid) from public;
+grant execute on function private.can_report(uuid) to authenticated;
+
+alter table public.photo_reports enable row level security;
+create policy "mes signalements" on public.photo_reports for select to authenticated
+  using (reporter_id = (select auth.uid()));
+create policy "signaler" on public.photo_reports for insert to authenticated
+  with check (reporter_id = (select auth.uid()) and private.can_report(photo_id));
+revoke all on public.photo_reports from anon, authenticated;
+grant select, insert on public.photo_reports to authenticated;
+
+alter table public.user_blocks enable row level security;
+create policy "mes blocages" on public.user_blocks for select to authenticated
+  using (blocker_id = (select auth.uid()));
+create policy "bloquer" on public.user_blocks for insert to authenticated
+  with check (blocker_id = (select auth.uid()));
+create policy "débloquer" on public.user_blocks for delete to authenticated
+  using (blocker_id = (select auth.uid()));
+revoke all on public.user_blocks from anon, authenticated;
+grant select, insert, delete on public.user_blocks to authenticated;
+
+-- ---------------------------------------------------------------------
 -- Publier : seul l'auteur, encore membre du voyage, et dans une ville de ce voyage.
 -- Republier change la ville ou la légende, sans perdre les réactions.
 -- ---------------------------------------------------------------------
@@ -105,6 +183,10 @@ begin
   select * into v_dest from public.trip_destinations where id = p_destination and trip_id = v_photo.trip_id;
   if v_dest.id is null then
     raise exception 'La ville doit être une étape de ce voyage';
+  end if;
+  if not exists (select 1 from public.photo_shares where photo_id = p_photo)
+     and (select count(*) from public.photo_shares s where s.author_id = auth.uid() and s.published_at > now() - interval '1 day') >= 30 then
+    raise exception 'Vous avez publié 30 photos aujourd''hui : réessayez demain.';
   end if;
 
   insert into public.photo_shares (photo_id, trip_id, author_id, destination_id, city, country_code, lat, lng, caption)
@@ -170,6 +252,11 @@ as $$
     and (p_country is null or s.country_code = p_country)
     and (p_city is null or lower(s.city) = lower(p_city))
     and (p_before is null or s.published_at < p_before)
+    and not exists (
+      select 1 from public.user_blocks b
+      where (b.blocker_id = (select auth.uid()) and b.blocked_id = s.author_id)
+         or (b.blocker_id = s.author_id and b.blocked_id = (select auth.uid()))
+    )
     and (not coalesce(p_wishlist, false) or exists (
       select 1 from public.photo_reactions w
       where w.photo_id = s.photo_id and w.user_id = (select auth.uid()) and w.kind = 'wishlist'

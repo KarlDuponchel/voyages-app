@@ -316,6 +316,30 @@ export type Database = {
           },
         ]
       }
+      photo_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          photo_id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          photo_id: string
+          reason: string
+          reporter_id?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          photo_id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: []
+      }
       photo_shares: {
         Row: {
           author_id: string
@@ -757,6 +781,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
       }
       user_countries: {
         Row: {

@@ -24,3 +24,24 @@ export async function unpublishPhoto(photoId: string): Promise<void> {
   const { error } = await supabase.from('photo_shares').delete().eq('photo_id', photoId)
   if (error) throw error
 }
+
+export const REPORT_REASONS = [
+  { value: 'inapproprie', label: 'Contenu choquant ou inapproprié' },
+  { value: 'personne', label: 'On me reconnaît, je n’ai pas donné mon accord' },
+  { value: 'droits', label: 'Ce n’est pas sa photo' },
+  { value: 'spam', label: 'Publicité ou spam' },
+  { value: 'autre', label: 'Autre raison' },
+] as const
+export type ReportReason = (typeof REPORT_REASONS)[number]['value']
+
+/** Une fois par personne ; à 3 signalements, la photo est masquée en attendant une décision */
+export async function reportPhoto(photoId: string, reason: ReportReason, details?: string): Promise<void> {
+  const { error } = await supabase.from('photo_reports').insert({ photo_id: photoId, reason, details: details?.trim() || null })
+  if (error && error.code !== '23505') throw error // déjà signalée par moi : rien à faire
+}
+
+/** On ne voit plus ses photos, et il ne voit plus les nôtres */
+export async function blockUser(userId: string): Promise<void> {
+  const { error } = await supabase.from('user_blocks').insert({ blocked_id: userId })
+  if (error && error.code !== '23505') throw error
+}
