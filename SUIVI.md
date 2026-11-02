@@ -91,6 +91,20 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
 7. **Fusionner `feat/design-wayfarer` dans `main`**, puis déclarer le site dans Google Search Console.
 8. **E-mails** : les codes de connexion partent de `noreply@karlduponchel.fr` ; mieux vaut une adresse `@tripmates.app`.
 
+### Engagements des pages légales et obligations, par ordre d'importance (02/11)
+Ce que les CGV, la politique de confidentialité ou les licences promettent, et qui n'est pas encore fait.
+1. **Médiateur de la consommation** — *avant le premier paiement réel*. Obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
+2. **Open-Meteo : usage commercial** — *avant le premier paiement réel*. L'API gratuite de recherche de ville est réservée à l'usage non commercial, et une app avec abonnement est commerciale (conditions d'Open-Meteo, lues le 02/11). Choix à faire par Karl : formule payante Open-Meteo (« API Standard »), ou autre service de recherche de ville (à étudier par Claude : il faut le nom, le pays, les coordonnées et le fuseau horaire). Le crédit CC BY est affiché sous les résultats depuis le 02/11.
+3. **Rappel avant le renouvellement annuel** (article L. 215-1 du Code de la consommation, promis par les CGV) — *avant la première souscription annuelle*. Stripe → Settings → Billing → Subscriptions and emails : activer l'e-mail avant renouvellement, et les reçus.
+4. **Mesure d'audience Umami** — *dès que possible*, sinon la politique de confidentialité décrit un traitement qui n'existe pas. Installation dans Dokploy : [docs/hebergement.md](docs/hebergement.md), section 5. Sinon, demander à Claude de retirer la ligne.
+5. **Droit d'accès et de portabilité** — *à la première demande* (réponse sous un mois). Au début, à la main : exporter les lignes de la personne (profil, voyages, réservations, photos) depuis Supabase. Plus tard : un bouton « Télécharger mes données » dans le profil.
+6. **Préavis de 30 jours avant un changement de prix** (CGV, article 4) — *à chaque changement de prix*. Prévenir les abonnés par e-mail au moins 30 jours avant l'échéance concernée. Rien à coder tant que les prix ne bougent pas.
+7. **Suppression des comptes inactifs depuis 3 ans** (politique de confidentialité) — *avant octobre 2029*. Tâche planifiée : avertir par e-mail un mois avant, puis supprimer avec `delete-account`.
+8. **Nom commercial « Tripmates »** à déclarer à l'INPI (gratuit), puis l'ajouter aux mentions légales.
+9. **Relecture par un juriste** des trois pages.
+
+Fait le 02/11 : acceptation des CGV et de la politique de confidentialité indiquée sur l'écran de connexion (liens ouverts dans un nouvel onglet) ; Open-Meteo décrit correctement (OpenMeteo GmbH, Suisse, journaux 90 jours) et crédité ; Cloudflare décrit comme proxy du site.
+
 ### Pour reprendre (mis à jour le 02/11)
 - **Design « Wayfarer » en cours sur la branche `feat/design-wayfarer`** (02/11, soir) : couleurs, polices et style appliqués à toute l'app, sans toucher aux blocs. Détails dans « Refonte du design », séance du 02/11.
   - **À faire par Karl** : regarder la branche sur l'iPhone (clair et sombre), valider le thème sombre et le corail foncé des textes, puis la fusionner.

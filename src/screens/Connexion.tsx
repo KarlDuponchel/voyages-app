@@ -78,6 +78,18 @@ export function Connexion() {
           <p className="caption muted" style={{ margin: 0 }}>
             Pas de mot de passe : on vous envoie un code à chaque connexion. Le compte est créé automatiquement la première fois.
           </p>
+          {/* Nouvel onglet : dans l'app installée, une page ouverte sur place n'aurait pas de bouton retour */}
+          <p className="caption muted connexion__legal">
+            En continuant, vous acceptez les{' '}
+            <a href="/cgv" target="_blank" rel="noopener">
+              conditions générales
+            </a>{' '}
+            et la{' '}
+            <a href="/confidentialite" target="_blank" rel="noopener">
+              politique de confidentialité
+            </a>
+            .
+          </p>
         </form>
       ) : (
         <form key="code" onSubmit={submitCode}>

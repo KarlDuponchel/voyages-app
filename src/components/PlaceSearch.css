@@ -46,3 +46,12 @@
 .place-clear svg {
   color: inherit;
 }
+
+/* Crédit des données de lieux (licence CC BY 4.0) */
+.place-credit {
+  padding: 6px 10px 2px;
+  font-size: 11px;
+}
+.place-credit a {
+  text-decoration: underline;
+}

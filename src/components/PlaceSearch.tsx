@@ -94,6 +94,14 @@ export function PlaceSearch({
               </button>
             </li>
           ))}
+          {/* Mention exigée par la licence CC BY 4.0 d'Open-Meteo (lieux issus de GeoNames) */}
+          <li className="place-credit caption muted">
+            Lieux :{' '}
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener">
+              Open-Meteo.com
+            </a>
+            , GeoNames (CC BY 4.0)
+          </li>
         </ul>
       )}
     </div>

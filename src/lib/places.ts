@@ -22,7 +22,7 @@ type OpenMeteoResult = {
 }
 
 /**
- * Recherche de villes via le service gratuit Open-Meteo (sans clé ni compte).
+ * Recherche de villes via Open-Meteo (sans clé ni compte). Attention : l'API gratuite est réservée à l'usage non commercial (voir SUIVI.md).
  * Seul le texte tapé est envoyé.
  */
 export async function searchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
