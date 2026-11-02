@@ -93,7 +93,8 @@ export async function listPublicPlaces(): Promise<PublicPlace[]> {
 
 /** Une réaction par personne : la même la retire, une autre la remplace */
 export async function setReaction(photoId: string, kind: ReactionKind | null): Promise<void> {
-  const { error } = await supabase.rpc('react_to_photo', { p_photo: photoId, p_kind: kind })
+  // p_kind vide retire la réaction (les types générés ne savent pas qu'un argument SQL peut être null)
+  const { error } = await supabase.rpc('react_to_photo', { p_photo: photoId, p_kind: kind as string })
   if (error) throw error
   // Prévenir l'auteur (regroupé côté serveur) ; une notification manquée n'empêche pas de réagir
   if (kind) supabase.functions.invoke('notify-reaction', { body: { photoId } }).catch(() => {})

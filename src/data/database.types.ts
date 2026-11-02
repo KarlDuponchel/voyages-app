@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -314,6 +314,13 @@ export type Database = {
             referencedRelation: "photo_shares"
             referencedColumns: ["photo_id"]
           },
+          {
+            foreignKeyName: "photo_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       photo_reports: {
@@ -338,7 +345,22 @@ export type Database = {
           reason?: string
           reporter_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "photo_reports_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_shares"
+            referencedColumns: ["photo_id"]
+          },
+          {
+            foreignKeyName: "photo_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       photo_shares: {
         Row: {
@@ -388,10 +410,31 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "photo_shares_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_shares_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "trip_destinations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "photo_shares_photo_id_fkey"
             columns: ["photo_id"]
             isOneToOne: true
             referencedRelation: "trip_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_shares_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -501,7 +544,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trip_destinations: {
         Row: {
@@ -801,7 +852,22 @@ export type Database = {
           blocker_id?: string
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_countries: {
         Row: {
@@ -918,7 +984,7 @@ export type Database = {
         Returns: undefined
       }
       react_to_photo: {
-        Args: { p_kind: string | null; p_photo: string }
+        Args: { p_kind: string; p_photo: string }
         Returns: undefined
       }
       regenerate_import_alias: { Args: never; Returns: string }
