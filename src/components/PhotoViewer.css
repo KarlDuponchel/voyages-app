@@ -98,6 +98,46 @@
   flex: 1;
 }
 
+/* Partage public */
+.viewer-photo__public {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.viewer-photo__info .viewer-photo__public {
+  color: #f5f1e8;
+}
+.publish .input {
+  color: #f5f1e8;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.publish__cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.publish__cities button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: #f5f1e8;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.publish__cities button.is-active {
+  border-color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 25%, transparent);
+}
+.publish__rights {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.publish__rights input {
+  margin-top: 2px;
+  accent-color: var(--accent-sunset);
+}
+
 @keyframes viewer-photo-in {
   from {
     opacity: 0;

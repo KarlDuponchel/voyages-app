@@ -1,4 +1,4 @@
-import { ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
+import { Globe, ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTrips } from '../data/store'
@@ -23,6 +23,11 @@ function Thumb({ photo, onOpen }: { photo: TripPhoto; onOpen: () => void }) {
   return (
     <button className="photos__thumb" onClick={onOpen} aria-label={photo.kind === 'video' ? 'Ouvrir la vidéo' : 'Ouvrir la photo'}>
       {url && <img src={url} alt="" loading="lazy" draggable={false} />}
+      {photo.share && !photo.share.hidden && (
+        <span className="photos__public" title={`Publique · ${photo.share.city}`}>
+          <Globe size={11} />
+        </span>
+      )}
       {photo.kind === 'video' && (
         <span className="photos__duration">
           <Play size={11} fill="currentColor" /> {photo.durationSeconds ? formatDuration(photo.durationSeconds) : ''}

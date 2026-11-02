@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { dropFromCache, getCachedBlob, putInCache } from './files'
 import { isVideoFile, MediaError, preparePhoto, prepareVideo } from './media'
+import type { PhotoShare } from './sharing'
 import { supabase } from './supabase'
 
 /**
@@ -25,6 +26,8 @@ export type TripPhoto = {
   date: string
   uploadedBy?: string
   caption?: string
+  /** Rendue publique par son auteur */
+  share?: PhotoShare
 }
 
 type Row = {
@@ -41,6 +44,7 @@ type Row = {
   created_at: string
   uploaded_by: string | null
   caption: string | null
+  photo_shares: { city: string; destination_id: string | null; caption: string | null; hidden_at: string | null } | null
 }
 
 const toPhoto = (r: Row): TripPhoto => ({
@@ -56,12 +60,22 @@ const toPhoto = (r: Row): TripPhoto => ({
   date: r.taken_at ?? r.created_at,
   uploadedBy: r.uploaded_by ?? undefined,
   caption: r.caption ?? undefined,
+  share: r.photo_shares
+    ? {
+        city: r.photo_shares.city,
+        destinationId: r.photo_shares.destination_id ?? undefined,
+        caption: r.photo_shares.caption ?? undefined,
+        hidden: r.photo_shares.hidden_at !== null,
+      }
+    : undefined,
 })
 
 export async function listPhotos(tripId: string): Promise<TripPhoto[]> {
   const { data, error } = await supabase
     .from('trip_photos')
-    .select('id, kind, path, thumb_path, mime_type, width, height, duration_seconds, size_bytes, taken_at, created_at, uploaded_by, caption')
+    .select(
+      'id, kind, path, thumb_path, mime_type, width, height, duration_seconds, size_bytes, taken_at, created_at, uploaded_by, caption, photo_shares ( city, destination_id, caption, hidden_at )',
+    )
     .eq('trip_id', tripId)
   if (error) throw error
   return ((data ?? []) as Row[]).map(toPhoto).sort((a, b) => a.date.localeCompare(b.date))
