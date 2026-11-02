@@ -30,129 +30,6 @@
 5. Retirer ce qui est écrit en dur : « Bonjour Karl », départ de Paris pour les distances, liste fixe des pays visités (`src/data/countries.ts`).
 6. Stockage des PDF de billets, puis des photos.
 
-### 8. Nouvelle direction artistique : maquettes Figma « Wayfarer » (ajoutées par Karl le 02/11)
-- **Où** : dossier [figma_mockups/Carte interactive de voyages](figma_mockups/Carte%20interactive%20de%20voyages), un export Figma Make (React et Tailwind). On s'en sert comme référence, sans le copier tel quel.
-  - [src/App.tsx](figma_mockups/Carte%20interactive%20de%20voyages/src/App.tsx) : une page d'accueil publique et la maquette de l'accueil mobile.
-  - [src/index.css](figma_mockups/Carte%20interactive%20de%20voyages/src/index.css) : les styles.
-  - [public/wayfarer-palette.css](figma_mockups/Carte%20interactive%20de%20voyages/public/wayfarer-palette.css) : la palette.
-- **Typographie** :
-  - **Titres** : DM Serif Display (400, avec l'italique pour les mots mis en valeur, en corail). Elle remplace Bricolage Grotesque.
-    - à embarquer avec `@fontsource/dm-serif-display`, pour l'usage hors ligne, comme les polices actuelles ;
-    - à changer dans `--font-display` (`src/styles.css`).
-  - **Texte** : DM Sans, déjà en place. On ajoute la graisse 700 pour les petites étiquettes en capitales espacées.
-- **Palette Wayfarer**, à reporter dans `src/theme/palettes.ts`, le seul fichier des couleurs :
-
-  | Nom | Valeur | Usage proposé (clair) |
-  |---|---|---|
-  | Forest | `#183F37` | `textPrimary`, boutons sombres, contours du globe |
-  | Deep Forest | `#0F302A` | titres ; fond du thème sombre |
-  | Warm Cream | `#F7F3E9` | `bgBase` |
-  | Paper | `#FFFCF4` | `bgSurface` (cartes) |
-  | Travel Coral | `#F26B4B` | `accentSunset` (boutons, pays visités) |
-  | Golden Hour | `#E9AD3A` | `accentSun` (repères, étiquettes) |
-  | Soft Sage | `#DFE5CF` | `bgElevated`, terres du globe |
-
-  - **Bordures** : `rgba(24, 63, 55, 0.16)`. **Texte secondaire** : `#597069` ou `#70817B`.
-  - **Le dégradé « sunset »** (`gradients` dans `palettes.ts`) passe du corail au doré : `#F26B4B` → `#E9AD3A`.
-  - **Contraste à corriger** : le corail sur fond crème n'atteint pas le minimum lisible pour du petit texte. On garde `#F26B4B` pour les aplats et les boutons, et on prend un corail plus foncé pour le texte, vers `#C4472B`, à valider.
-  - **Thème sombre** : absent des maquettes. Proposition, à valider avec Karl :
-    - fond Deep Forest `#0F302A`, cartes Forest `#183F37`, éléments posés `#22493F` ou `#366158` ;
-    - texte crème `#F7F3E9`, texte secondaire `#ABC0BA` (celui du bandeau des fonctionnalités) ;
-    - mêmes accents corail et doré ;
-    - étoiles de l'écran Monde retirées ou très atténuées.
-- **Éléments à reprendre des maquettes** :
-  - **En-tête de l'accueil** : petit sur-titre corail (« BONJOUR, KARL ») et titre à empattements sur deux lignes. Les textes doivent rester neutres : pas de « Où êtes-vous allée ? », plutôt « Votre monde, en un regard ».
-  - **Globe « papier »** :
-    - océan crème dégradé (`#FFFDF5` → `#E5E5D2`), terres sauge (`#CAD3AD`, contour `#718872`) ;
-    - pays visités en corail, contour Forest ;
-    - orbites fines décoratives ;
-    - repères ronds bordés de blanc, avec une animation « ping » sur le repère actif ;
-    - carte du lieu en verre dépoli en bas.
-  - **Chiffres** : 3 colonnes séparées par des filets, nombres en DM Serif, libellés en petites capitales espacées.
-  - **Carte souvenir** : photo pleine largeur assombrie vers le bas, dates en doré, ville en serif, « 18 souvenirs · 9 jours », cœur en haut à droite. À utiliser pour Souvenirs et pour « Les souvenirs de la communauté ».
-  - **Barre d'onglets en verre** : flottante, arrondie, flou et reflet, petit point corail sur l'onglet actif, bouton « + » central corail légèrement incliné.
-    - **À décider** : la maquette a 4 onglets et le « + », l'app en a 5 (avec Explorer). Faut-il regrouper Souvenirs et Explorer, ou garder 5 onglets sans « + » central ?
-  - **Boutons** : en pilule (999 px), corail pour l'action principale, Forest pour les autres. Ils montent légèrement au survol, et rien ne bouge au toucher.
-- **À ne pas reprendre** :
-  - **Le nom** : « Wayfarer » est celui de la maquette ; l'app s'appelle Voyages, avec le domaine tripmates.app. **Choix du nom à faire par Karl.**
-  - **Le contenu factice** : les faux chiffres (« 12 000+ voyageurs », 24 pays…), la photo Unsplash, les initiales « ML ».
-  - **La section « palette »** de la page d'accueil : c'est un outil de travail, pas du contenu.
-- **Page d'accueil publique** (hors de l'app, pour `tripmates.app` à l'ouverture) :
-  - à reprendre de la maquette : héros « Chaque voyage laisse une trace », bandeau des fonctionnalités, présentation mobile, citation, pied de page ;
-  - avec de vrais chiffres ou sans chiffres, et un bouton « Ouvrir l'app ».
-  - À faire avec l'étape 7 (ouverture au public).
-- **Ordre conseillé** :
-  1. **Couleurs et polices** dans `palettes.ts` et `styles.css` : toute l'app change d'un coup. Vérifier le contraste dans les deux thèmes.
-  2. **Écran Monde** : en-tête, globe papier, chiffres, prochain départ, communauté en cartes souvenir.
-  3. **Barre d'onglets en verre**, une fois tranchée la question des onglets.
-  4. **Les autres écrans un par un** (Voyages, Voyage, Billet, Souvenirs, Explorer, Profil), avec une capture avant et après sur iPhone.
-  5. **Page d'accueil publique.**
-- **Garder dans Git** le dossier `figma_mockups`, avec son sous-dossier `.figma`, que Figma Make demande de commiter. Il n'est pas compilé avec l'app : Vite ne lit que `src/`.
-
-### 9. Héberger l'app sur un VPS avec Dokploy (au lieu de Vercel Pro)
-- **Pourquoi** :
-  - Vercel Hobby interdit l'usage commercial, et Vercel Pro coûte 20 $ par mois.
-  - L'app est un site statique (une PWA compilée par Vite, sans serveur) : un petit VPS suffit, pour environ 4 à 6 € par mois.
-  - Point d'équilibre : les frais fixes passent d'environ 43 € à 28 à 30 € par mois, soit environ 17 à 20 abonnés au lieu de 25 à 35.
-  - Rien ne change pour Supabase (base, fonctions, stockage) ni pour Cloudflare (relais e-mail).
-- **Serveur** :
-  - Hetzner CX22 (2 vCPU, 4 Go, Allemagne ou Finlande, environ 4,50 € par mois), ou équivalent chez OVH ou Scaleway, en Europe pour le RGPD ;
-  - Ubuntu 24.04, accès SSH par clé, pare-feu limité à 22, 80 et 443.
-- **Dokploy** : installation en une commande (voir docs.dokploy.com). Il gère :
-  - Traefik et les certificats HTTPS (Let's Encrypt) ;
-  - le déploiement automatique à chaque push sur `main`, depuis GitHub ;
-  - les variables d'environnement ;
-  - le retour à une version précédente.
-- **Ce qu'il faut ajouter au projet** (travail de code, pour Claude) :
-  - **Un `Dockerfile` en deux étapes** :
-    - Node 22 : `npm ci` puis `npm run build`, avec les variables `VITE_*` passées à la compilation ;
-    - puis nginx (ou Caddy), qui sert `dist/`.
-  - **Une configuration nginx** :
-    - renvoyer `index.html` pour toutes les pages de l'app, ce que fait aujourd'hui `vercel.json` ;
-    - `Cache-Control: no-cache` sur `index.html`, `sw.js` et `manifest.webmanifest`, pour que l'app installée se mette à jour ;
-    - un cache d'un an sur `assets/*` ;
-    - la compression, les en-têtes de sécurité et le bon type pour `.webmanifest`.
-  - **Remplacer Vercel Analytics et Speed Insights**, qui ne marchent que sur Vercel : soit Umami installé sur le même Dokploy, soit rien. À mettre à jour dans la politique de confidentialité.
-  - **Supprimer `vercel.json`** une fois la bascule faite.
-- **Bascule** (à faire en même temps que le passage sur `tripmates.app`, pour ne changer d'adresse qu'une fois) :
-  1. **DNS chez Cloudflare** : `app.tripmates.app` (ou la racine), en enregistrement A vers le VPS, sans proxy au début, pour que Let's Encrypt fonctionne.
-  2. **Supabase → Authentication → URL Configuration** : Site URL et Redirect URLs avec la nouvelle adresse.
-  3. **Secret `APP_URL`** à la nouvelle adresse : retours de Stripe, portail client.
-  4. **Vérifier** sur la nouvelle adresse : connexion par code, invitations, notifications (nouvelle autorisation), hors ligne, mise à jour de l'app installée.
-  5. **Prévenir les utilisateurs** : l'app installée est liée à son adresse. Il faudra la réinstaller depuis la nouvelle adresse et se reconnecter une fois. Les données restent, elles sont dans Supabase.
-  6. **Garder Vercel** une ou deux semaines, avec une redirection vers la nouvelle adresse, puis le fermer.
-- **Suivi** :
-  - Uptime Kuma, sur le même Dokploy, avec une alerte par e-mail ;
-  - mises à jour de sécurité automatiques d'Ubuntu (`unattended-upgrades`).
-
-### 10. Passer Stripe en réel (fin du mode test)
-- **Avant tout** (Karl) :
-  - **Statut** : micro-entreprise avec un SIRET, ou autre statut avec l'aide du comptable, et un compte bancaire professionnel.
-  - **TVA** :
-    - en franchise : mention « TVA non applicable, art. 293 B du CGI » sur les reçus ;
-    - sinon, TVA française, et Stripe Tax au-delà de 10 000 € de ventes à des particuliers d'autres pays de l'UE.
-  - **Activer le compte Stripe** (Switch to live account) : identité, entreprise, compte bancaire, nom affiché sur les relevés (par exemple « TRIPMATES »).
-- **Documents légaux**, en ligne avant le premier paiement réel : CGV, CGU, mentions légales et politique de confidentialité (photos, IA, paiement, sous-traitants), à faire relire.
-  - **Droit de rétractation** : pour un service numérique qui démarre tout de suite, l'acheteur doit accepter expressément de renoncer à son délai de 14 jours.
-- **Dans le code** (Claude) :
-  - **Checkout** :
-    - case obligatoire d'acceptation des CGV (`consent_collection[terms_of_service]=required`, avec l'adresse des CGV dans les réglages Stripe) ;
-    - texte sur la renonciation au délai de rétractation (`custom_text`).
-  - **Prix affichés** (`PRICES` dans `src/lib/plan.ts`) : à vérifier contre les prix réels.
-  - **Message d'erreur détaillé** : il ne s'affiche qu'en mode test, il disparaît tout seul avec une clé `sk_live_`.
-- **Dans Stripe, en mode réel** (les objets de test ne sont pas recopiés) :
-  1. Recréer le produit Premium et ses deux prix, puis noter les nouveaux `price_…`.
-  2. Régler le portail client : résiliation à la fin de la période, carte, factures.
-  3. Créer un nouveau webhook vers la même adresse `stripe-webhook`, avec les 4 événements, et noter le nouveau `whsec_…`.
-  4. Personnaliser : logo, couleurs Wayfarer, reçus envoyés par e-mail, adresse de support.
-- **Bascule** :
-  - remplacer les secrets Supabase (`STRIPE_SECRET_KEY=sk_live_…`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTH`, `STRIPE_PRICE_YEAR`) ;
-  - pas besoin de redéployer.
-- **Abonnements de test** : la colonne `stripe_customer_id` pointe vers des clients de test. Les effacer avant la bascule : `delete from subscriptions where status <> 'offert';`.
-- **Vérification** :
-  - un vrai paiement mensuel avec ta propre carte, puis le remboursement et la résiliation dans Stripe ;
-  - contrôler que le profil repasse en « Gratuit » à l'échéance.
-
 ### Plus tard
 - Lecture automatique des e-mails transférés et des PDF, par l'IA.
 - Import des photos et vidéos, souvenirs automatiques.
@@ -186,7 +63,14 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
-### Pour reprendre (mis à jour le 28/10, fin de soirée)
+### Pour reprendre (mis à jour le 02/11)
+- **Prochaine séance : refaire le design d'après les maquettes Figma** du dossier `figma_mockups/`.
+  - Le plan complet est à l'étape 8 de la feuille de route, « Nouvelle direction artistique ».
+  - Avant de commencer, Karl doit trancher : le nom de l'app (Wayfarer ou Voyages), les onglets (4 et un « + », ou 5 avec Explorer), et les couleurs du thème sombre.
+- **Depuis le 02/11, en ligne** : partage public, Explorer, réactions, premium (Stripe en sandbox), code d'accès. Détails dans la séance du 02/11, plus bas.
+- **Ensuite** : étape 9 (VPS avec Dokploy, en même temps que `tripmates.app`), puis étape 10 (Stripe en réel).
+
+### Pour reprendre (28/10, fin de soirée)
 - **Tout est sur `main`**, mis en ligne par Vercel, et déployé côté Supabase et Cloudflare. Aucune branche en attente.
 - **En service** :
   - billets PDF ; import par l'IA (billets et e-mails, Haiku 5.5) ; notifications « e-mail analysé » ;
@@ -198,7 +82,7 @@
 ### La suite, dans l'ordre (décidée le 28/10)
 1. **Tester « Revivre » sur l'iPhone** (Karl) : stories, son des vidéos, appui long, glisser pour fermer.
 2. **Test à deux avec Louna** (Karl) : invitation, puis chacun ajoute billets et photos. Tout le partage n'a encore jamais été vécu à deux.
-3. **Direction artistique** : Karl fait les maquettes (prompt de retouche dans [prompt-maquettes.md](docs/prompt-maquettes.md) : Éditorial, Carnet de bord ou Signalétique, moins d'arrondis) ; ensuite, Claude applique la direction choisie, écran par écran.
+3. **Direction artistique** : maquettes « Wayfarer » livrées par Karl le 02/11 dans `figma_mockups/`. **Prochaine séance** : les appliquer, en suivant l'étape 8 de la feuille de route (« Nouvelle direction artistique »).
 4. **Comptes premium** :
    - **gratuit** : 5 lectures par l'IA, photos dans 2 voyages et 250 Mo (300 à 400 photos) ;
    - **premium** : 20 Go, IA presque illimitée ;
@@ -534,6 +418,129 @@
 - Revoir les textes des notifications (ton choisi provisoirement le 26/10). Idée : un emoji selon le type de réservation (🏨 hôtel, 🚆 train, 🎟️ activité, 🍽️ restaurant…) au lieu du ✈️ fixe. Toutes les réservations sont déjà notifiées, quel que soit leur type.
 - CGU et politique de confidentialité, avec la liste des sous-traitants : Supabase, Vercel, Open-Meteo, SMTP, IA.
 - Gestion des quotas et des coûts, nom de domaine, page d'accueil.
+
+### 8. Nouvelle direction artistique : maquettes Figma « Wayfarer » (ajoutées par Karl le 02/11)
+- **Où** : dossier [figma_mockups/Carte interactive de voyages](figma_mockups/Carte%20interactive%20de%20voyages), un export Figma Make (React et Tailwind). On s'en sert comme référence, sans le copier tel quel.
+  - [src/App.tsx](figma_mockups/Carte%20interactive%20de%20voyages/src/App.tsx) : une page d'accueil publique et la maquette de l'accueil mobile.
+  - [src/index.css](figma_mockups/Carte%20interactive%20de%20voyages/src/index.css) : les styles.
+  - [public/wayfarer-palette.css](figma_mockups/Carte%20interactive%20de%20voyages/public/wayfarer-palette.css) : la palette.
+- **Typographie** :
+  - **Titres** : DM Serif Display (400, avec l'italique pour les mots mis en valeur, en corail). Elle remplace Bricolage Grotesque.
+    - à embarquer avec `@fontsource/dm-serif-display`, pour l'usage hors ligne, comme les polices actuelles ;
+    - à changer dans `--font-display` (`src/styles.css`).
+  - **Texte** : DM Sans, déjà en place. On ajoute la graisse 700 pour les petites étiquettes en capitales espacées.
+- **Palette Wayfarer**, à reporter dans `src/theme/palettes.ts`, le seul fichier des couleurs :
+
+  | Nom | Valeur | Usage proposé (clair) |
+  |---|---|---|
+  | Forest | `#183F37` | `textPrimary`, boutons sombres, contours du globe |
+  | Deep Forest | `#0F302A` | titres ; fond du thème sombre |
+  | Warm Cream | `#F7F3E9` | `bgBase` |
+  | Paper | `#FFFCF4` | `bgSurface` (cartes) |
+  | Travel Coral | `#F26B4B` | `accentSunset` (boutons, pays visités) |
+  | Golden Hour | `#E9AD3A` | `accentSun` (repères, étiquettes) |
+  | Soft Sage | `#DFE5CF` | `bgElevated`, terres du globe |
+
+  - **Bordures** : `rgba(24, 63, 55, 0.16)`. **Texte secondaire** : `#597069` ou `#70817B`.
+  - **Le dégradé « sunset »** (`gradients` dans `palettes.ts`) passe du corail au doré : `#F26B4B` → `#E9AD3A`.
+  - **Contraste à corriger** : le corail sur fond crème n'atteint pas le minimum lisible pour du petit texte. On garde `#F26B4B` pour les aplats et les boutons, et on prend un corail plus foncé pour le texte, vers `#C4472B`, à valider.
+  - **Thème sombre** : absent des maquettes. Proposition, à valider avec Karl :
+    - fond Deep Forest `#0F302A`, cartes Forest `#183F37`, éléments posés `#22493F` ou `#366158` ;
+    - texte crème `#F7F3E9`, texte secondaire `#ABC0BA` (celui du bandeau des fonctionnalités) ;
+    - mêmes accents corail et doré ;
+    - étoiles de l'écran Monde retirées ou très atténuées.
+- **Éléments à reprendre des maquettes** :
+  - **En-tête de l'accueil** : petit sur-titre corail (« BONJOUR, KARL ») et titre à empattements sur deux lignes. Les textes doivent rester neutres : pas de « Où êtes-vous allée ? », plutôt « Votre monde, en un regard ».
+  - **Globe « papier »** :
+    - océan crème dégradé (`#FFFDF5` → `#E5E5D2`), terres sauge (`#CAD3AD`, contour `#718872`) ;
+    - pays visités en corail, contour Forest ;
+    - orbites fines décoratives ;
+    - repères ronds bordés de blanc, avec une animation « ping » sur le repère actif ;
+    - carte du lieu en verre dépoli en bas.
+  - **Chiffres** : 3 colonnes séparées par des filets, nombres en DM Serif, libellés en petites capitales espacées.
+  - **Carte souvenir** : photo pleine largeur assombrie vers le bas, dates en doré, ville en serif, « 18 souvenirs · 9 jours », cœur en haut à droite. À utiliser pour Souvenirs et pour « Les souvenirs de la communauté ».
+  - **Barre d'onglets en verre** : flottante, arrondie, flou et reflet, petit point corail sur l'onglet actif, bouton « + » central corail légèrement incliné.
+    - **À décider** : la maquette a 4 onglets et le « + », l'app en a 5 (avec Explorer). Faut-il regrouper Souvenirs et Explorer, ou garder 5 onglets sans « + » central ?
+  - **Boutons** : en pilule (999 px), corail pour l'action principale, Forest pour les autres. Ils montent légèrement au survol, et rien ne bouge au toucher.
+- **À ne pas reprendre** :
+  - **Le nom** : « Wayfarer » est celui de la maquette ; l'app s'appelle Voyages, avec le domaine tripmates.app. **Choix du nom à faire par Karl.**
+  - **Le contenu factice** : les faux chiffres (« 12 000+ voyageurs », 24 pays…), la photo Unsplash, les initiales « ML ».
+  - **La section « palette »** de la page d'accueil : c'est un outil de travail, pas du contenu.
+- **Page d'accueil publique** (hors de l'app, pour `tripmates.app` à l'ouverture) :
+  - à reprendre de la maquette : héros « Chaque voyage laisse une trace », bandeau des fonctionnalités, présentation mobile, citation, pied de page ;
+  - avec de vrais chiffres ou sans chiffres, et un bouton « Ouvrir l'app ».
+  - À faire avec l'étape 7 (ouverture au public).
+- **Ordre conseillé** :
+  1. **Couleurs et polices** dans `palettes.ts` et `styles.css` : toute l'app change d'un coup. Vérifier le contraste dans les deux thèmes.
+  2. **Écran Monde** : en-tête, globe papier, chiffres, prochain départ, communauté en cartes souvenir.
+  3. **Barre d'onglets en verre**, une fois tranchée la question des onglets.
+  4. **Les autres écrans un par un** (Voyages, Voyage, Billet, Souvenirs, Explorer, Profil), avec une capture avant et après sur iPhone.
+  5. **Page d'accueil publique.**
+- **Garder dans Git** le dossier `figma_mockups`, avec son sous-dossier `.figma`, que Figma Make demande de commiter. Il n'est pas compilé avec l'app : Vite ne lit que `src/`.
+
+### 9. Héberger l'app sur un VPS avec Dokploy (au lieu de Vercel Pro)
+- **Pourquoi** :
+  - Vercel Hobby interdit l'usage commercial, et Vercel Pro coûte 20 $ par mois.
+  - L'app est un site statique (une PWA compilée par Vite, sans serveur) : un petit VPS suffit, pour environ 4 à 6 € par mois.
+  - Point d'équilibre : les frais fixes passent d'environ 43 € à 28 à 30 € par mois, soit environ 17 à 20 abonnés au lieu de 25 à 35.
+  - Rien ne change pour Supabase (base, fonctions, stockage) ni pour Cloudflare (relais e-mail).
+- **Serveur** :
+  - Hetzner CX22 (2 vCPU, 4 Go, Allemagne ou Finlande, environ 4,50 € par mois), ou équivalent chez OVH ou Scaleway, en Europe pour le RGPD ;
+  - Ubuntu 24.04, accès SSH par clé, pare-feu limité à 22, 80 et 443.
+- **Dokploy** : installation en une commande (voir docs.dokploy.com). Il gère :
+  - Traefik et les certificats HTTPS (Let's Encrypt) ;
+  - le déploiement automatique à chaque push sur `main`, depuis GitHub ;
+  - les variables d'environnement ;
+  - le retour à une version précédente.
+- **Ce qu'il faut ajouter au projet** (travail de code, pour Claude) :
+  - **Un `Dockerfile` en deux étapes** :
+    - Node 22 : `npm ci` puis `npm run build`, avec les variables `VITE_*` passées à la compilation ;
+    - puis nginx (ou Caddy), qui sert `dist/`.
+  - **Une configuration nginx** :
+    - renvoyer `index.html` pour toutes les pages de l'app, ce que fait aujourd'hui `vercel.json` ;
+    - `Cache-Control: no-cache` sur `index.html`, `sw.js` et `manifest.webmanifest`, pour que l'app installée se mette à jour ;
+    - un cache d'un an sur `assets/*` ;
+    - la compression, les en-têtes de sécurité et le bon type pour `.webmanifest`.
+  - **Remplacer Vercel Analytics et Speed Insights**, qui ne marchent que sur Vercel : soit Umami installé sur le même Dokploy, soit rien. À mettre à jour dans la politique de confidentialité.
+  - **Supprimer `vercel.json`** une fois la bascule faite.
+- **Bascule** (à faire en même temps que le passage sur `tripmates.app`, pour ne changer d'adresse qu'une fois) :
+  1. **DNS chez Cloudflare** : `app.tripmates.app` (ou la racine), en enregistrement A vers le VPS, sans proxy au début, pour que Let's Encrypt fonctionne.
+  2. **Supabase → Authentication → URL Configuration** : Site URL et Redirect URLs avec la nouvelle adresse.
+  3. **Secret `APP_URL`** à la nouvelle adresse : retours de Stripe, portail client.
+  4. **Vérifier** sur la nouvelle adresse : connexion par code, invitations, notifications (nouvelle autorisation), hors ligne, mise à jour de l'app installée.
+  5. **Prévenir les utilisateurs** : l'app installée est liée à son adresse. Il faudra la réinstaller depuis la nouvelle adresse et se reconnecter une fois. Les données restent, elles sont dans Supabase.
+  6. **Garder Vercel** une ou deux semaines, avec une redirection vers la nouvelle adresse, puis le fermer.
+- **Suivi** :
+  - Uptime Kuma, sur le même Dokploy, avec une alerte par e-mail ;
+  - mises à jour de sécurité automatiques d'Ubuntu (`unattended-upgrades`).
+
+### 10. Passer Stripe en réel (fin du mode test)
+- **Avant tout** (Karl) :
+  - **Statut** : micro-entreprise avec un SIRET, ou autre statut avec l'aide du comptable, et un compte bancaire professionnel.
+  - **TVA** :
+    - en franchise : mention « TVA non applicable, art. 293 B du CGI » sur les reçus ;
+    - sinon, TVA française, et Stripe Tax au-delà de 10 000 € de ventes à des particuliers d'autres pays de l'UE.
+  - **Activer le compte Stripe** (Switch to live account) : identité, entreprise, compte bancaire, nom affiché sur les relevés (par exemple « TRIPMATES »).
+- **Documents légaux**, en ligne avant le premier paiement réel : CGV, CGU, mentions légales et politique de confidentialité (photos, IA, paiement, sous-traitants), à faire relire.
+  - **Droit de rétractation** : pour un service numérique qui démarre tout de suite, l'acheteur doit accepter expressément de renoncer à son délai de 14 jours.
+- **Dans le code** (Claude) :
+  - **Checkout** :
+    - case obligatoire d'acceptation des CGV (`consent_collection[terms_of_service]=required`, avec l'adresse des CGV dans les réglages Stripe) ;
+    - texte sur la renonciation au délai de rétractation (`custom_text`).
+  - **Prix affichés** (`PRICES` dans `src/lib/plan.ts`) : à vérifier contre les prix réels.
+  - **Message d'erreur détaillé** : il ne s'affiche qu'en mode test, il disparaît tout seul avec une clé `sk_live_`.
+- **Dans Stripe, en mode réel** (les objets de test ne sont pas recopiés) :
+  1. Recréer le produit Premium et ses deux prix, puis noter les nouveaux `price_…`.
+  2. Régler le portail client : résiliation à la fin de la période, carte, factures.
+  3. Créer un nouveau webhook vers la même adresse `stripe-webhook`, avec les 4 événements, et noter le nouveau `whsec_…`.
+  4. Personnaliser : logo, couleurs Wayfarer, reçus envoyés par e-mail, adresse de support.
+- **Bascule** :
+  - remplacer les secrets Supabase (`STRIPE_SECRET_KEY=sk_live_…`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTH`, `STRIPE_PRICE_YEAR`) ;
+  - pas besoin de redéployer.
+- **Abonnements de test** : la colonne `stripe_customer_id` pointe vers des clients de test. Les effacer avant la bascule : `delete from subscriptions where status <> 'offert';`.
+- **Vérification** :
+  - un vrai paiement mensuel avec ta propre carte, puis le remboursement et la résiliation dans Stripe ;
+  - contrôler que le profil repasse en « Gratuit » à l'échéance.
 
 ### Plus tard
 - Bilan annuel des voyages (« Wrapped »).
