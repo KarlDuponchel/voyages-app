@@ -76,7 +76,10 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
    - **À corriger** (détail dans [docs/hebergement.md](docs/hebergement.md), « Cloudflare devant le serveur ») : le serveur présente le certificat par défaut de Traefik ; installer un certificat d'origine Cloudflare et passer en « Full (strict) ». Et `www.tripmates.app` répond 404 : ajouter la redirection vers `tripmates.app`.
    - **Reste de la bascule** : Supabase (Site URL, Redirect URLs), secret `APP_URL`, réinstallation de l'app sur les téléphones, redirection de l'ancienne adresse Vercel.
 4. **Domaine** (dans la bascule de docs/hebergement.md) : `tripmates.app` vers le VPS ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
-5. **Pages légales** : compléter ce qui est surligné en jaune (éditeur, SIRET, TVA, médiateur de la consommation), créer `contact@tripmates.app` (Cloudflare Email Routing), faire relire.
+5. **Pages légales** : complétées le 02/11 (Karl Duponchel, EI, SIRET 991 899 378 00012 vérifié dans l'annuaire des entreprises, adresse du siège, TVA non applicable art. 293 B, VPS OVH en Allemagne, e-mails par Resend, Supabase Pte. Ltd d'après son DPA, CGV en vigueur au 2 novembre 2026).
+   - **Reste : le médiateur de la consommation**, obligatoire pour vendre à des particuliers (articles L. 612-1 et L. 641-1 du Code de la consommation, amende jusqu'à 15 000 €). Adhérer à un médiateur agréé (CM2C, Médicys, AME Conso…), puis donner son nom, son adresse et son site à Claude pour l'article 14 des CGV. Seul champ encore surligné.
+   - **Nom commercial « Tripmates »** non déclaré : à ajouter à l'INPI (modification gratuite), puis le citer dans les mentions légales.
+   - Faire relire par un juriste.
 6. **Stripe en réel** (détail à l'étape 10) :
    - activer le compte (SIRET, compte bancaire) ;
    - **adresse des CGV** dans Paramètres → Informations publiques (`https://tripmates.app/cgv`), **en test comme en réel, avant de déployer `billing`**, sinon Stripe refuse de créer le paiement ;
