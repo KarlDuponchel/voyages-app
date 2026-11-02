@@ -76,9 +76,9 @@
 **Avant le premier vrai paiement** (dans cet ordre)
 1. **Médiateur de la consommation** : obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
 2. **Open-Meteo remplacé par notre propre base de villes** (décision de Karl, 03/11 ; détail dans [docs/lieux.md](docs/lieux.md)). **Code fait et testé**, pas encore en ligne. À faire, **dans cet ordre** :
-   1. appliquer la migration `20261103110000_lieux.sql` (`npx supabase db push --remote`) ;
-   2. charger les villes : `node scripts/lieux/importer.mjs <dossier>`, après `preparer.mjs` (Claude a les fichiers prêts) ;
-   3. **seulement ensuite**, Deploy dans Dokploy : l'app appelle désormais `search_places`, et la recherche de ville serait vide sans les données.
+   1. ~~appliquer la migration `20261103110000_lieux.sql`~~ et ~~charger les villes~~ : **faits le 03/11 par Claude** (226 024 lieux, 241 804 noms, 71 Mo). Recherches vérifiées en ligne.
+   2. **appliquer `20261103120000_lieux_rapide.sql`** (`npx supabase db push --remote`) : même résultats, mais moins de 30 ms au lieu de 200 à 850 ms par recherche (testée en ligne dans une transaction annulée). Refusée à Claude sans accord explicite de Karl.
+   3. **ensuite**, Deploy dans Dokploy : l'app appelle `search_places` au lieu d'Open-Meteo.
 3. **Supabase Pro** (25 $ par mois, 100 Go de stockage) : l'offre gratuite plafonne le stockage à 1 Go pour tout le projet, alors que le Premium promet 20 Go par abonné.
 4. **Stripe en réel** :
    - en mode réel : produit Premium et ses deux prix (2,50 €/mois, 20 €/an), webhook vers `https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/stripe-webhook` avec les 4 événements (`checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`) ;

@@ -10,13 +10,14 @@ Quand on crée un voyage ou qu'on choisit sa ville de départ, la ville se cherc
 - **Noms cherchables** (environ 242 000) : le nom français, le nom GeoNames, sa version sans accents, le nom anglais, et le nom dans la langue du pays (Lisboa, München, Firenze, Praha, Wien). Ce dernier est classé après les autres, pour ne pas confondre Bienne (Suisse) avec un ancien nom de Vienne.
 - **Limite connue** : les îles et les régions ne sont pas des lieux habités. « Santorin » ne donne rien : il faut taper Fira, le chef-lieu, ou Oia.
 
-## Base (migration `20261103110000_lieux.sql`)
+## Base (migrations `20261103110000_lieux.sql` et `20261103120000_lieux_rapide.sql`)
 
 - `public.places` : un lieu par ligne (identifiant GeoNames).
 - `public.place_names` : les noms cherchables, avec une colonne `search` calculée par `public.normalize_place()` (minuscules, sans accents ni ponctuation).
 - `public.search_places(p_query, p_limit)` :
   - d'abord les noms qui commencent par le texte tapé, classés par population ; un nom exact compte 100 fois plus, un nom local moitié moins (« par » donne Paris avant le village de Par) ;
-  - ensuite les noms ressemblants, pour les fautes de frappe (« reykjavick », « marrakesh »), à partir de 4 lettres.
+  - ensuite les noms ressemblants, pour les fautes de frappe (« reykjavick », « marrakesh »), à partir de 4 lettres, seulement s'il manque des résultats.
+  - Chaque recherche utilise son propre index : moins de 30 ms sur la base en ligne (mesuré le 03/11), contre 200 à 850 ms avec la première version.
 - Les tables ne se lisent que par cette fonction, réservée aux utilisateurs connectés.
 - Tests : `npm run test:db` (section « villes »).
 
