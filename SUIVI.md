@@ -75,7 +75,10 @@
 
 **Avant le premier vrai paiement** (dans cet ordre)
 1. **Médiateur de la consommation** : obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
-2. **Open-Meteo** : l'API gratuite de recherche de ville interdit l'usage commercial, et une app avec abonnement est commerciale. Choisir : formule payante « API Standard », ou un autre service (à étudier par Claude ; il faut nom, pays, coordonnées et fuseau horaire).
+2. **Open-Meteo remplacé par notre propre base de villes** (décision de Karl, 03/11 ; détail dans [docs/lieux.md](docs/lieux.md)). **Code fait et testé**, pas encore en ligne. À faire, **dans cet ordre** :
+   1. appliquer la migration `20261103110000_lieux.sql` (`npx supabase db push --remote`) ;
+   2. charger les villes : `node scripts/lieux/importer.mjs <dossier>`, après `preparer.mjs` (Claude a les fichiers prêts) ;
+   3. **seulement ensuite**, Deploy dans Dokploy : l'app appelle désormais `search_places`, et la recherche de ville serait vide sans les données.
 3. **Supabase Pro** (25 $ par mois, 100 Go de stockage) : l'offre gratuite plafonne le stockage à 1 Go pour tout le projet, alors que le Premium promet 20 Go par abonné.
 4. **Stripe en réel** :
    - en mode réel : produit Premium et ses deux prix (2,50 €/mois, 20 €/an), webhook vers `https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/stripe-webhook` avec les 4 événements (`checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`) ;
@@ -95,7 +98,7 @@
 ### Engagements des pages légales et obligations, par ordre d'importance (02/11)
 Ce que les CGV, la politique de confidentialité ou les licences promettent, et qui n'est pas encore fait.
 1. **Médiateur de la consommation** — *avant le premier paiement réel*. Obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
-2. **Open-Meteo : usage commercial** — *avant le premier paiement réel*. L'API gratuite de recherche de ville est réservée à l'usage non commercial, et une app avec abonnement est commerciale (conditions d'Open-Meteo, lues le 02/11). Choix à faire par Karl : formule payante Open-Meteo (« API Standard »), ou autre service de recherche de ville (à étudier par Claude : il faut le nom, le pays, les coordonnées et le fuseau horaire). Le crédit CC BY est affiché sous les résultats depuis le 02/11.
+2. **Open-Meteo : usage commercial** — *réglé dans le code le 03/11 (base de villes GeoNames chez nous), reste à mettre en ligne* — L'API gratuite de recherche de ville est réservée à l'usage non commercial, et une app avec abonnement est commerciale (conditions d'Open-Meteo, lues le 02/11). Choix à faire par Karl : formule payante Open-Meteo (« API Standard »), ou autre service de recherche de ville (à étudier par Claude : il faut le nom, le pays, les coordonnées et le fuseau horaire). Le crédit CC BY est affiché sous les résultats depuis le 02/11.
 3. **Rappel avant le renouvellement annuel** (article L. 215-1 du Code de la consommation, promis par les CGV) — *avant la première souscription annuelle*. Stripe → Settings → Billing → Subscriptions and emails : activer l'e-mail avant renouvellement, et les reçus.
 4. ~~**Mesure d'audience Umami**~~ — **en service le 02/11** sur `https://stats.tripmates.app` (Dokploy). Les deux valeurs `VITE_UMAMI_*` sont dans le `.env` du dépôt, comme les autres valeurs publiques. Vérifié par Claude : script chargé et visites envoyées depuis l'accueil et les pages légales.
 5. **Droit d'accès et de portabilité** — *à la première demande* (réponse sous un mois). Au début, à la main : exporter les lignes de la personne (profil, voyages, réservations, photos) depuis Supabase. Plus tard : un bouton « Télécharger mes données » dans le profil.

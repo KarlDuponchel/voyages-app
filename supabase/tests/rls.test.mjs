@@ -1,16 +1,18 @@
 import { PGlite } from '@electric-sql/pglite'
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm'
 import { readdirSync, readFileSync } from 'node:fs'
 
 /**
  * Vérifie les règles de sécurité (RLS) dans un Postgres embarqué, sans compte Supabase.
  * Lancer : npm run test:db
  */
-const db = new PGlite()
+const db = new PGlite({ extensions: { pg_trgm } })
 const dir = new URL('../migrations/', import.meta.url)
 const migration = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort().map((f) => readFileSync(new URL(f, dir), 'utf8')).join('\n')
 
 // Imitation minimale de l'environnement Supabase
 await db.exec(`
+  create schema extensions;
   create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
   grant usage on schema public to anon, authenticated, service_role;
   alter default privileges in schema public grant all on tables to anon, authenticated;
@@ -648,6 +650,71 @@ await ok("premium : les photos du voyage partagé comptent désormais chez Bao, 
   const [{ m }] = await as('cyd', `select public.photo_quota_check('${shared}', 1000) as m`)
   expect(m === null, 'Cyd ne peut plus ajouter de photo : ' + m)
 })
+
+// ---------------------------------------------------------------------
+// Recherche de villes (données GeoNames chargées à part ; ici un petit échantillon)
+// ---------------------------------------------------------------------
+await db.exec(`
+  insert into public.places (id, name, admin1, country_code, lat, lng, timezone, population) values
+    (2988507, 'Paris', 'Île-de-France', 'FR', 48.85, 2.35, 'Europe/Paris', 2138551),
+    (4717560, 'Paris', 'Texas', 'US', 33.66, -95.56, 'America/Chicago', 24782),
+    (2267057, 'Lisbonne', 'Lisbonne', 'PT', 38.72, -9.14, 'Europe/Lisbon', 517802),
+    (2980291, 'Saint-Étienne', 'Auvergne-Rhône-Alpes', 'FR', 45.43, 4.39, 'Europe/Paris', 172565),
+    (3413829, 'Reykjavik', 'Capitale', 'IS', 64.14, -21.94, 'Atlantic/Reykjavik', 118918),
+    (3412093, 'Vík', 'Suðurland', 'IS', 63.42, -19.01, 'Atlantic/Reykjavik', 600),
+    (2640729, 'Par', 'Angleterre', 'GB', 50.35, -4.7, 'Europe/London', 1600),
+    (3143244, 'Vikersund', 'Buskerud', 'NO', 59.97, 10.03, 'Europe/Oslo', 3000);
+  insert into public.place_names (place_id, name, principal) values (2267057, 'Lisboa', false);
+  insert into public.place_names (place_id, name) values
+    (2988507, 'Paris'), (4717560, 'Paris'),
+    (2267057, 'Lisbonne'), (2267057, 'Lisbon'),
+    (2980291, 'Saint-Étienne'), (3413829, 'Reykjavík'), (3412093, 'Vík'), (2640729, 'Par'), (3143244, 'Vikersund');
+`)
+const cities = async (q) => (await as('lea', `select name, country_code from public.search_places('${q.replace(/'/g, "''")}')`)).map((r) => `${r.name} ${r.country_code}`)
+
+await ok('villes : nom sans accents ni ponctuation', async () => {
+  const [{ n }] = await db.query("select public.normalize_place('Œuvres de Saint-Étienne, Ærø') as n").then((r) => r.rows)
+  expect(n === 'oeuvres de saint etienne aero', n)
+})
+await ok("villes : « paris » donne Paris (France) avant Paris (Texas), le plus peuplé d'abord", async () => {
+  const r = await cities('paris')
+  expect(r[0] === 'Paris FR' && r[1] === 'Paris US', JSON.stringify(r))
+})
+await ok('villes : « par » donne Paris avant le village de Par (la population compte)', async () => {
+  const r = await cities('par')
+  expect(r[0] === 'Paris FR' && r.includes('Par GB'), JSON.stringify(r))
+})
+await ok('villes : début de nom, au fil de la frappe', async () => {
+  const r = await cities('Lis')
+  expect(r[0] === 'Lisbonne PT', JSON.stringify(r))
+})
+await ok('villes : « Lisbon » et « Lisboa » trouvent Lisbonne', async () => {
+  const a = await cities('Lisbon')
+  const b = await cities('lisboa')
+  expect(a[0] === 'Lisbonne PT' && b[0] === 'Lisbonne PT', JSON.stringify([a, b]))
+})
+await ok('villes : accents et tirets ignorés (« saint etienne »)', async () => {
+  const r = await cities('saint etienne')
+  expect(r[0] === 'Saint-Étienne FR', JSON.stringify(r))
+})
+await ok('villes : faute de frappe tolérée (« reykjavick »)', async () => {
+  const r = await cities('reykjavick')
+  expect(r[0] === 'Reykjavik IS', JSON.stringify(r))
+})
+await ok('villes : petit lieu trouvé (« Vík »), et rien pour une seule lettre', async () => {
+  const r = await cities('vik')
+  const one = await cities('p')
+  expect(r[0] === 'Vík IS' && one.length === 0, JSON.stringify([r, one]))
+})
+await denied('villes : les tables ne se lisent pas directement', () => as('lea', 'select * from public.places'), 'permission denied')
+await denied('villes : anon ne peut pas chercher', async () => {
+  await db.exec('set role anon')
+  try {
+    return (await db.query("select * from public.search_places('paris')")).rows
+  } finally {
+    await db.exec('reset role')
+  }
+}, 'permission denied')
 
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')

@@ -1,4 +1,5 @@
 import { countryByAlpha2 } from '../data/countries'
+import { supabase } from './supabase'
 
 /** Une ville trouvée par la recherche */
 export type Place = {
@@ -11,36 +12,28 @@ export type Place = {
   timezone?: string
 }
 
-type OpenMeteoResult = {
-  name: string
-  latitude: number
-  longitude: number
-  country_code?: string
-  country?: string
-  admin1?: string
-  timezone?: string
-}
-
 /**
- * Recherche de villes via Open-Meteo (sans clé ni compte). Attention : l'API gratuite est réservée à l'usage non commercial (voir SUIVI.md).
- * Seul le texte tapé est envoyé.
+ * Recherche de villes dans notre propre base (fonction search_places, données GeoNames) :
+ * nom en français, région, pays, coordonnées et fuseau. Rien n'est envoyé à un service tiers.
  */
 export async function searchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=fr&format=json`
-  const res = await fetch(url, { signal })
-  if (!res.ok) throw new Error('Recherche indisponible')
-  const json = (await res.json()) as { results?: OpenMeteoResult[] }
-  return (json.results ?? []).flatMap((r) => {
-    const country = r.country_code ? countryByAlpha2(r.country_code) : undefined
+  let request = supabase.rpc('search_places', { p_query: query, p_limit: 6 })
+  if (signal) request = request.abortSignal(signal)
+  const { data, error } = await request
+  // Recherche remplacée par une plus récente (frappe suivante) : ce n'est pas une panne
+  if (signal?.aborted) throw new DOMException('Recherche annulée', 'AbortError')
+  if (error) throw error
+  return (data ?? []).flatMap((r) => {
+    const country = countryByAlpha2(r.country_code)
     if (!country) return []
     return [
       {
         name: r.name,
-        detail: [r.admin1 !== r.name ? r.admin1 : undefined, country.name].filter(Boolean).join(', '),
+        detail: [r.admin1 && r.admin1 !== r.name ? r.admin1 : undefined, country.name].filter(Boolean).join(', '),
         countryId: country.id,
-        lat: r.latitude,
-        lng: r.longitude,
-        timezone: r.timezone,
+        lat: r.lat,
+        lng: r.lng,
+        timezone: r.timezone ?? undefined,
       },
     ]
   })

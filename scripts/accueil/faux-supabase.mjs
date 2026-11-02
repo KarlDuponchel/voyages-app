@@ -49,6 +49,11 @@ const RPC = {
   public_trending_places: [],
   public_photos: [],
   public_places: [],
+  search_places: [
+    { id: 2267057, name: 'Lisbonne', admin1: 'District de Lisbonne', country_code: 'PT', lat: 38.72509, lng: -9.1498, timezone: 'Europe/Lisbon' },
+    { id: 3410315, name: 'João Lisboa', admin1: 'Maranhão', country_code: 'BR', lat: -5.06, lng: -47.4, timezone: 'America/Fortaleza' },
+    { id: 4969398, name: 'Lisbon', admin1: 'Maine', country_code: 'US', lat: 44.03, lng: -70.1, timezone: 'America/New_York' },
+  ],
   // QUOTA_PLEIN=1 : l'envoi de photos est refusé, comme avec l'offre gratuite dépassée
   photo_quota_check: process.env.QUOTA_PLEIN ? "Avec l'offre gratuite, les photos sont possibles dans 2 voyages. Passez premium pour en ajouter à tous vos voyages." : null,
 }

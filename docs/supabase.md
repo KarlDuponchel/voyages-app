@@ -100,7 +100,7 @@ Ces types sont branchés sur le client (`createClient<Database>`). Si la base et
 - **Configuration** : l'URL et la clé publique sont dans `.env`. Ce fichier est versionné, car ces valeurs sont publiques, et Vercel n'a donc rien à configurer.
 - **Connexion** ([Connexion.tsx](../src/screens/Connexion.tsx), [auth.tsx](../src/data/auth.tsx)) : on saisit son e-mail, on reçoit un code et on le tape. Le compte est créé à la première connexion.
 - **Données** ([store.tsx](../src/data/store.tsx)) : les voyages, les étapes, les réservations, les membres et les pays visités sont lus dans Supabase. Une copie reste sur le téléphone : l'app s'ouvre tout de suite et reste lisible hors ligne. Elle se met à jour au retour dans l'app et au retour du réseau. Les modifications demandent une connexion.
-- **Création d'un voyage** : la destination se cherche avec le service gratuit Open-Meteo, qui fournit la ville, le pays, les coordonnées et le fuseau horaire. Seul le texte tapé lui est envoyé.
+- **Création d'un voyage** : la destination se cherche dans notre propre base de villes (fonction `search_places`, données GeoNames), qui fournit la ville, la région, le pays, les coordonnées et le fuseau horaire. Rien ne part vers un service tiers. Voir [lieux.md](lieux.md).
 - **Partage** : dans un voyage, le bouton « Voyageurs » affiche les membres, crée un lien d'invitation (« peut modifier » ou « peut seulement voir ») et permet de quitter ou de supprimer le voyage.
 - **Profil** : prénom (« Bonjour … »), ville de départ pour les distances, pays visités avant l'app, déconnexion et suppression du compte.
 

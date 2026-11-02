@@ -970,6 +970,18 @@ export type Database = {
           photo_count: number
         }[]
       }
+      search_places: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          admin1: string | null
+          country_code: string
+          id: number
+          lat: number
+          lng: number
+          name: string
+          timezone: string | null
+        }[]
+      }
       public_trending_places: {
         Args: { p_limit?: number }
         Returns: {
