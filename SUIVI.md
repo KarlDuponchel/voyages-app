@@ -401,7 +401,7 @@
 - [x] **Base** : migrations appliquées et types régénérés le 02/11. Avec la CLI 3.0, il faut ajouter `--linked` à `db push`, sinon elle vise une base locale. Ceux de `src/data/database.types.ts` ont été écrits à la main en attendant.
 - [ ] **Premium offert** à Karl et Louna. Sinon, l'offre gratuite s'applique dès la mise en ligne : 5 lectures par l'IA déjà consommées, et 2 voyages avec photos. La requête est dans [docs/partage.md](docs/partage.md).
 - [x] **Stripe en mode test** : produit, deux prix, portail, webhook et secrets réglés par Karl le 02/11.
-- [ ] **Paiement de test** : le premier essai affiche « Paiement indisponible ». La fonction `billing` va montrer l'erreur exacte de Stripe en mode test (à redéployer), et la cause est aussi dans Supabase → Edge Functions → billing → Logs.
+- [ ] **Paiement de test** : le premier essai affichait « Paiement indisponible », à cause d'une mauvaise valeur dans `STRIPE_SECRET_KEY`, corrigée par Karl. À refaire. La fonction `billing` montre désormais l'erreur exacte de Stripe en mode test : ce changement est commité, mais pas encore redéployé. La cause est aussi visible dans Supabase → Edge Functions → billing → Logs.
 - [x] **Fonctions** déployées le 02/11. La CLI 3.0 demande `--yes` quand Claude déploie, après l'accord de Karl. Commande : `npx supabase functions deploy` pour `billing`, `stripe-webhook`, `notify-reaction`, puis `extract-booking` et `inbound-email`, qui ont changé.
 - [x] `feat/partage` fusionnée dans `main` et en ligne le 02/11.
 
