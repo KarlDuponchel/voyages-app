@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "cgv.html"
+        ],
+        "createdAt": "2026-11-02T18:30:45.678Z",
+        "reason": "Claude: les tailles sont dans src/site/site.css chargé en module, invisible pour le hook ; échelle réelle 16 px (texte) → 28 px (h2) → 40-58 px (h1), h3 en gras à 16 px voulu comme intertitre"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "mentions-legales.html"
+        ],
+        "createdAt": "2026-11-02T18:30:45.876Z",
+        "reason": "Claude: les tailles sont dans src/site/site.css chargé en module, invisible pour le hook ; échelle réelle 16 px (texte) → 28 px (h2) → 40-58 px (h1), h3 en gras à 16 px voulu comme intertitre"
+      },
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "confidentialite.html"
+        ],
+        "createdAt": "2026-11-02T18:30:46.063Z",
+        "reason": "Claude: les tailles sont dans src/site/site.css chargé en module, invisible pour le hook ; échelle réelle 16 px (texte) → 28 px (h2) → 40-58 px (h1), h3 en gras à 16 px voulu comme intertitre"
+      }
+    ]
+  }
+}

@@ -23,18 +23,81 @@
   position: relative;
 }
 
+.monde__view {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.monde__controls {
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+}
+
+/* Choix de la vue : globe ou carte */
+.monde__switch {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+}
+.monde__switch button {
+  width: 34px;
+  height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.monde__switch button[aria-checked='true'] {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+}
+
 .monde__globe {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 320px;
 }
+.monde__map {
+  display: grid;
+  place-items: center;
+  padding: 18px 16px 10px;
+}
 
-.monde__tag {
+/* Orbites fines décoratives autour du globe */
+.monde__orbit {
   position: absolute;
-  top: 12px;
-  right: 20px;
-  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  left: 50%;
+  top: 50%;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 18%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.monde__orbit--a {
+  width: min(360px, calc(100vw - 20px));
+  height: 62%;
+  transform: translate(-50%, -50%) rotate(-24deg);
+}
+.monde__orbit--b {
+  width: 46%;
+  height: min(350px, calc(100vw - 30px));
+  transform: translate(-50%, -50%) rotate(72deg);
+}
+
+/* Étiquette du prochain voyage, en verre dépoli */
+.monde__tag {
+  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+  font-weight: 600;
 }
 .monde__tag i {
   width: 8px;
@@ -43,27 +106,46 @@
   background: var(--accent-sun);
 }
 
+/* Chiffres : 3 colonnes séparées par des filets */
 .monde__tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 16px;
 }
 .tile {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  text-align: center;
+}
+.tile + .tile {
+  border-left: 1px solid var(--border-subtle);
+}
+.tile .overline {
+  font-size: 10px;
+  letter-spacing: 0.12em;
 }
 
+/* Prochain départ : carte Forest, sur-titre doré */
 .monde__next {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 20px;
+  padding: 20px 20px 20px 22px;
   border-radius: 24px;
-  background: var(--gradient-sunset);
-  color: var(--text-on-accent);
+  background: #183f37;
+  color: #f7f3e9;
+  box-shadow: var(--shadow-soft);
+}
+[data-theme='sombre'] .monde__next {
+  background: #22493f;
+}
+.monde__next-kicker {
+  color: #e9bd55;
 }
 .monde__next-icon {
   width: 52px;
@@ -72,6 +154,6 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #0a0f1f;
-  color: #f6c46a;
+  background: var(--accent-sunset);
+  color: #ffffff;
 }

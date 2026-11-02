@@ -14,7 +14,7 @@
 }
 .install-steps svg {
   vertical-align: -2px;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 .install-steps__n {
   flex: none;
@@ -25,7 +25,7 @@
   place-items: center;
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
 }
 
@@ -42,12 +42,12 @@
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent-sunset) 35%, transparent);
 }
 .install-prompt__kicker {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 .install-prompt__never {
   align-self: center;

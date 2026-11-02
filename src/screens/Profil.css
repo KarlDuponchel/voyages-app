@@ -5,30 +5,6 @@
   padding: 16px;
 }
 
-.profil-theme {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.profil-theme button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-}
-.profil-theme button.is-active {
-  border-color: var(--accent-sunset);
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--accent-sunset) 12%, transparent);
-}
-.profil-theme button.is-active svg {
-  color: var(--accent-sunset);
-}
-
 .profil-chips {
   display: flex;
   flex-wrap: wrap;
@@ -42,7 +18,7 @@
   font-size: 13px;
 }
 .profil-chip--add {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   background: color-mix(in srgb, var(--accent-sunset) 12%, transparent);
 }
 
@@ -76,7 +52,7 @@
   gap: 6px;
 }
 .plan__name svg {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 .progress--full > span {
   background: var(--accent-sunset);

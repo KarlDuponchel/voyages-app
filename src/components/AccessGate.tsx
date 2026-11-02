@@ -52,7 +52,7 @@ export function AccessGate({ children }: { children: ReactNode }) {
       <img src="/logo.svg" alt="" className="connexion__logo" />
       <div className="stack" style={{ gap: 6 }}>
         <span className="overline muted">Accès privé</span>
-        <h1 className="display-xl">Voyages</h1>
+        <h1 className="display-xl">Tripmates</h1>
         <p className="muted" style={{ margin: 0 }}>
           L’app est encore en test. Entrez le code d’accès qu’on vous a donné.
         </p>

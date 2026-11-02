@@ -42,7 +42,7 @@ export function InstallPrompt() {
         <div className="stack" style={{ gap: 2 }}>
           <span className="overline install-prompt__kicker">Application</span>
           <h2 className="display-l" style={{ margin: 0 }}>
-            Installez Voyages
+            Installez Tripmates
           </h2>
         </div>
       </div>
@@ -53,7 +53,7 @@ export function InstallPrompt() {
       <InstallSteps platform={platform} onInstalled={() => close(true)} />
 
       <p className="caption muted" style={{ margin: 0 }}>
-        Ouvrez ensuite Voyages depuis l'écran d'accueil et connectez-vous une fois dedans : l'app installée ne partage pas la session de {browser}.
+        Ouvrez ensuite Tripmates depuis l'écran d'accueil et connectez-vous une fois dedans : l'app installée ne partage pas la session de {browser}.
         {platform === 'ios-autre' && ' Si l’option n’apparaît pas, ouvrez cette page dans Safari.'}
       </p>
 

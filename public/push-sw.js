@@ -11,19 +11,19 @@ self.addEventListener('push', (event) => {
     data = { body: event.data ? event.data.text() : '' }
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Voyages', {
+    self.registration.showNotification(data.title || 'Tripmates', {
       body: data.body || '',
       icon: '/pwa-192x192.png',
       badge: '/pwa-64x64.png',
       tag: data.tag,
-      data: { url: data.url || '/' },
+      data: { url: data.url || '/monde' },
     }),
   )
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const url = new URL(event.notification.data?.url || '/', self.location.origin).href
+  const url = new URL(event.notification.data?.url || '/monde', self.location.origin).href
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })

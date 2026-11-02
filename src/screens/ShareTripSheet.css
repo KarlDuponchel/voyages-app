@@ -20,7 +20,7 @@
   display: grid;
   place-items: center;
   font-weight: 600;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   background: color-mix(in srgb, var(--accent-sunset) 16%, transparent);
 }
 

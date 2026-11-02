@@ -15,11 +15,12 @@
   right: 20px;
   display: flex;
   justify-content: space-between;
-  color: #f5f1e8;
+  color: #f7f3e9;
 }
 .voyage__nav .icon-btn {
-  color: #f5f1e8;
-  background: rgba(10, 15, 31, 0.45);
+  color: #f7f3e9;
+  background: rgba(15, 48, 42, 0.45);
+  border-color: transparent;
 }
 
 .voyage__title {
@@ -32,7 +33,7 @@
   gap: 6px;
 }
 .voyage__country {
-  color: var(--accent-sun);
+  color: var(--accent-text);
 }
 .voyage__chip {
   background: color-mix(in srgb, var(--bg-base) 55%, transparent);

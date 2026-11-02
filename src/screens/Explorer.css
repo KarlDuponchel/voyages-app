@@ -43,7 +43,7 @@
 }
 
 .explorer__empty-icon {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 
 /* Ma réaction, en coin de la miniature */
@@ -65,14 +65,14 @@
   display: grid;
   place-items: center;
   font-weight: 600;
-  color: #1a1410;
+  color: var(--text-on-gradient);
   background: var(--gradient-sunset);
 }
 .public__author {
-  color: #f5f1e8;
+  color: #f7f3e9;
 }
 .public__caption {
-  color: #f5f1e8;
+  color: #f7f3e9;
   font-size: 15px;
 }
 .public__reactions {

@@ -48,7 +48,7 @@
 }
 .ptr--pret .ptr__bubble,
 .ptr--chargement .ptr__bubble {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   border-color: color-mix(in srgb, var(--accent-sunset) 45%, transparent);
 }
 .ptr--chargement .ptr__icon {

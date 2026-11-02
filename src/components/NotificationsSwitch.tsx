@@ -70,7 +70,7 @@ export function NotificationsSwitch({ compact = false }: { compact?: boolean }) 
       )}
       {state === 'refuse' && (
         <p className="caption muted" style={{ margin: 0 }}>
-          Les notifications sont bloquées pour Voyages. Pour les autoriser : Réglages du téléphone → Notifications → Voyages.
+          Les notifications sont bloquées pour Tripmates. Pour les autoriser : Réglages du téléphone → Notifications → Tripmates.
         </p>
       )}
       {state === 'non-pris-en-charge' && (

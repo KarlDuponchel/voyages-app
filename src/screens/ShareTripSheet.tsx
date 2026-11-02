@@ -47,7 +47,7 @@ export function ShareTripSheet({ trip, open, onClose }: { trip: Trip; open: bool
     run(async () => {
       const url = await createInvitation(trip.id, role)
       setLink(url)
-      const text = `Rejoins le voyage « ${trip.title} » (${formatRange(trip.start, trip.end)}) sur Voyages`
+      const text = `Rejoins le voyage « ${trip.title} » (${formatRange(trip.start, trip.end)}) sur Tripmates`
       try {
         if (navigator.share) await navigator.share({ title: trip.title, text, url })
         else await navigator.clipboard.writeText(url)

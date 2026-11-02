@@ -63,23 +63,18 @@ export function Globe({ visitedIds, pins, highlight, size = 300 }: Props) {
         oceanLight: cssVar('--globe-ocean-light'),
         oceanDark: cssVar('--globe-ocean-dark'),
         land: cssVar('--globe-land'),
+        landStroke: cssVar('--globe-land-stroke'),
         visited: cssVar('--globe-visited'),
-        glow: cssVar('--globe-glow'),
+        outline: cssVar('--globe-outline'),
+        shade: cssVar('--globe-shade'),
         pin: cssVar('--accent-sun'),
+        active: cssVar('--accent-sunset'),
         line: cssVar('--text-primary'),
-        base: '#0A0F1F',
       }
       const cx = size / 2
       const cy = size / 2
       projection.rotate([rotation.current[0], rotation.current[1]])
       ctx.clearRect(0, 0, size, size)
-
-      // Halo
-      const glow = ctx.createRadialGradient(cx, cy, r * 0.9, cx, cy, size / 2)
-      glow.addColorStop(0, hexA(c.glow, 0.28))
-      glow.addColorStop(1, hexA(c.glow, 0))
-      ctx.fillStyle = glow
-      ctx.fillRect(0, 0, size, size)
 
       // Océan
       const ocean = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r * 1.15)
@@ -93,7 +88,7 @@ export function Globe({ visitedIds, pins, highlight, size = 300 }: Props) {
       // Méridiens et parallèles
       ctx.beginPath()
       path(graticule)
-      ctx.strokeStyle = hexA(c.line, 0.07)
+      ctx.strokeStyle = hexA(c.line, 0.08)
       ctx.lineWidth = 1
       ctx.stroke()
 
@@ -102,23 +97,26 @@ export function Globe({ visitedIds, pins, highlight, size = 300 }: Props) {
       others.forEach((f) => path(f))
       ctx.fillStyle = c.land
       ctx.fill()
+      ctx.strokeStyle = c.landStroke
+      ctx.lineWidth = 0.6
+      ctx.stroke()
       ctx.beginPath()
       visited.forEach((f) => path(f))
       ctx.fillStyle = c.visited
       ctx.fill()
-      ctx.strokeStyle = hexA(c.base, 0.35)
-      ctx.lineWidth = 0.5
+      ctx.strokeStyle = c.line
+      ctx.lineWidth = 0.8
       ctx.stroke()
 
-      // Ombre (effet de volume) et contour
+      // Ombre légère (effet de volume) et contour
       const shade = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.5, cx, cy, r)
       shade.addColorStop(0, 'rgba(0,0,0,0)')
-      shade.addColorStop(1, 'rgba(0,0,0,0.5)')
+      shade.addColorStop(1, c.shade)
       ctx.beginPath()
       path({ type: 'Sphere' })
       ctx.fillStyle = shade
       ctx.fill()
-      ctx.strokeStyle = hexA(c.glow, 0.4)
+      ctx.strokeStyle = c.outline
       ctx.lineWidth = 1.5
       ctx.stroke()
 
@@ -129,22 +127,31 @@ export function Globe({ visitedIds, pins, highlight, size = 300 }: Props) {
         if (!visible(p)) continue
         const xy = projection([p.lng, p.lat])
         if (!xy) continue
+        // Repère rond bordé de blanc
         ctx.beginPath()
-        ctx.arc(xy[0], xy[1], 4.5, 0, Math.PI * 2)
+        ctx.arc(xy[0], xy[1], 5, 0, Math.PI * 2)
         ctx.fillStyle = c.pin
         ctx.fill()
-        ctx.lineWidth = 2
-        ctx.strokeStyle = c.base
+        ctx.lineWidth = 2.5
+        ctx.strokeStyle = '#FFFFFF'
         ctx.stroke()
       }
       if (highlight && visible(highlight)) {
         const xy = projection([highlight.lng, highlight.lat])
         if (xy) {
-          const phase = reduceMotion ? 0.5 : (now % 2000) / 2000
+          // Repère actif plus grand, en corail, avec une onde « ping »
           ctx.beginPath()
-          ctx.arc(xy[0], xy[1], 6 + phase * 14, 0, Math.PI * 2)
-          ctx.strokeStyle = hexA(c.pin, 0.7 * (1 - phase))
-          ctx.lineWidth = 2
+          ctx.arc(xy[0], xy[1], 7, 0, Math.PI * 2)
+          ctx.fillStyle = c.active
+          ctx.fill()
+          ctx.lineWidth = 3
+          ctx.strokeStyle = '#FFFFFF'
+          ctx.stroke()
+          const phase = reduceMotion ? 0.5 : (now % 1700) / 1700
+          ctx.beginPath()
+          ctx.arc(xy[0], xy[1], 8 + phase * 12, 0, Math.PI * 2)
+          ctx.strokeStyle = hexA(c.active, 0.8 * (1 - phase))
+          ctx.lineWidth = 1.5
           ctx.stroke()
         }
       }

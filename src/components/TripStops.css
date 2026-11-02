@@ -9,7 +9,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -28,7 +28,7 @@
   min-height: 36px;
 }
 .stops__list li > svg {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   flex: none;
 }
 /* Trait vertical reliant les étapes */

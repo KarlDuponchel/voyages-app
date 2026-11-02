@@ -81,7 +81,7 @@
   border-radius: var(--radius-md);
   display: grid;
   place-items: center;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
   animation: add-reading-pulse 1.4s ease-in-out infinite;
 }
@@ -105,7 +105,7 @@
   margin: 0;
 }
 .add-form__ai {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 .add-form__ai svg {
   flex: none;

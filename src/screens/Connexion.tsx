@@ -44,7 +44,7 @@ export function Connexion() {
       <img src="/logo.svg" alt="" className="connexion__logo" />
       <div className="stack" style={{ gap: 6 }}>
         <span className="overline muted">{invited ? 'Vous êtes invité à un voyage' : 'Bienvenue'}</span>
-        <h1 className="display-xl">Voyages</h1>
+        <h1 className="display-xl">Tripmates</h1>
         <p className="muted" style={{ margin: 0 }}>
           Billets, réservations et souvenirs au même endroit, à partager avec ceux qui partent avec vous.
         </p>

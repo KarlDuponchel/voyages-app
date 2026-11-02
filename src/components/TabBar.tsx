@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import './TabBar.css'
 
 const tabs = [
-  { to: '/', label: 'Monde', Icon: Globe2, end: true },
+  { to: '/monde', label: 'Monde', Icon: Globe2, end: true },
   { to: '/voyages', label: 'Voyages', Icon: Plane, end: false },
   { to: '/souvenirs', label: 'Souvenirs', Icon: Camera, end: false },
   { to: '/explorer', label: 'Explorer', Icon: Compass, end: false },
@@ -15,7 +15,7 @@ export function TabBar() {
     <nav className="tabbar" aria-label="Navigation principale">
       {tabs.map(({ to, label, Icon, end }) => (
         <NavLink key={to} to={to} end={end} className="tabbar__item">
-          <Icon size={24} strokeWidth={2} aria-hidden />
+          <Icon size={21} strokeWidth={1.9} aria-hidden />
           <span>{label}</span>
         </NavLink>
       ))}

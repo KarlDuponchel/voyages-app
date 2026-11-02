@@ -1,7 +1,9 @@
 import '@fontsource/dm-sans/400.css'
 import '@fontsource/dm-sans/500.css'
 import '@fontsource/dm-sans/600.css'
-import '@fontsource-variable/bricolage-grotesque'
+import '@fontsource/dm-sans/700.css'
+import '@fontsource/dm-serif-display/400.css'
+import '@fontsource/dm-serif-display/400-italic.css'
 import './styles.css'
 
 import { StrictMode } from 'react'

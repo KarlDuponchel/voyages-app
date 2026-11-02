@@ -35,5 +35,5 @@
   padding: 16px 18px;
   border-radius: 22px;
   background: var(--gradient-dusk);
-  color: var(--text-on-accent);
+  color: var(--text-on-gradient);
 }

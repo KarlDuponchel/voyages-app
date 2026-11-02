@@ -3,19 +3,417 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Voyages</title>
-    <meta name="description" content="Nos voyages, billets et souvenirs au même endroit." />
-    <meta name="theme-color" content="#0A0F1F" />
-    <!-- iPhone : ouverture plein écran depuis l'écran d'accueil -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Voyages" />
+    <title>Tripmates · Carnet de voyage : billets, carte du monde et souvenirs</title>
+    <meta
+      name="description"
+      content="Tripmates réunit vos billets, votre itinéraire et vos photos de voyage dans une app à partager. Billets hors ligne, lecture des réservations par l'IA, globe des pays visités."
+    />
+    <link rel="canonical" href="https://tripmates.app/" />
+    <meta name="theme-color" content="#F7F3E9" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+
+    <!-- Partage sur les réseaux -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tripmates" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content="https://tripmates.app/" />
+    <meta property="og:title" content="Tripmates · Chaque voyage laisse une trace" />
+    <meta property="og:description" content="Billets, itinéraire, carte du monde et souvenirs, dans une seule app à partager avec vos compagnons de route." />
+    <meta property="og:image" content="https://tripmates.app/accueil/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="L'app Tripmates : globe des pays visités et prochain départ" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- L'app installée (ancienne adresse « / ») et les membres connectés sur téléphone vont directement dans l'app -->
+    <script>
+      try {
+        var installee = matchMedia('(display-mode: standalone)').matches || navigator.standalone
+        var connecte = Object.keys(localStorage).some(function (k) {
+          return /^sb-.*-auth-token$/.test(k)
+        })
+        if (installee || (connecte && innerWidth < 768)) location.replace('/monde')
+      } catch (e) {}
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://tripmates.app/#organisation",
+            "name": "Tripmates",
+            "url": "https://tripmates.app/",
+            "logo": "https://tripmates.app/pwa-512x512.png",
+            "email": "contact@tripmates.app"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://tripmates.app/#site",
+            "url": "https://tripmates.app/",
+            "name": "Tripmates",
+            "inLanguage": "fr-FR",
+            "publisher": { "@id": "https://tripmates.app/#organisation" }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://tripmates.app/#app",
+            "name": "Tripmates",
+            "url": "https://tripmates.app/monde",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "iOS, Android, Windows, macOS (navigateur web)",
+            "inLanguage": "fr-FR",
+            "description": "Carnet de voyage à partager : billets disponibles hors ligne, lecture des réservations par l'IA, itinéraire, globe des pays visités et souvenirs photo.",
+            "screenshot": [
+              "https://tripmates.app/accueil/app-globe.webp",
+              "https://tripmates.app/accueil/app-billet.webp",
+              "https://tripmates.app/accueil/app-souvenirs.webp"
+            ],
+            "featureList": [
+              "Billets et cartes d'embarquement disponibles hors ligne",
+              "Lecture des billets et des e-mails de réservation par l'IA",
+              "Itinéraire jour par jour partagé entre voyageurs",
+              "Globe et carte du monde des pays visités",
+              "Photos, vidéos et souvenirs de voyage"
+            ],
+            "offers": [
+              { "@type": "Offer", "name": "Gratuit", "price": "0", "priceCurrency": "EUR" },
+              { "@type": "Offer", "name": "Premium mensuel", "price": "2.50", "priceCurrency": "EUR", "url": "https://tripmates.app/#tarifs" },
+              { "@type": "Offer", "name": "Premium annuel", "price": "20.00", "priceCurrency": "EUR", "url": "https://tripmates.app/#tarifs" }
+            ],
+            "publisher": { "@id": "https://tripmates.app/#organisation" }
+          }
+        ]
+      }
+    </script>
+    <script type="module" src="/src/site/site.ts"></script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="nav">
+      <a class="brand" href="/" aria-label="Tripmates, accueil">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3.4 3 14.6 0 18M12 3c-3 3.4-3 14.6 0 18" /></svg>
+        </span>
+        TRIPMATES
+      </a>
+      <nav class="nav__links" aria-label="Sections de la page">
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#app">L'app</a>
+        <a href="#tarifs">Tarifs</a>
+        <a href="#questions">Questions</a>
+      </nav>
+      <a class="btn btn--forest nav__cta" href="/monde">
+        Ouvrir l'app
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+      </a>
+    </header>
+
+    <main>
+      <!-- Héros -->
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="eyebrow">Carnet de voyage à partager</p>
+          <h1>Chaque voyage<br />laisse une <em>trace.</em></h1>
+          <p class="lead">
+            Billets, itinéraire, photos et pays visités : Tripmates garde tout votre voyage au même endroit, sur votre téléphone, même sans réseau.
+            Et vos compagnons de route y ont accès aussi.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--coral" href="/monde">
+              Commencer gratuitement
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </a>
+            <a class="text-link" href="#app">Voir l'app en images</a>
+          </div>
+          <ul class="hero__proof">
+            <li>Sans téléchargement sur un store</li>
+            <li>Gratuit pour commencer</li>
+            <li>Données hébergées en Europe</li>
+          </ul>
+        </div>
+        <div class="hero__visual">
+          <div class="sun" aria-hidden="true"></div>
+          <div class="phone phone--tilt">
+            <img src="/accueil/app-globe.webp" width="390" height="844" alt="Écran d'accueil de Tripmates : globe avec les pays visités en corail et le prochain départ pour Lisbonne" fetchpriority="high" />
+          </div>
+          <div class="note note--left" aria-hidden="true">
+            <span class="note__icon">✈</span>
+            <span><small>PROCHAIN DÉPART</small><strong>Lisbonne · J-18</strong></span>
+          </div>
+          <div class="note note--right" aria-hidden="true">
+            <strong>14</strong>
+            <span>pays<br />visités</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bandeau des fonctionnalités -->
+      <section class="strip" id="fonctionnalites" aria-labelledby="titre-fonctionnalites">
+        <div class="strip__intro">
+          <span class="kicker kicker--gold">CE QUE FAIT TRIPMATES</span>
+          <h2 id="titre-fonctionnalites">Tout le voyage, du billet au souvenir.</h2>
+        </div>
+        <div class="strip__item">
+          <span class="strip__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z" /><path d="M13 5v2M13 17v2M13 11v2" /></svg>
+          </span>
+          <div>
+            <h3>Billets hors ligne</h3>
+            <p>Cartes d'embarquement, billets de train et réservations s'ouvrent même en mode avion.</p>
+          </div>
+        </div>
+        <div class="strip__item">
+          <span class="strip__icon strip__icon--coral">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.3 3.7L17 8l-3.7 1.3L12 13l-1.3-3.7L7 8l3.7-1.3L12 3Z" /><path d="m6 14 .8 2.2L9 17l-2.2.8L6 20l-.8-2.2L3 17l2.2-.8L6 14Z" /></svg>
+          </span>
+          <div>
+            <h3>Lu par l'IA</h3>
+            <p>Une photo du billet ou un e-mail transféré, et la réservation se range toute seule au bon jour.</p>
+          </div>
+        </div>
+        <div class="strip__item">
+          <span class="strip__icon strip__icon--gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3.4 3 14.6 0 18M12 3c-3 3.4-3 14.6 0 18" /></svg>
+          </span>
+          <div>
+            <h3>Votre carte du monde</h3>
+            <p>Les pays visités se colorent sur un globe ou une carte, avec vos statistiques de voyageur.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- L'app en images -->
+      <section class="showcase" id="app" aria-labelledby="titre-app">
+        <header class="showcase__head">
+          <span class="kicker">L'APP EN IMAGES</span>
+          <h2 id="titre-app">Pensée pour le téléphone, <em>prête pour la route.</em></h2>
+          <p>Tripmates s'installe sur l'écran d'accueil comme une vraie app, sur iPhone comme sur Android. Voici à quoi ressemble un voyage.</p>
+        </header>
+
+        <article class="feature">
+          <div class="feature__copy">
+            <span class="feature__num">01</span>
+            <h3>Le billet, au moment où il faut</h3>
+            <p>
+              Le jour du départ, la carte d'embarquement est à portée de pouce : terminal, porte, siège et référence, même sans réseau à l'aéroport.
+              Joignez le PDF ou la capture d'origine, elle reste disponible hors ligne.
+            </p>
+            <ul class="checks">
+              <li>Vols, trains, cars, bateaux, hôtels et activités</li>
+              <li>Ajout en photographiant le billet, ou en transférant l'e-mail de confirmation</li>
+              <li>Notification quand une réservation transférée est prête</li>
+            </ul>
+          </div>
+          <div class="feature__visual feature__visual--sage">
+            <div class="phone">
+              <img src="/accueil/app-billet.webp" width="390" height="844" loading="lazy" alt="Carte d'embarquement Paris Orly vers Lisbonne dans Tripmates, avec porte, siège et référence" />
+            </div>
+          </div>
+        </article>
+
+        <article class="feature feature--reverse">
+          <div class="feature__copy">
+            <span class="feature__num">02</span>
+            <h3>Un itinéraire que tout le monde suit</h3>
+            <p>
+              Étapes, vols, nuits d'hôtel et visites se rangent jour par jour. Invitez vos compagnons de voyage : chacun ajoute ses réservations, et tout le
+              monde a la même version.
+            </p>
+            <ul class="checks">
+              <li>Invitation par un simple lien</li>
+              <li>Droits de modification ou de lecture seule</li>
+              <li>Budget du voyage en un coup d'œil</li>
+            </ul>
+          </div>
+          <div class="feature__visual feature__visual--gold">
+            <div class="phone">
+              <img src="/accueil/app-voyage.webp" width="390" height="844" loading="lazy" alt="Itinéraire d'un voyage Lisbonne et Porto : étapes, vol et hôtel du premier jour" />
+            </div>
+          </div>
+        </article>
+
+        <article class="feature">
+          <div class="feature__copy">
+            <span class="feature__num">03</span>
+            <h3>Votre monde, en globe ou en carte</h3>
+            <p>
+              Chaque voyage colore les pays visités. Faites tourner le globe du bout du doigt, ou passez à la carte du monde pour tout voir d'un regard :
+              pays, continents, villes et kilomètres parcourus.
+            </p>
+            <ul class="checks">
+              <li>Globe 3D ou mappemonde, au choix</li>
+              <li>Pourcentage du monde exploré</li>
+              <li>Statistiques : vols, nuits, distance la plus lointaine</li>
+            </ul>
+          </div>
+          <div class="feature__visual feature__visual--duo">
+            <div class="phone phone--back">
+              <img src="/accueil/app-carte.webp" width="390" height="844" loading="lazy" alt="Carte du monde de Tripmates avec les pays visités en corail" />
+            </div>
+            <div class="phone phone--front">
+              <img src="/accueil/app-stats.webp" width="390" height="844" loading="lazy" alt="Statistiques de voyage par continent dans Tripmates" />
+            </div>
+          </div>
+        </article>
+
+        <article class="feature feature--reverse">
+          <div class="feature__copy">
+            <span class="feature__num">04</span>
+            <h3>Des souvenirs qui se revivent</h3>
+            <p>
+              Photos et vidéos de tous les voyageurs se retrouvent dans le voyage, compressées sur le téléphone pour rester légères. « Revivre » les rejoue
+              comme des stories, et vous pouvez partager vos plus belles photos avec la communauté.
+            </p>
+            <ul class="checks">
+              <li>Photos privées par défaut, publiques si vous le choisissez</li>
+              <li>Explorer : les photos des voyageurs, ville par ville</li>
+              <li>Wishlist des destinations qui vous font envie</li>
+            </ul>
+          </div>
+          <div class="feature__visual feature__visual--coral">
+            <div class="phone">
+              <img src="/accueil/app-souvenirs.webp" width="390" height="844" loading="lazy" alt="Écran Souvenirs de Tripmates avec les voyages passés et le bouton Revivre" />
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Comment ça marche -->
+      <section class="steps" aria-labelledby="titre-etapes">
+        <span class="kicker">EN TROIS GESTES</span>
+        <h2 id="titre-etapes">Prêt avant le prochain départ.</h2>
+        <ol>
+          <li>
+            <span>1</span>
+            <h3>Ouvrez l'app</h3>
+            <p>Connexion par un code reçu par e-mail, sans mot de passe. Ajoutez Tripmates à l'écran d'accueil.</p>
+          </li>
+          <li>
+            <span>2</span>
+            <h3>Créez le voyage</h3>
+            <p>Les villes, les dates, puis les billets : photographiés, transférés par e-mail ou saisis à la main.</p>
+          </li>
+          <li>
+            <span>3</span>
+            <h3>Invitez la bande</h3>
+            <p>Un lien suffit. Chacun complète l'itinéraire et ajoute ses photos pendant le voyage.</p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Tarifs -->
+      <section class="pricing" id="tarifs" aria-labelledby="titre-tarifs">
+        <header>
+          <span class="kicker">TARIFS</span>
+          <h2 id="titre-tarifs">Gratuit pour partir, <em>premium pour aller loin.</em></h2>
+          <p>Le propriétaire d'un voyage premium en fait profiter tous ses voyageurs.</p>
+        </header>
+        <div class="pricing__grid">
+          <article class="plan">
+            <h3>Gratuit</h3>
+            <p class="plan__price"><strong>0 €</strong></p>
+            <ul class="checks">
+              <li>Voyages, itinéraires et billets sans limite</li>
+              <li>Billets disponibles hors ligne</li>
+              <li>5 lectures de billets par l'IA</li>
+              <li>Photos dans 2 voyages, jusqu'à 250 Mo</li>
+              <li>Globe, carte et statistiques</li>
+            </ul>
+            <a class="btn btn--outline" href="/monde">Commencer</a>
+          </article>
+          <article class="plan plan--premium">
+            <span class="plan__badge">Le plus complet</span>
+            <h3>Premium</h3>
+            <p class="plan__price"><strong>2,50 €</strong> / mois</p>
+            <p class="plan__alt">ou 20 € par an, soit un tiers de moins</p>
+            <ul class="checks">
+              <li>Toute l'offre gratuite</li>
+              <li>Lecture des billets par l'IA illimitée<sup>*</sup></li>
+              <li>Photos et vidéos dans tous vos voyages, 20 Go</li>
+              <li>Vos voyageurs en profitent dans vos voyages</li>
+              <li>Sans engagement, résiliable à tout moment</li>
+            </ul>
+            <a class="btn btn--coral" href="/monde">Essayer Tripmates</a>
+          </article>
+        </div>
+        <p class="pricing__note">
+          Prix TTC. Paiement sécurisé par Stripe. <sup>*</sup>Dans le cadre d'un usage raisonnable, soit jusqu'à 300 lectures par période de 30 jours.
+          Voir les <a href="/cgv">conditions générales de vente</a>.
+        </p>
+      </section>
+
+      <!-- Questions -->
+      <section class="faq" id="questions" aria-labelledby="titre-questions">
+        <span class="kicker">QUESTIONS FRÉQUENTES</span>
+        <h2 id="titre-questions">Bon à savoir avant d'embarquer.</h2>
+        <details>
+          <summary>Faut-il télécharger Tripmates sur l'App Store ou Google Play ?</summary>
+          <p>
+            Non. Tripmates est une application web : ouvrez tripmates.app dans Safari ou Chrome, puis ajoutez-la à l'écran d'accueil. Elle s'ouvre alors
+            en plein écran comme une app classique, et se met à jour toute seule.
+          </p>
+        </details>
+        <details>
+          <summary>Mes billets sont-ils vraiment disponibles sans réseau ?</summary>
+          <p>
+            Oui. Une fois ouverts une première fois, vos billets et leurs pièces jointes sont gardés sur votre téléphone. Vous pouvez les afficher en mode
+            avion, à l'aéroport ou à l'étranger sans données mobiles.
+          </p>
+        </details>
+        <details>
+          <summary>Comment fonctionne la lecture des billets par l'IA ?</summary>
+          <p>
+            Prenez une photo ou une capture de votre billet, ou transférez l'e-mail de confirmation à votre adresse d'import personnelle. L'IA en extrait
+            les dates, horaires, numéros et références, et vous vérifiez avant d'ajouter la réservation au voyage.
+          </p>
+        </details>
+        <details>
+          <summary>Qui peut voir mes photos ?</summary>
+          <p>
+            Seuls les membres du voyage. Une photo ne devient publique que si vous la publiez vous-même, rattachée à une ville, et vous pouvez la retirer
+            à tout moment.
+          </p>
+        </details>
+        <details>
+          <summary>Où sont hébergées mes données ?</summary>
+          <p>
+            Vos voyages, billets et photos sont stockés en Europe. Le détail est dans notre <a href="/confidentialite">politique de confidentialité</a>.
+          </p>
+        </details>
+        <details>
+          <summary>Puis-je résilier le premium quand je veux ?</summary>
+          <p>Oui, depuis votre profil, en deux clics. Le premium reste actif jusqu'à la fin de la période déjà payée.</p>
+        </details>
+      </section>
+
+      <!-- Citation et appel final -->
+      <section class="manifesto">
+        <span class="kicker">NOTRE IDÉE DU VOYAGE</span>
+        <blockquote>On ne se souvient pas des jours,<br />on se souvient des <em>moments.</em></blockquote>
+        <a class="btn btn--forest" href="/monde">
+          Commencer mon carnet
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+        </a>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a class="brand" href="/">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3.4 3 14.6 0 18M12 3c-3 3.4-3 14.6 0 18" /></svg>
+        </span>
+        TRIPMATES
+      </a>
+      <nav aria-label="Informations légales">
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="/cgv">CGV</a>
+        <a href="/confidentialite">Confidentialité</a>
+        <a href="mailto:contact@tripmates.app">Contact</a>
+      </nav>
+      <p>© 2026 Tripmates</p>
+    </footer>
   </body>
 </html>

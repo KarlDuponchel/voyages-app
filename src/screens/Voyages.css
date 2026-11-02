@@ -18,6 +18,6 @@ h2.overline {
 .trip-row__badge {
   padding: 5px 10px;
   background: color-mix(in srgb, var(--accent-sunset) 16%, transparent);
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   font-weight: 600;
 }

@@ -31,7 +31,9 @@ function Shell() {
     <>
       <PullToRefresh onRefresh={() => Promise.all([refresh(), reloadProfile()])} />
       <Routes>
-        <Route path="/" element={<Monde />} />
+        {/* « / » est la page d'accueil publique (index.html) : l'app commence à /monde */}
+        <Route path="/" element={<Navigate to="/monde" replace />} />
+        <Route path="/monde" element={<Monde />} />
         <Route path="/voyages" element={<Voyages />} />
         <Route path="/voyages/:tripId" element={<Voyage />} />
         <Route path="/voyages/:tripId/reservations/:bookingId" element={<Billet />} />
@@ -41,7 +43,7 @@ function Shell() {
         <Route path="/profil" element={<Profil />} />
         <Route path="/invitation/:token" element={<Invitation />} />
         <Route path="/imports" element={<Imports />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/monde" replace />} />
       </Routes>
       {!hideTabBar(pathname) && <TabBar />}
     </>

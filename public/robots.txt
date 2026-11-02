@@ -1,0 +1,17 @@
+# Seules les pages publiques sont à référencer : l'app est réservée aux membres
+User-agent: *
+Allow: /$
+Allow: /cgv
+Allow: /mentions-legales
+Allow: /confidentialite
+Allow: /accueil/
+Disallow: /monde
+Disallow: /voyages
+Disallow: /souvenirs
+Disallow: /explorer
+Disallow: /stats
+Disallow: /profil
+Disallow: /invitation/
+Disallow: /imports
+
+Sitemap: https://tripmates.app/sitemap.xml

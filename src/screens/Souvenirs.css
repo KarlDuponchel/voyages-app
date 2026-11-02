@@ -40,7 +40,7 @@
   position: relative;
   display: block;
   overflow: hidden;
-  color: #f5f1e8;
+  color: #f7f3e9;
   isolation: isolate;
 }
 .memory > svg,
@@ -57,7 +57,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, transparent 45%, rgba(10, 15, 31, 0.85));
+  background: linear-gradient(180deg, transparent 45%, rgba(8, 28, 24, 0.82));
 }
 
 .memory {
@@ -68,12 +68,12 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  background: rgba(10, 15, 31, 0.45);
+  background: rgba(15, 48, 42, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 .memory__tag svg {
-  color: #f6c46a;
+  color: #f5c65e;
 }
 .memory__bottom {
   position: absolute;
@@ -88,8 +88,8 @@
 .memory__play {
   flex: none;
   padding: 10px 14px 10px 12px;
-  background: #f5f1e8;
-  color: #0a0f1f;
+  background: #fffcf4;
+  color: #183f37;
 }
 
 .memory-grid {
@@ -146,4 +146,12 @@ button.memory {
   flex: none;
   border-radius: 6px;
   overflow: hidden;
+}
+
+/* Ville en serif sur les cartes souvenir, comme dans les maquettes */
+.memory-card__text .title-m {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 21px;
+  line-height: 1.1;
 }

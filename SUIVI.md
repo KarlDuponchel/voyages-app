@@ -64,9 +64,11 @@
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
 ### Pour reprendre (mis à jour le 02/11)
-- **Prochaine séance : refaire le design d'après les maquettes Figma** du dossier `figma_mockups/`.
-  - Le plan complet est à l'étape 8 de la feuille de route, « Nouvelle direction artistique ».
-  - Avant de commencer, Karl doit trancher : le nom de l'app (Wayfarer ou Tripmates), les onglets (4 et un « + », ou 5 avec Explorer), et les couleurs du thème sombre.
+- **Design « Wayfarer » en cours sur la branche `feat/design-wayfarer`** (02/11, soir) : couleurs, polices et style appliqués à toute l'app, sans toucher aux blocs. Détails dans « Refonte du design », séance du 02/11.
+  - **À faire par Karl** : regarder la branche sur l'iPhone (clair et sombre), valider le thème sombre et le corail foncé des textes, puis la fusionner.
+  - **Nom de l'app : Tripmates** (décision de Karl, 02/11), en production sur https://tripmates.app. Renommée dans l'app sur la branche.
+  - **Depuis (02/11, nuit)** : thème sombre désactivé, page d'accueil publique et pages légales faites. Voir « Accueil public et pages légales » dans la séance du 02/11.
+  - **Avant de fusionner** : vérifier sur la preview Vercel que `/`, `/cgv`, `/monde` et une ancienne app installée (qui s'ouvre sur `/`) se comportent bien.
 - **Depuis le 02/11, en ligne** : partage public, Explorer, réactions, premium (Stripe en sandbox), code d'accès. Détails dans la séance du 02/11, plus bas.
 - **Ensuite** : étape 9 (VPS avec Dokploy, en même temps que `tripmates.app`), puis étape 10 (Stripe en réel).
 
@@ -318,6 +320,48 @@
 - [ ] **Premium** : paiement test (carte `4242 4242 4242 4242`), retour sur le profil, « Gérer l'abonnement ».
 - [ ] **Figma** (thème clair) : retouches de la barre d'état des écrans 02 et 06, du QR code du billet 03 et du texte « PORTUGAL · 7 JOURS ».
 
+### Refonte du design (branche `feat/design-wayfarer`, 02/11 au soir, pas encore fusionnée)
+- **Demande de Karl** : reprendre la typo et les couleurs de la maquette, adapter le style, **en laissant les blocs comme ils sont**. Donc 5 onglets gardés (avec Explorer), pas de « + » central.
+- **Couleurs** (`src/theme/palettes.ts`) : palette Wayfarer en clair ; thème sombre selon la proposition de l'étape 8 (fond Deep Forest, cartes Forest, texte crème).
+  - Nouvelles clés : `accentText` (corail foncé `#C4472B` pour le petit texte en clair), `textOnGradient` (texte sur les dégradés), `globeLandStroke`, `globeOutline`, `globeShade`, `glassBg`, `glassBorder`, `glassActive`, `shadowSoft`. `globeGlow` a disparu.
+  - Le texte sur les boutons corail est blanc, comme dans la maquette.
+- **Polices** : DM Serif Display (titres, chiffres, italique corail pour les mots en valeur) remplace Bricolage Grotesque ; DM Sans en 700 pour les petites capitales.
+- **Style** : boutons en pilule (montent au survol, souris seulement), cartes Paper avec ombre douce, sur-titres en capitales espacées.
+- **Écran Monde** : « BONJOUR, KARL » en corail, titre « Votre monde, *en un regard* », globe papier (terres sauge, pays visités en corail, repères bordés de blanc, onde sur le prochain voyage), orbites décoratives, chiffres en 3 colonnes à filets, prochain départ en carte Forest.
+- **Barre d'onglets** en verre, flottante, avec le point corail sur l'onglet actif.
+- **Couleurs en dur** de l'ancienne palette remplacées (visionneuses, couvertures, billet, Explorer, voile des panneaux).
+- **Vérifié dans le navigateur** avec un faux Supabase, en clair et en sombre : Monde, Voyages, Voyage, Billet, Souvenirs, Explorer, Stats, Profil. Compilation OK.
+- **Nom** : « Voyages » remplacé par **Tripmates** partout où il s'affiche (titre de l'onglet, app installée, connexion, code d'accès, installation, notifications, message d'invitation). Les clés de stockage gardent le préfixe `voyages:`, pour ne pas perdre les réglages des appareils.
+- **Accueil, globe ou carte** (demande de Karl) : un sélecteur au-dessus du globe propose le globe qui tourne (par défaut) ou une mappemonde à plat (`src/components/WorldMap.tsx`, projection Equal Earth, mêmes couleurs, mêmes repères). Le choix est gardé sur l'appareil (`voyages:vue-monde`).
+- **Pas encore fait** : captures avant et après sur iPhone, page d'accueil publique, icônes de l'app (toujours les anciennes).
+
+### Accueil public et pages légales (branche `feat/design-wayfarer`, 02/11 dans la nuit)
+- **Thème sombre désactivé** (Karl n'aime pas le fond vert) : `src/theme/theme.tsx` applique toujours le thème clair, et le choix « Apparence » a disparu du profil. La palette `sombre` reste dans `palettes.ts` pour un retour éventuel.
+- **Nouvelle organisation des adresses** :
+  - `/` est la page d'accueil publique (`index.html`, statique, référencée) ;
+  - `/cgv`, `/mentions-legales`, `/confidentialite` sont les pages légales (`*.html` à la racine) ;
+  - **l'app est dans `app.html` et commence à `/monde`** ; toutes les autres adresses (`/voyages`, `/invitation/…`) restent les mêmes.
+  - Règles : `vercel.json` (`cleanUrls` et réécriture vers `app.html`), et le plugin `sitePages` de `vite.config.ts` pour `npm run dev` et `vite preview`.
+  - **Avec Dokploy** : reproduire la règle dans nginx (`/` → `index.html`, `/cgv` → `cgv.html`, le reste sans extension → `app.html`).
+  - L'app installée s'ouvrait sur `/` : l'accueil renvoie vers `/monde` l'app installée, et les personnes connectées sur téléphone. Le manifeste démarre désormais sur `/monde`. Le service worker ouvre `app.html` hors ligne.
+- **Page d'accueil** (`index.html`, styles `src/site/site.css`) : d'après la maquette Figma. Héros « Chaque voyage laisse une trace », bandeau des fonctionnalités, 4 sections avec de vraies captures de l'app, 3 étapes, tarifs (2,50 €/mois, 20 €/an), questions fréquentes, citation, pied de page. Aucun faux chiffre d'utilisateurs.
+  - **Captures** dans `public/accueil/` (WebP, ×2), faites avec des données de démo (Camille, Lisbonne & Porto). Les couvertures des voyages de démo sont des photos Unsplash libres de droits (Lisbonne, Kyoto, Islande, New York, Cyclades, Marrakech, Oaxaca), rangées dans `scripts/accueil/photos/` avec leurs crédits (`CREDITS.md`) ; elles habillent les sections 2 (itinéraire) et 4 (souvenirs). Pour les refaire : `node scripts/accueil/faux-supabase.mjs`, puis Vite en mode `mock` sur le port 5174 avec un `.env.mock.local` (`VITE_SUPABASE_URL=http://localhost:54399`), puis `node scripts/accueil/captures.mjs public/accueil`. `page.mjs` capture une page entière (image de partage `og.jpg` en 1200×630).
+- **Premium affiché « lecture par l'IA illimitée »** (décision de Karl, 02/11), avec un astérisque : « usage raisonnable, jusqu'à 300 lectures par période de 30 jours », sur l'accueil et dans les CGV. Le plafond doit rester écrit près du mot « illimitée », sinon c'est une pratique commerciale trompeuse.
+- **App, en-tête d'un voyage avec photo** : le fondu vers la crème commence plus haut et le sur-titre (« PORTUGAL · 8 JOURS ») passe en corail foncé ; en doré sur une photo claire, il était illisible.
+- **Référencement** : titre et description, URL canonique, Open Graph et image de partage, données structurées `Organization`, `WebSite` et `WebApplication` (avec les prix), `robots.txt` (l'app est exclue), `sitemap.xml`, `noindex` sur `app.html`. Pas de balisage FAQ : Google ne l'affiche plus depuis mai 2026. La page ne charge que ses styles et ses polices (environ 20 ko de HTML), pas l'app.
+  - **Après la mise en ligne** : déclarer le site et le sitemap dans Google Search Console et Bing Webmaster Tools.
+- **Pages légales**, à faire relire par un juriste avant l'ouverture. Les informations manquantes sont surlignées en jaune (classe `todo`) :
+  - identité de l'éditeur, statut, SIRET, adresse, directeur de la publication, régime de TVA ;
+  - **médiateur de la consommation** (obligatoire pour vendre aux particuliers) ;
+  - prestataire d'envoi des e-mails ; adresse de Supabase (dans son DPA) ; hébergeur du VPS au passage sur Dokploy ;
+  - **créer la boîte `contact@tripmates.app`** (redirection Cloudflare Email Routing), citée partout.
+- **Engagements écrits dans les pages, pas encore codés** :
+  - rappel par e-mail avant le renouvellement de l'abonnement annuel (obligatoire, article L. 215-1) ;
+  - prévenir 30 jours avant un changement de prix ;
+  - suppression des comptes inactifs depuis 3 ans, avec un e-mail d'avertissement ;
+  - exporter ses données sur demande (droit d'accès et de portabilité) : à la main au début.
+- **Trouvé en écrivant la politique de confidentialité** : supprimer son compte n'efface ni les voyages créés (`created_by` passe à `null`), ni les fichiers des billets et des photos dans le stockage. Les voyages dont la personne était seule membre restent donc en base, invisibles. **À corriger avant l'ouverture** (supprimer les voyages sans membre et leurs fichiers). En attendant, la page le dit honnêtement.
+
 ### Idées pour la suite du partage
 - **Globe** : un point par ville qui a des photos publiques, qui ouvre Explorer sur cette ville.
 - **Vérification par l'IA à la publication** (Haiku, moins d'un centime par photo) : refuser d'emblée les contenus choquants.
@@ -463,13 +507,14 @@
     - **À décider** : la maquette a 4 onglets et le « + », l'app en a 5 (avec Explorer). Faut-il regrouper Souvenirs et Explorer, ou garder 5 onglets sans « + » central ?
   - **Boutons** : en pilule (999 px), corail pour l'action principale, Forest pour les autres. Ils montent légèrement au survol, et rien ne bouge au toucher.
 - **À ne pas reprendre** :
-  - **Le nom** : « Wayfarer » est celui de la maquette ; l'app s'appelle Voyages, avec le domaine tripmates.app. **Choix du nom à faire par Karl.**
+  - **Le nom** : « Wayfarer » est celui de la maquette ; l'app s'appelle **Tripmates** (décidé le 02/11), sur https://tripmates.app.
   - **Le contenu factice** : les faux chiffres (« 12 000+ voyageurs », 24 pays…), la photo Unsplash, les initiales « ML ».
   - **La section « palette »** de la page d'accueil : c'est un outil de travail, pas du contenu.
 - **Page d'accueil publique** (hors de l'app, pour `tripmates.app` à l'ouverture) :
   - à reprendre de la maquette : héros « Chaque voyage laisse une trace », bandeau des fonctionnalités, présentation mobile, citation, pied de page ;
   - avec de vrais chiffres ou sans chiffres, et un bouton « Ouvrir l'app ».
   - À faire avec l'étape 7 (ouverture au public).
+- **Avancement (02/11)** : étapes 1 à 3 faites sur `feat/design-wayfarer` (barre d'onglets gardée à 5 onglets), étape 4 en partie (couleurs et polices partout, sans refonte des blocs).
 - **Ordre conseillé** :
   1. **Couleurs et polices** dans `palettes.ts` et `styles.css` : toute l'app change d'un coup. Vérifier le contraste dans les deux thèmes.
   2. **Écran Monde** : en-tête, globe papier, chiffres, prochain départ, communauté en cartes souvenir.

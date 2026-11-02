@@ -1,0 +1,67 @@
+/* Mêmes couleurs que le globe (palettes.ts : globe…) */
+.world-map {
+  display: block;
+  overflow: visible;
+}
+.world-map__ocean-light {
+  stop-color: var(--globe-ocean-light);
+}
+.world-map__ocean-dark {
+  stop-color: var(--globe-ocean-dark);
+}
+.world-map__lines {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  stroke-width: 0.6;
+}
+.world-map__land {
+  fill: var(--globe-land);
+  stroke: var(--globe-land-stroke);
+  stroke-width: 0.4;
+}
+.world-map__visited {
+  fill: var(--globe-visited);
+  stroke: var(--text-primary);
+  stroke-width: 0.6;
+}
+.world-map__outline {
+  fill: none;
+  stroke: var(--globe-outline);
+  stroke-width: 1.2;
+}
+
+/* Repères ronds bordés de blanc */
+.world-map__pin {
+  fill: var(--accent-sun);
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.world-map__active {
+  fill: var(--accent-sunset);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.world-map__ping {
+  fill: none;
+  stroke: var(--accent-sunset);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: world-map-ping 1.7s ease-out infinite;
+}
+@keyframes world-map-ping {
+  from {
+    opacity: 1;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-map__ping {
+    animation: none;
+    opacity: 0.5;
+  }
+}

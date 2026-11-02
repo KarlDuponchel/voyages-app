@@ -23,7 +23,7 @@
 }
 .place-results svg,
 .place-chosen svg {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   flex: none;
 }
 

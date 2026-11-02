@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   background: #000;
-  color: #f5f1e8;
+  color: #f7f3e9;
   animation: story-in 0.25s ease both;
   user-select: none;
   -webkit-user-select: none;
@@ -55,7 +55,7 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  color: #f5f1e8;
+  color: #f7f3e9;
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
 }
 
@@ -100,7 +100,7 @@
   animation: story-in 0.3s ease both;
 }
 .story-player__link {
-  color: #f5f1e8;
+  color: #f7f3e9;
   border-color: rgba(255, 255, 255, 0.3);
 }
 

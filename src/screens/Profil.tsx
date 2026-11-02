@@ -1,4 +1,4 @@
-import { Check, Copy, LogOut, Monitor, Moon, Plus, RefreshCw, Sun, Trash2, X } from 'lucide-react'
+import { Check, Copy, LogOut, Plus, RefreshCw, Trash2, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { InstallSteps } from '../components/InstallSteps'
@@ -13,14 +13,7 @@ import { installPlatform, isInstalled } from '../lib/install'
 import { PUSH_CONFIGURED } from '../lib/push'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
-import { useTheme, type ThemeChoice } from '../theme/theme'
 import './Profil.css'
-
-const themeOptions: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
-  { value: 'auto', label: 'Auto', Icon: Monitor },
-  { value: 'clair', label: 'Clair', Icon: Sun },
-  { value: 'sombre', label: 'Sombre', Icon: Moon },
-]
 
 const normalize = (s: string) =>
   s
@@ -271,7 +264,6 @@ function Account() {
 }
 
 export function Profil() {
-  const { choice, setChoice } = useTheme()
   const { profile } = useAuth()
   const { importAlias } = useTrips()
   const address = importAddress(importAlias)
@@ -313,23 +305,6 @@ export function Profil() {
           </div>
         </section>
       )}
-
-      <section className="px stack" style={{ gap: 10 }}>
-        <h2 className="overline muted">Apparence</h2>
-        <div className="card profil-card">
-          <div className="profil-theme" role="radiogroup" aria-label="Thème">
-            {themeOptions.map(({ value, label, Icon }) => (
-              <button key={value} role="radio" aria-checked={choice === value} className={choice === value ? 'is-active' : ''} onClick={() => setChoice(value)}>
-                <Icon size={20} />
-                <span className="caption">{label}</span>
-              </button>
-            ))}
-          </div>
-          <p className="caption muted" style={{ margin: 0 }}>
-            « Auto » suit le réglage clair/sombre du téléphone.
-          </p>
-        </div>
-      </section>
 
       <section className="px stack" style={{ gap: 10 }}>
         <h2 className="overline muted">Installer l'app</h2>

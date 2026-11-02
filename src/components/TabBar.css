@@ -1,34 +1,67 @@
+/* Barre d'onglets en verre, flottante (maquettes Figma) */
 .tabbar {
   position: fixed;
   z-index: 20;
-  bottom: 0;
+  bottom: calc(var(--safe-bottom) + 12px);
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 12px calc(var(--safe-bottom) + 8px);
-  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border-subtle);
+  width: calc(100% - 26px);
+  max-width: calc(480px - 26px);
+  height: 64px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  padding: 6px 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  box-shadow:
+    0 12px 28px rgba(15, 48, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(24, 63, 55, 0.08);
+}
+/* Reflet sur le bord du verre */
+.tabbar::before {
+  content: '';
+  position: absolute;
+  width: 42%;
+  height: 2px;
+  left: 12%;
+  top: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  pointer-events: none;
 }
 
 .tabbar__item {
-  width: 62px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 16px;
+  font-size: 10.5px;
   font-weight: 500;
   color: var(--text-secondary);
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .tabbar__item.active {
   color: var(--text-primary);
+  background: var(--glass-active);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 8px rgba(24, 63, 55, 0.07);
 }
-.tabbar__item.active svg {
-  color: var(--accent-sunset);
+/* Petit point corail sur l'onglet actif */
+.tabbar__item.active::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-sunset);
+  box-shadow: 0 0 8px rgba(242, 107, 75, 0.65);
 }

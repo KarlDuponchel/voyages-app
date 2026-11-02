@@ -3,7 +3,7 @@
   align-items: center;
   gap: 2px;
   flex: none;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 
 /* Cartes des villes : défilement horizontal, une carte et le début de la suivante */
@@ -73,7 +73,7 @@
   content: '';
   position: absolute;
   inset: 45% 0 0 0;
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.65));
+  background: linear-gradient(to bottom, transparent, rgba(8, 28, 24, 0.82));
   pointer-events: none;
 }
 .community__title {
@@ -91,8 +91,8 @@
 }
 .community__city {
   font-family: var(--font-display, inherit);
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 400;
   line-height: 1.1;
 }
 .community__rank {
@@ -105,7 +105,7 @@
   font-size: 12px;
   font-weight: 600;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 48, 42, 0.5);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -125,7 +125,7 @@
 }
 .community__recent {
   margin-left: auto;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   font-weight: 600;
 }
 

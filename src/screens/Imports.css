@@ -19,7 +19,7 @@
 }
 .imports__ai,
 .imports__reading svg {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
 }
 
 .imports__new-trip {
@@ -28,7 +28,7 @@
   align-items: center;
   gap: 4px;
   margin-top: -4px;
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -95,6 +95,6 @@
   border: 1px solid color-mix(in srgb, var(--accent-sunset) 35%, transparent);
 }
 .imports-banner svg {
-  color: var(--accent-sunset);
+  color: var(--accent-text);
   flex: none;
 }
