@@ -66,7 +66,7 @@
 ### Pour reprendre (mis à jour le 02/11)
 - **Prochaine séance : refaire le design d'après les maquettes Figma** du dossier `figma_mockups/`.
   - Le plan complet est à l'étape 8 de la feuille de route, « Nouvelle direction artistique ».
-  - Avant de commencer, Karl doit trancher : le nom de l'app (Wayfarer ou Voyages), les onglets (4 et un « + », ou 5 avec Explorer), et les couleurs du thème sombre.
+  - Avant de commencer, Karl doit trancher : le nom de l'app (Wayfarer ou Tripmates), les onglets (4 et un « + », ou 5 avec Explorer), et les couleurs du thème sombre.
 - **Depuis le 02/11, en ligne** : partage public, Explorer, réactions, premium (Stripe en sandbox), code d'accès. Détails dans la séance du 02/11, plus bas.
 - **Ensuite** : étape 9 (VPS avec Dokploy, en même temps que `tripmates.app`), puis étape 10 (Stripe en réel).
 
