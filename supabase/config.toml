@@ -244,6 +244,15 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# E-mails de connexion Tripmates (à coller aussi dans le tableau de bord : voir docs/supabase.md)
+[auth.email.template.magic_link]
+subject = "Votre code de connexion Tripmates"
+content_path = "./supabase/templates/connexion.html"
+
+[auth.email.template.confirmation]
+subject = "Bienvenue sur Tripmates : votre code"
+content_path = "./supabase/templates/inscription.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

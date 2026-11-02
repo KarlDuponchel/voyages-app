@@ -59,8 +59,10 @@ Les réservations sont enregistrées en **heure locale du lieu**, accompagnée d
 4. Dans **Authentication → URL Configuration** :
    - mets `https://voyages-app-chi.vercel.app` comme **Site URL** ;
    - ajoute `https://voyages-app-chi.vercel.app/**` et `http://localhost:5173/**` dans les **Redirect URLs**.
-5. Dans **Authentication → Emails → Templates**, ajoute le code dans les modèles **Magic Link** et **Confirm signup**, par exemple :
-   `<p>Votre code : <strong>{{ .Token }}</strong></p>`
+5. Dans **Authentication → Emails → Templates**, colle les modèles du projet (mis en page aux couleurs de l'app le 02/11) :
+   - **Magic Link** (connexion d'un compte existant) : sujet « Votre code de connexion Tripmates », contenu de `supabase/templates/connexion.html` ;
+   - **Confirm signup** (première connexion, le compte est créé) : sujet « Bienvenue sur Tripmates : votre code », contenu de `supabase/templates/inscription.html`.
+   Les deux affichent le code (`{{ .Token }}`) en grand et un bouton (`{{ .ConfirmationURL }}`). Ils sont aussi déclarés dans `supabase/config.toml`.
    Sans ce code, on ne peut pas se connecter depuis l'app installée sur l'iPhone. Elle ne partage pas sa session avec Safari, donc un lien ouvert depuis Mail connecterait Safari, pas l'app.
 6. **Avant d'ouvrir l'app à d'autres personnes** : branche un service d'envoi d'e-mails (SMTP) dans **Authentication → Emails → SMTP Settings**. Resend, Brevo et d'autres ont une offre gratuite. Sans lui, Supabase n'envoie des e-mails qu'aux membres de l'équipe du projet, et seulement quelques-uns par heure.
 7. Dans **Project Settings → API**, récupère l'**URL du projet** et la clé **anon / publishable**. Ces deux valeurs peuvent figurer dans l'app sans risque, car c'est la RLS qui protège les données. La clé **service_role** ou **secret**, elle, ne doit jamais aller dans l'app ni sur GitHub.

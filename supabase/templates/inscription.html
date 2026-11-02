@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Bienvenue sur Tripmates</title>
+  </head>
+  <!-- Modèle « Confirm signup » de Supabase (première connexion : le compte est créé). Voir docs/supabase.md. -->
+  <body style="margin:0;padding:0;background-color:#F7F3E9;">
+    <!-- Aperçu dans la boîte de réception -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#F7F3E9;">Bienvenue ! Votre code : {{ .Token }}</div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F3E9;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
+            <!-- Logo -->
+            <tr>
+              <td style="padding:0 4px 20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td><img src="https://tripmates.app/pwa-192x192.png" width="40" height="40" alt="" style="display:block;border-radius:10px;" /></td>
+                    <td style="padding-left:10px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;color:#183F37;">TRIPMATES</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Carte -->
+            <tr>
+              <td style="background-color:#FFFCF4;border:1px solid #DCD9CC;border-radius:20px;padding:36px 32px;">
+                <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#C4472B;">Bienvenue à bord</p>
+                <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1.15;font-weight:normal;color:#0F302A;">Votre carnet de voyage <em style="color:#C4472B;">vous attend.</em></h1>
+                <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#4A6560;">Saisissez ce code dans l'app Tripmates pour créer votre compte :</p>
+
+                <!-- Code -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" style="background-color:#DFE5CF;border-radius:14px;padding:20px 12px;font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:#183F37;">{{ .Token }}</td>
+                  </tr>
+                </table>
+
+                <p style="margin:24px 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#4A6560;">Ou ouvrez Tripmates directement depuis ce téléphone ou cet ordinateur :</p>
+
+                <!-- Bouton -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="background-color:#183F37;border-radius:999px;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;">Commencer&nbsp;&nbsp;→</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid #E6E3D7;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#4F645E;">Ce code ne sert qu'une fois et expire rapidement. Si vous n'avez rien demandé, ignorez simplement cet e-mail : le compte ne sera pas activé sans ce code.</p>
+              </td>
+            </tr>
+
+            <!-- Pied -->
+            <tr>
+              <td align="center" style="padding:24px 16px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#4F645E;">
+                Tripmates · Chaque voyage laisse une trace<br />
+                <a href="https://tripmates.app" style="color:#183F37;">tripmates.app</a> · <a href="mailto:contact@tripmates.app" style="color:#183F37;">contact@tripmates.app</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
