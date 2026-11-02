@@ -226,7 +226,7 @@
   - on montre le mois de prise de vue, pas le jour ;
   - pas de commentaires.
 
-### Fait (branche `feat/partage`, pas encore fusionnée ni en ligne)
+### Fait (fusionné dans `main` et en ligne le 02/11)
 - **Ce qui restait ouvert** : uniquement des vérifications sur iPhone, regroupées plus bas dans « À tester sur iPhone ».
 - **Base du partage** : migration `20261102100000_partage.sql`.
   - L'auteur publie dans une ville du voyage.
@@ -275,11 +275,11 @@
   - Corrigé en chemin : la rangée de boutons de la visionneuse débordait sur iPhone.
 
 ### À faire par Karl pour mettre en ligne
-- [ ] **Base** : `npm run test:db`, puis `npx supabase db push`, puis régénérer les types. Ceux de `src/data/database.types.ts` ont été écrits à la main en attendant.
+- [x] **Base** : migrations appliquées et types régénérés le 02/11. Avec la CLI 3.0, il faut ajouter `--linked` à `db push`, sinon elle vise une base locale. Ceux de `src/data/database.types.ts` ont été écrits à la main en attendant.
 - [ ] **Premium offert** à Karl et Louna. Sinon, l'offre gratuite s'applique dès la mise en ligne : 5 lectures par l'IA déjà consommées, et 2 voyages avec photos. La requête est dans [docs/partage.md](docs/partage.md).
 - [ ] **Stripe en mode test** : produit, deux prix, portail, webhook, secrets. Voir [docs/partage.md](docs/partage.md).
-- [ ] **Fonctions** : `npx supabase functions deploy` pour `billing`, `stripe-webhook`, `notify-reaction`, puis `extract-booking` et `inbound-email`, qui ont changé.
-- [ ] Fusionner `feat/partage` dans `main` (Vercel met l'app en ligne).
+- [x] **Fonctions** déployées le 02/11. La CLI 3.0 demande `--yes` quand Claude déploie, après l'accord de Karl. Commande : `npx supabase functions deploy` pour `billing`, `stripe-webhook`, `notify-reaction`, puis `extract-booking` et `inbound-email`, qui ont changé.
+- [x] `feat/partage` fusionnée dans `main` et en ligne le 02/11.
 
 ### À tester sur iPhone (tout ce qui reste ouvert)
 - [ ] **Photos** : choisir plusieurs photos et une vidéo dans la pellicule, la date de prise de vue, mettre en couverture, supprimer, l'affichage hors ligne.
