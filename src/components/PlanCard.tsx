@@ -21,6 +21,9 @@ function Meter({ label, value, max, detail }: { label: string; value: number; ma
   )
 }
 
+/** États Stripe où il existe un abonnement à gérer (changer de carte, résilier, factures) */
+const SUBSCRIBED = ['active', 'trialing', 'past_due', 'unpaid']
+
 /** Offre du compte : place utilisée, lectures par l'IA, passage au premium ou gestion de l'abonnement */
 export function PlanCard() {
   const location = useLocation()
@@ -139,7 +142,8 @@ export function PlanCard() {
               <span className="caption muted">Sans engagement, résiliable à tout moment. Paiement sécurisé par Stripe.</span>
             </div>
           )}
-          {plan.managedByStripe && (
+          {/* Un client Stripe existe dès qu'un paiement est commencé, même abandonné : le portail ne sert qu'avec un vrai abonnement */}
+          {plan.managedByStripe && SUBSCRIBED.includes(plan.status ?? '') && (
             <button className="btn btn--ghost" disabled={busy} onClick={() => run(openBillingPortal)}>
               Gérer l’abonnement
             </button>

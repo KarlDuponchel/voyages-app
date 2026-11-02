@@ -8,7 +8,7 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
   --gutter: 24px;
-  --tabbar-h: 78px; /* barre flottante (64px) et son écart avec le bas */
+  --tabbar-h: 70px; /* barre flottante (64px) et son écart avec le bas */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 

@@ -1,13 +1,20 @@
-/* Barre d'onglets en verre, flottante (maquettes Figma) */
+/* Barre d'onglets en verre, flottante (maquettes Figma). Près du bas de l'écran,
+   juste au-dessus de la barre de geste de l'iPhone (zone de sécurité moins 12 px). */
 .tabbar {
   position: fixed;
   z-index: 20;
-  bottom: calc(var(--safe-bottom) + 12px);
+  bottom: calc(max(var(--safe-bottom) - 12px, 0px) + 8px);
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 26px);
   max-width: calc(480px - 26px);
   height: 64px;
+  transition:
+    width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    max-width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    bottom 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.35s ease;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
@@ -47,6 +54,34 @@
   font-weight: 500;
   color: var(--text-secondary);
   transition: color 0.2s ease, background 0.2s ease;
+}
+
+.tabbar__item span {
+  max-height: 14px;
+  overflow: hidden;
+  transition:
+    opacity 0.2s ease,
+    max-height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Réduite pendant le défilement vers le bas : plus étroite, plus basse, icônes seules */
+.tabbar--compact {
+  width: calc(100% - 96px);
+  max-width: calc(480px - 120px);
+  height: 52px;
+  bottom: calc(max(var(--safe-bottom) - 14px, 0px) + 6px);
+  border-radius: 20px;
+}
+.tabbar--compact .tabbar__item span {
+  opacity: 0;
+  max-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabbar,
+  .tabbar__item span {
+    transition: none;
+  }
 }
 
 .tabbar__item.active {
