@@ -16,11 +16,11 @@ export function formBody(params: Record<string, unknown>, prefix = ''): string[]
   })
 }
 
-export async function stripeApi<T>(method: 'GET' | 'POST', path: string, params: Record<string, unknown> = {}): Promise<T> {
+export async function stripeApi<T>(method: 'GET' | 'POST' | 'DELETE', path: string, params: Record<string, unknown> = {}): Promise<T> {
   const key = Deno.env.get('STRIPE_SECRET_KEY')
   if (!key) throw new Error('Variable STRIPE_SECRET_KEY manquante')
   const body = formBody(params).join('&')
-  const res = await fetch(`${API}${path}${method === 'GET' && body ? `?${body}` : ''}`, {
+  const res = await fetch(`${API}${path}${method !== 'POST' && body ? `?${body}` : ''}`, {
     method,
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: method === 'POST' ? body : undefined,

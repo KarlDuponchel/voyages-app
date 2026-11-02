@@ -910,8 +910,11 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      account_files: {
+        Args: { p_user: string }
+        Returns: { bucket_id: string; name: string }[]
+      }
       ai_allowance: { Args: { p_trip?: string; p_user: string }; Returns: Json }
-      delete_my_account: { Args: never; Returns: undefined }
       invitation_preview: {
         Args: { p_token: string }
         Returns: {

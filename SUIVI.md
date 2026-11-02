@@ -392,6 +392,40 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
   - CGU (licence d'affichage, droits, personnes photographiées) ;
   - point de contact pour le DSA.
 
+## Suppression de compte complète (RGPD, 2 novembre 2026)
+
+Découvert en écrivant la politique de confidentialité : supprimer son compte laissait des fichiers et l'abonnement.
+
+### Constat
+- **La base faisait déjà sa part** (déclencheur `after_member_removed`, schéma initial), vérifié par un test :
+  - un voyage dont on était le seul membre est supprimé, avec ses réservations, étapes et photos ;
+  - un voyage partagé reste aux autres ; si on en était propriétaire, le membre le plus ancien le devient (un participant avant un lecteur).
+- **Ce qui manquait** :
+  - les **fichiers** (billets `trip-files`, photos `trip-photos`, pièces jointes `imports`) restaient dans le stockage : Postgres ne peut pas les effacer ;
+  - l'**abonnement Stripe** continuait d'être prélevé ;
+  - le webhook Stripe aurait échoué en boucle sur un compte disparu.
+
+### Fait (branche `claude/modest-poitras-1ed45c`)
+- **Choix : une fonction serveur `delete-account`**, appelée par l'app à la place de la fonction de base `delete_my_account()`.
+  - Seul le serveur, avec la clé serveur, peut effacer des fichiers de voyages dont on n'est pas forcément éditeur, résilier chez Stripe, puis supprimer le compte.
+  - Écarté : effacer depuis l'app avant la suppression (une coupure laisse des fichiers, une vieille version de l'app les oublie) ; un nettoyage périodique des fichiers orphelins (des données restent des jours après la demande).
+  - Ordre : résilier l'abonnement, effacer les fichiers, puis supprimer le compte. Une erreur arrête tout avant la suppression : on peut réessayer.
+- **Migration `20261103100000_suppression_compte.sql`** :
+  - `account_files(p_user)`, réservée au serveur, liste les fichiers à effacer : ceux des voyages dont la personne est la seule membre, y compris les envois interrompus, et ses pièces jointes d'e-mails ;
+  - `delete_my_account()` est supprimée.
+- **Voyages partagés** : leurs fichiers restent, comme les photos ajoutées par la personne, sans son nom.
+- **Premium** : le nouveau propriétaire paie désormais pour tous. Les photos du voyage comptent dans son espace. S'il est en gratuit et dépasse la limite, les photos restent, mais on ne peut plus en ajouter (même règle qu'à la fin d'un premium). Il peut aussi faire tomber le voyage sous la limite gratuite des 2 voyages avec photos.
+- **Webhook Stripe** : il ignore un abonnement dont le compte n'existe plus.
+- **Tests** : 8 nouveaux tests de base (113 au total) et 2 tests de fonctions (21 au total).
+
+### À faire par Karl pour mettre en ligne (dans cet ordre, rapprochés)
+L'app actuelle appelle `delete_my_account()`, que la migration supprime. Faire les trois étapes à la suite. L'app n'est pas encore ouverte au public, donc le court intervalle est sans risque.
+- [ ] Vérifier : `npm run test:db` et `npm run test:functions`.
+- [ ] Appliquer la migration : `npx supabase db push --linked`. Puis régénérer les types : les fonctions `account_files` et `delete_my_account` sont déjà corrigées à la main dans `src/data/database.types.ts`.
+- [ ] Déployer les fonctions : `npx supabase functions deploy delete-account` (nouvelle) et `npx supabase functions deploy stripe-webhook` (modifiée). Pas de nouveau secret : elles utilisent `SUPABASE_SERVICE_ROLE_KEY` et `STRIPE_SECRET_KEY`, déjà réglés.
+- [ ] Mettre l'app en ligne (fusion dans `main`).
+- [ ] Tester avec un compte jetable : un voyage seul avec un billet et une photo, un voyage partagé avec Louna. Supprimer le compte, puis vérifier dans le tableau de bord que les fichiers du voyage seul ont disparu des buckets, et que Louna est propriétaire du voyage partagé.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
