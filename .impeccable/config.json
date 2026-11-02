@@ -29,6 +29,42 @@
         ],
         "createdAt": "2026-11-02T18:30:46.063Z",
         "reason": "Claude: les tailles sont dans src/site/site.css chargé en module, invisible pour le hook ; échelle réelle 16 px (texte) → 28 px (h2) → 40-58 px (h1), h3 en gras à 16 px voulu comme intertitre"
+      },
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "files": [
+          "supabase/templates/connexion.html"
+        ],
+        "createdAt": "2026-11-02T21:03:53.215Z",
+        "reason": "Claude : e-mail, les messageries n'affichent pas les polices web ; Arial sert de police sûre à la place de DM Sans"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "supabase/templates/connexion.html"
+        ],
+        "createdAt": "2026-11-02T21:03:53.399Z",
+        "reason": "Claude : palette de la marque Tripmates (Warm Cream #F7F3E9), reprise des maquettes Figma choisies par Karl"
+      },
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "files": [
+          "supabase/templates/inscription.html"
+        ],
+        "createdAt": "2026-11-02T21:03:53.584Z",
+        "reason": "Claude : e-mail, les messageries n'affichent pas les polices web ; Arial sert de police sûre à la place de DM Sans"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "supabase/templates/inscription.html"
+        ],
+        "createdAt": "2026-11-02T21:03:53.782Z",
+        "reason": "Claude : palette de la marque Tripmates (Warm Cream #F7F3E9), reprise des maquettes Figma choisies par Karl"
       }
     ]
   }
