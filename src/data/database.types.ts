@@ -902,6 +902,10 @@ export type Database = {
         Args: { p_caption?: string; p_destination: string; p_photo: string }
         Returns: undefined
       }
+      react_to_photo: {
+        Args: { p_kind: string | null; p_photo: string }
+        Returns: undefined
+      }
       regenerate_import_alias: { Args: never; Returns: string }
       save_push_subscription: {
         Args: {

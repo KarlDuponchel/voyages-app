@@ -208,6 +208,7 @@ export function PhotoViewer({
               setSharing(null)
               await onChanged()
             }}
+            onUnpublish={canUnpublish ? () => setSharing('retirer') : undefined}
           />
         ) : sharing === 'retirer' ? (
           <div className="stack" style={{ gap: 8 }}>
@@ -254,23 +255,19 @@ export function PhotoViewer({
                   })
                 }
               >
-                <ImageIcon size={16} /> {isCover ? 'Couverture du voyage' : 'Mettre en couverture'}
+                <ImageIcon size={16} /> {isCover ? 'En couverture' : 'Couverture'}
               </button>
             )}
-            {isAuthor && (
-              <button
-                className="btn btn--ghost viewer-photo__action"
-                onClick={() => setSharing('publier')}
-                disabled={busy}
-                aria-label={photo.share ? 'Modifier la publication' : 'Rendre publique'}
-              >
-                <Globe size={16} /> {photo.share ? 'Modifier' : 'Rendre publique'}
+            {isAuthor ? (
+              <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing('publier')} disabled={busy}>
+                <Globe size={16} /> {photo.share ? 'Publique' : 'Rendre publique'}
               </button>
-            )}
-            {canUnpublish && (
-              <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing('retirer')} disabled={busy}>
-                Retirer
-              </button>
+            ) : (
+              canUnpublish && (
+                <button className="btn btn--ghost viewer-photo__action" onClick={() => setSharing('retirer')} disabled={busy}>
+                  <Globe size={16} /> Retirer
+                </button>
+              )
             )}
             {canDelete && (
               <button className="btn btn--ghost viewer-photo__action" onClick={() => setConfirm(true)} disabled={busy} aria-label="Supprimer">

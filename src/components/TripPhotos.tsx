@@ -1,11 +1,11 @@
-import { Globe, ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
+import { Compass, Globe, ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { formatDayHeader } from '../lib/format'
 import { listPhotos, QuotaError, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
-import { canEdit } from '../lib/trip'
+import { canEdit, mainPlace } from '../lib/trip'
 import { PhotoViewer } from './PhotoViewer'
 import { StoryPlayer } from './StoryPlayer'
 import './TripPhotos.css'
@@ -58,6 +58,7 @@ export function TripPhotos({
   const [reliving, setReliving] = useState(false)
   const input = useRef<HTMLInputElement>(null)
   const editable = canEdit(trip)
+  const place = mainPlace(trip)
 
   const load = useCallback(async () => {
     try {
@@ -216,6 +217,12 @@ export function TripPhotos({
             </div>
           </div>
         ))}
+
+        {place && (
+          <Link className="caption photos__explore" to={`/explorer?ville=${encodeURIComponent(place.city)}&pays=${place.countryId}`}>
+            <Compass size={14} /> Ce que les voyageurs ont vu à {place.city}
+          </Link>
+        )}
 
         {photos && photos.length > 0 && (
           <p className="caption muted" style={{ margin: 0 }}>

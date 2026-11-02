@@ -83,3 +83,10 @@
   color: #fff;
   background: rgba(0, 0, 0, 0.55);
 }
+
+.photos__explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-sunset);
+}

@@ -1,4 +1,4 @@
-import { Camera, Globe2, Plane, User } from 'lucide-react'
+import { Camera, Compass, Globe2, Plane, User } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import './TabBar.css'
 
@@ -6,6 +6,7 @@ const tabs = [
   { to: '/', label: 'Monde', Icon: Globe2, end: true },
   { to: '/voyages', label: 'Voyages', Icon: Plane, end: false },
   { to: '/souvenirs', label: 'Souvenirs', Icon: Camera, end: false },
+  { to: '/explorer', label: 'Explorer', Icon: Compass, end: false },
   { to: '/profil', label: 'Profil', Icon: User, end: false },
 ]
 

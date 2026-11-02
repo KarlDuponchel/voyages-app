@@ -290,6 +290,25 @@ as $$
   order by count(*) desc;
 $$;
 
+-- Réagir (ou changer de réaction, ou la retirer avec p_kind vide), avec les droits de l'utilisateur
+create function public.react_to_photo(p_photo uuid, p_kind text)
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if p_kind is null then
+    delete from public.photo_reactions where photo_id = p_photo and user_id = (select auth.uid());
+  else
+    insert into public.photo_reactions (photo_id, kind) values (p_photo, p_kind)
+    on conflict (photo_id, user_id) do update set kind = excluded.kind;
+  end if;
+end;
+$$;
+
+revoke all on function public.react_to_photo(uuid, text) from public, anon;
+grant execute on function public.react_to_photo(uuid, text) to authenticated;
 revoke all on function public.publish_photo(uuid, uuid, text), public.public_photos(char, text, timestamptz, integer, boolean),
   public.public_places() from public, anon;
 grant execute on function public.publish_photo(uuid, uuid, text), public.public_photos(char, text, timestamptz, integer, boolean),

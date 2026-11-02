@@ -6,7 +6,20 @@ import { publishPhoto } from '../lib/sharing'
 import { errorMessage } from '../lib/supabase'
 
 /** Rendre publique (ou changer la ville et la légende d'une photo déjà publique) */
-export function PublishPanel({ trip, photo, onDone, onCancel }: { trip: Trip; photo: TripPhoto; onDone: () => Promise<void>; onCancel: () => void }) {
+export function PublishPanel({
+  trip,
+  photo,
+  onDone,
+  onCancel,
+  onUnpublish,
+}: {
+  trip: Trip
+  photo: TripPhoto
+  onDone: () => Promise<void>
+  onCancel: () => void
+  /** Photo déjà publique : lien pour la retirer du public */
+  onUnpublish?: () => void
+}) {
   const stops = [...trip.destinations].sort((a, b) => a.position - b.position)
   const [destination, setDestination] = useState(photo.share?.destinationId ?? stops[0]?.id)
   const [caption, setCaption] = useState(photo.share?.caption ?? '')
@@ -71,6 +84,11 @@ export function PublishPanel({ trip, photo, onDone, onCancel }: { trip: Trip; ph
           Annuler
         </button>
       </div>
+      {onUnpublish && (
+        <button className="caption publish__unpublish" onClick={onUnpublish} disabled={busy}>
+          Retirer du public
+        </button>
+      )}
     </div>
   )
 }

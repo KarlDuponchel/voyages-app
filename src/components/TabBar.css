@@ -8,7 +8,7 @@
   max-width: 480px;
   display: flex;
   justify-content: space-between;
-  padding: 10px 28px calc(var(--safe-bottom) + 8px);
+  padding: 10px 12px calc(var(--safe-bottom) + 8px);
   background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -16,7 +16,7 @@
 }
 
 .tabbar__item {
-  width: 64px;
+  width: 62px;
   display: flex;
   flex-direction: column;
   align-items: center;

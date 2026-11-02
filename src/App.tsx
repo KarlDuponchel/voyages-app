@@ -7,6 +7,7 @@ import { useAuth } from './data/auth'
 import { TripsProvider, useTrips } from './data/store'
 import { Billet } from './screens/Billet'
 import { Connexion } from './screens/Connexion'
+import { Explorer } from './screens/Explorer'
 import { Imports } from './screens/Imports'
 import { Invitation } from './screens/Invitation'
 import { Monde } from './screens/Monde'
@@ -35,6 +36,7 @@ function Shell() {
         <Route path="/voyages/:tripId" element={<Voyage />} />
         <Route path="/voyages/:tripId/reservations/:bookingId" element={<Billet />} />
         <Route path="/souvenirs" element={<Souvenirs />} />
+        <Route path="/explorer" element={<Explorer />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/profil" element={<Profil />} />
         <Route path="/invitation/:token" element={<Invitation />} />
