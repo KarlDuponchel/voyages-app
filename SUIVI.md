@@ -63,33 +63,34 @@
 - [ ] Test complet à deux sur iPhone : installation, connexion, invitation, ajout de réservations par chacun.
 - [ ] Sur iPhone 14 Pro (iOS 26 ?) : voile clair sous la barre d'état d'un voyage. Correctif en ligne (couleur de la couverture), à confirmer.
 
-### Ouverture au public : la liste (décidée le 02/11 au soir)
-Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite. Fait dans le code, sur `feat/design-wayfarer` :
-- **code d'accès retiré** (`AccessGate`) : l'app est ouverte à tous ;
-- **paiement** : case obligatoire « J'accepte les CGV et je demande que le Premium commence immédiatement » dans Stripe Checkout (`checkoutConsent` dans `supabase/functions/_shared/stripe.ts`), avec un test.
+### Ouverture au public : où on en est (mis à jour le 02/11, nuit)
+**L'app est ouverte au public sur `https://tripmates.app`** : plus de code d'accès, création de compte libre, usage gratuit possible. **Pas encore de vente du Premium** : les points « avant le premier vrai paiement » ci-dessous ne sont pas réglés. D'ici là : proches et testeurs, Premium offert à la main, pas de promotion.
 
-À faire par Karl, dans cet ordre :
-1. **Regarder la preview Vercel** de `feat/design-wayfarer` : `/`, `/cgv`, `/monde`, connexion, et l'app installée sur l'iPhone (elle doit s'ouvrir sur l'app, pas sur l'accueil).
-2. ~~**Suppression de compte**~~ : **fait le 02/11**. `feat/design-wayfarer` fusionnée dans `main`, migration `20261103100000_suppression_compte.sql` appliquée, fonctions `delete-account` et `stripe-webhook` déployées par Claude avec l'accord de Karl. Vérifié : `delete-account` refuse un appel sans connexion (401). Reste le test avec un compte jetable (voir « Suppression de compte complète »).
-   - **`billing` n'est pas redéployée exprès** : la nouvelle version exige l'adresse des CGV dans les réglages Stripe. La déployer juste après l'avoir renseignée (étape 6).
-3. **Hébergement sur le VPS avec Dokploy** : **en ligne le 02/11** sur `https://tripmates.app` (VPS OVH 57.131.148.58, derrière le proxy Cloudflare). Vérifié par Claude : accueil, CGV, app, `/sante`, fichiers, cache, compression, Supabase dans l'app.
-   - **À corriger** (détail dans [docs/hebergement.md](docs/hebergement.md), « Cloudflare devant le serveur ») : le serveur présente le certificat par défaut de Traefik ; installer un certificat d'origine Cloudflare et passer en « Full (strict) ». Et `www.tripmates.app` répond 404 : ajouter la redirection vers `tripmates.app`.
-   - **Reste de la bascule** : Supabase (Site URL, Redirect URLs), secret `APP_URL`, réinstallation de l'app sur les téléphones, redirection de l'ancienne adresse Vercel.
-4. **Domaine** (dans la bascule de docs/hebergement.md) : `tripmates.app` vers le VPS ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
-5. **Pages légales** : complétées le 02/11 (Karl Duponchel, EI, SIRET 991 899 378 00012 vérifié dans l'annuaire des entreprises, adresse du siège, TVA non applicable art. 293 B, VPS OVH en Allemagne, e-mails par Resend, Supabase Pte. Ltd d'après son DPA, CGV en vigueur au 2 novembre 2026).
-   - **Reste : le médiateur de la consommation**, obligatoire pour vendre à des particuliers (articles L. 612-1 et L. 641-1 du Code de la consommation, amende jusqu'à 15 000 €). Adhérer à un médiateur agréé (CM2C, Médicys, AME Conso…), puis donner son nom, son adresse et son site à Claude pour l'article 14 des CGV. Seul champ encore surligné.
-   - **Nom commercial « Tripmates »** non déclaré : à ajouter à l'INPI (modification gratuite), puis le citer dans les mentions légales.
-   - Faire relire par un juriste.
-6. **Stripe en réel** (détail à l'étape 10) :
-   - activer le compte (SIRET, compte bancaire) ;
-   - **adresse des CGV** dans Paramètres → Informations publiques (`https://tripmates.app/cgv`), **en test comme en réel, avant de déployer `billing`**, sinon Stripe refuse de créer le paiement ;
-   - recréer le produit, les deux prix, le portail client et le webhook en mode réel ;
-   - activer dans Stripe l'**e-mail avant le renouvellement** des abonnements (Paramètres → Facturation → Abonnements et e-mails) : il couvre le rappel obligatoire avant l'échéance annuelle promis par les CGV ; et les reçus par e-mail ;
-   - remplacer les 4 secrets Stripe, effacer les abonnements de test (`delete from subscriptions where status <> 'offert';`) ;
-   - déployer `billing` (`npx supabase functions deploy billing`) ;
-   - un vrai paiement avec sa carte, puis remboursement et résiliation.
-7. **Fusionner `feat/design-wayfarer` dans `main`**, puis déclarer le site dans Google Search Console.
-8. **E-mails** : les codes de connexion partent de `noreply@karlduponchel.fr` ; mieux vaut une adresse `@tripmates.app`.
+**Fait le 02/11**
+- Design Tripmates, accueil public, pages légales, logo, e-mails de connexion ; tout est sur `main`.
+- Hébergement sur le VPS OVH avec Dokploy, derrière Cloudflare : certificat d'origine Cloudflare (Full strict), redirection de `www`.
+- Supabase : migration et fonctions de la suppression de compte déployées ; `billing` redéployée par Karl avec l'acceptation des CGV ; **URL Configuration** (Site URL et Redirect URLs sur `tripmates.app`) et **modèles d'e-mails** (Magic Link, Confirm signup) réglés par Karl.
+- Stripe : compte activé (Karl Duponchel EI, nom public Tripmates, libellé `TRIPMATES.APP`), adresse des CGV renseignée, portail client (résiliation en fin de période).
+- Pages légales complètes sauf le médiateur ; acceptation des CGV à la connexion ; Umami en service sur `stats.tripmates.app`.
+
+**Avant le premier vrai paiement** (dans cet ordre)
+1. **Médiateur de la consommation** : obligatoire pour vendre à des particuliers (amende jusqu'à 15 000 €). Adhérer (CM2C, Médicys, AME Conso…), puis donner nom, adresse et site à Claude pour l'article 14 des CGV.
+2. **Open-Meteo** : l'API gratuite de recherche de ville interdit l'usage commercial, et une app avec abonnement est commerciale. Choisir : formule payante « API Standard », ou un autre service (à étudier par Claude ; il faut nom, pays, coordonnées et fuseau horaire).
+3. **Supabase Pro** (25 $ par mois, 100 Go de stockage) : l'offre gratuite plafonne le stockage à 1 Go pour tout le projet, alors que le Premium promet 20 Go par abonné.
+4. **Stripe en réel** :
+   - en mode réel : produit Premium et ses deux prix (2,50 €/mois, 20 €/an), webhook vers `https://qpxcaywcslayfmcjcpgw.supabase.co/functions/v1/stripe-webhook` avec les 4 événements (`checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`) ;
+   - e-mail avant le renouvellement et reçus (Settings → Billing → Subscriptions and emails) ;
+   - **vérifier que les secrets Supabase contiennent bien les clés réelles** (`sk_live_…`, `whsec_…` réel, prix réels) : avec les clés de test, le bouton Premium accepte la carte de test `4242…` et donne le Premium sans paiement ;
+   - effacer les abonnements de test (`delete from subscriptions where status <> 'offert';`) ;
+   - un vrai paiement avec sa carte, puis remboursement et résiliation ; le profil doit repasser en gratuit.
+
+**À régler rapidement, même en gratuit**
+- **Déploiement automatique de Dokploy** : un push sur `main` ne déclenche pas de déploiement (constaté deux fois le 02/11) ; vérifier « Auto Deploy » et le webhook GitHub (Settings → Webhooks du dépôt).
+- **Cloudflare → Caching → Browser Cache TTL → « Respect Existing Headers »** : sinon les fichiers (service worker des notifications, icônes) restent jusqu'à 4 heures en cache chez les visiteurs.
+- **Test complet d'un nouvel utilisateur** sur iPhone, avec une adresse neuve : e-mail reçu et code, installation sur l'écran d'accueil, un voyage, un billet, puis suppression du compte (vérifier dans Supabase que ses fichiers ont disparu).
+- **Réinstaller l'app** sur les téléphones de Karl et Louna depuis `tripmates.app`, puis réactiver les notifications ; rediriger puis fermer l'ancienne adresse Vercel ([docs/hebergement.md](docs/hebergement.md), bascule).
+- **E-mails** : expéditeur `noreply@tripmates.app` au lieu de `noreply@karlduponchel.fr` (domaine `tripmates.app` à vérifier dans Resend) ; redirection `contact@tripmates.app` dans Cloudflare Email Routing.
+- **Google Search Console** : ajouter `tripmates.app` et envoyer le sitemap.
 
 ### Engagements des pages légales et obligations, par ordre d'importance (02/11)
 Ce que les CGV, la politique de confidentialité ou les licences promettent, et qui n'est pas encore fait.
