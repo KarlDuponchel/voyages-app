@@ -267,6 +267,52 @@ as $$
   limit least(greatest(coalesce(p_limit, 30), 1), 100);
 $$;
 
+-- Villes tendances, pour l'accueil (« Les souvenirs de la communauté ») : classées par l'activité
+-- des 30 derniers jours (publications et réactions), puis par nombre de photos. Pour chacune :
+-- ses chiffres et jusqu'à 4 miniatures, les plus appréciées d'abord. Les personnes bloquées sont exclues.
+create function public.public_trending_places(p_limit integer default 6)
+returns table (
+  city text,
+  country_code char(3),
+  photo_count bigint,
+  traveler_count bigint,
+  reaction_count bigint,
+  recent_count bigint,
+  thumb_paths text[]
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with visible as (
+    select s.photo_id, s.city, s.country_code, s.author_id, s.published_at, p.kind, p.thumb_path,
+      (select count(*) from public.photo_reactions r where r.photo_id = s.photo_id) as reactions,
+      (select count(*) from public.photo_reactions r where r.photo_id = s.photo_id and r.created_at > now() - interval '30 days') as recent_reactions
+    from public.photo_shares s
+    join public.trip_photos p on p.id = s.photo_id
+    where s.hidden_at is null
+      and (select auth.uid()) is not null
+      and not exists (
+        select 1 from public.user_blocks b
+        where (b.blocker_id = (select auth.uid()) and b.blocked_id = s.author_id)
+           or (b.blocker_id = s.author_id and b.blocked_id = (select auth.uid()))
+      )
+  )
+  select
+    min(v.city),
+    v.country_code,
+    count(*),
+    count(distinct v.author_id),
+    sum(v.reactions)::bigint,
+    (count(*) filter (where v.published_at > now() - interval '30 days') + sum(v.recent_reactions))::bigint,
+    (array_agg(v.thumb_path order by v.reactions desc, v.published_at desc) filter (where v.kind = 'photo'))[1:4]
+  from visible v
+  group by v.country_code, lower(v.city)
+  order by 6 desc, 3 desc
+  limit least(greatest(coalesce(p_limit, 6), 1), 20);
+$$;
+
 -- Villes qui ont des photos publiques, pour le globe : nombre et dernière miniature
 create function public.public_places()
 returns table (
@@ -312,6 +358,6 @@ $$;
 revoke all on function public.react_to_photo(uuid, text) from public, anon;
 grant execute on function public.react_to_photo(uuid, text) to authenticated;
 revoke all on function public.publish_photo(uuid, uuid, text), public.public_photos(char, text, timestamptz, integer, boolean),
-  public.public_places() from public, anon;
+  public.public_places(), public.public_trending_places(integer) from public, anon;
 grant execute on function public.publish_photo(uuid, uuid, text), public.public_photos(char, text, timestamptz, integer, boolean),
-  public.public_places() to authenticated;
+  public.public_places(), public.public_trending_places(integer) to authenticated;

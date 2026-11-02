@@ -254,12 +254,19 @@
   - photos publiques récentes, filtre par ville, onglet Wishlist ;
   - visionneuse avec les réactions, « Signaler » et « Bloquer » ;
   - lien « Ce que les voyageurs ont vu à … » dans l'onglet Photos d'un voyage.
+- **Accueil, « Les souvenirs de la communauté »** (demande de Karl), en bas de l'écran Monde :
+  - les villes tendances, classées par l'activité des 30 derniers jours (publications et réactions) ;
+  - une carte par ville : mosaïque de 1 à 4 photos, les plus appréciées d'abord, et le pays ;
+  - les chiffres de chaque ville : photos, voyageurs, réactions, « +N ce mois-ci » ;
+  - un appui ouvre Explorer sur la ville, et « Tout voir » ouvre Explorer ;
+  - sans photo publique, un message invite à partager les siennes ;
+  - fonction `public_trending_places`, qui respecte les blocages.
 - **D. Notifications** : fonction `notify-reaction`, qui prévient l'auteur.
   - « 😍 Marie adore votre photo » ;
   - « ✨ Votre photo de Porto plaît : Marie, Tom et 2 autres ont réagi » ;
   - au plus une par heure et par photo.
 - **Tests** :
-  - 107 tests de sécurité de la base, contre 63 avant ;
+  - 108 tests de sécurité de la base, contre 63 avant ;
   - 19 tests des fonctions serveur, contre 14 avant : signature Stripe, abonnements, messages.
 - **Vérifié dans le navigateur** avec un faux Supabase :
   - Explorer, filtre par ville, Wishlist, réactions, signalement, blocage ;

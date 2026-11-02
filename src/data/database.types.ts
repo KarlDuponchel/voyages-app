@@ -901,6 +901,18 @@ export type Database = {
           photo_count: number
         }[]
       }
+      public_trending_places: {
+        Args: { p_limit?: number }
+        Returns: {
+          city: string
+          country_code: string
+          photo_count: number
+          reaction_count: number
+          recent_count: number
+          thumb_paths: string[]
+          traveler_count: number
+        }[]
+      }
       publish_photo: {
         Args: { p_caption?: string; p_destination: string; p_photo: string }
         Returns: undefined

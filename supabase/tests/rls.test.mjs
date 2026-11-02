@@ -436,6 +436,21 @@ await ok('Léa publie une photo ; Karl en publie une de son voyage', async () =>
   mKarl = await photoIn('karl', t3)
   await as('karl', `select public.publish_photo('${mKarl}', '${lisbonne}')`)
 })
+await ok("villes tendances : activité récente d'abord, chiffres et miniatures, blocages respectés", async () => {
+  await as('tiers', `select public.react_to_photo('${mKarl}', 'jadore')`)
+  await as('inconnu', `select public.react_to_photo('${mKarl}', 'waouh')`)
+  const rows = await as('tiers', 'select * from public.public_trending_places()')
+  expect(rows.length === 2 && rows[0].city === 'Lisbonne' && rows[1].city === 'Porto', JSON.stringify(rows))
+  const [lis] = rows
+  expect(Number(lis.photo_count) === 1 && Number(lis.traveler_count) === 1 && Number(lis.reaction_count) === 2 && Number(lis.recent_count) === 3, JSON.stringify(lis))
+  expect(lis.thumb_paths.length === 1 && lis.thumb_paths[0] === `${t3}/${mKarl}/thumb.jpg`, JSON.stringify(lis.thumb_paths))
+  await as('lea', `insert into public.user_blocks (blocked_id) values ('${U.karl}')`)
+  const leaRows = await as('lea', 'select city from public.public_trending_places()')
+  expect(leaRows.length === 1 && leaRows[0].city === 'Porto', JSON.stringify(leaRows))
+  await as('lea', `delete from public.user_blocks where blocked_id = '${U.karl}'`)
+  await as('tiers', `select public.react_to_photo('${mKarl}', null)`)
+  await as('inconnu', `select public.react_to_photo('${mKarl}', null)`)
+})
 await denied('on ne signale pas sa propre photo', () => as('lea', `insert into public.photo_reports (photo_id, reason) values ('${m1}', 'spam')`), 'row-level security')
 await ok('Karl signale la photo de Léa ; il ne voit que son signalement', async () => {
   await as('karl', `insert into public.photo_reports (photo_id, reason, details) values ('${m1}', 'spam', 'publicité')`)

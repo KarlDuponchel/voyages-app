@@ -109,3 +109,35 @@ export function toggled(photo: PublicPhoto, kind: ReactionKind): PublicPhoto {
 }
 
 export const monthLabel = (month: string) => new Date(`${month.slice(0, 10)}T12:00:00`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+
+export type TrendingPlace = {
+  city: string
+  countryId: string
+  photos: number
+  travelers: number
+  reactions: number
+  /** Publications et réactions des 30 derniers jours */
+  recent: number
+  thumbUrls: string[]
+}
+
+/** Villes tendances de l'accueil, avec leurs miniatures (adresses signées en une fois) */
+export async function listTrendingPlaces(limit = 6): Promise<TrendingPlace[]> {
+  const { data, error } = await supabase.rpc('public_trending_places', { p_limit: limit })
+  if (error) throw error
+  const rows = data ?? []
+  const urls = await signedUrls(rows.flatMap((r) => r.thumb_paths ?? []))
+  return rows.map((r) => ({
+    city: r.city,
+    countryId: r.country_code,
+    photos: Number(r.photo_count),
+    travelers: Number(r.traveler_count),
+    reactions: Number(r.reaction_count),
+    recent: Number(r.recent_count),
+    thumbUrls: (r.thumb_paths ?? []).flatMap((p) => (urls[p] ? [urls[p]] : [])),
+  }))
+}
+
+/** « 980 », « 1,2 k », « 12 k » */
+export const compact = (n: number) =>
+  n < 1000 ? String(n) : `${(n / 1000).toLocaleString('fr-FR', { maximumFractionDigits: n < 10_000 ? 1 : 0 })} k`

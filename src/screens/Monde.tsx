@@ -1,6 +1,7 @@
 import { BarChart3, Plane, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { CommunityMemories } from '../components/CommunityMemories'
 import { Globe } from '../components/Globe'
 import { useAuth } from '../data/auth'
 import { useTrips } from '../data/store'
@@ -101,6 +102,8 @@ export function Monde() {
           </Link>
         </section>
       )}
+
+      <CommunityMemories />
 
       <button className="fab btn btn--accent" onClick={() => setCreating(true)}>
         <Plus size={20} /> Nouveau voyage
