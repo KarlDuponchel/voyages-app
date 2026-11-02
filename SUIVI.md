@@ -397,6 +397,14 @@
   - carte « Offre », en gratuit et en premium, en thème clair et sombre.
   - Corrigé en chemin : la rangée de boutons de la visionneuse débordait sur iPhone.
 
+- **Code d'accès** (demande de Karl, en ligne le 02/11) :
+  - le code est demandé avant l'app, même avant la connexion, une fois par appareil ;
+  - l'app installée sur l'écran d'accueil le redemande une fois, car elle ne partage pas son stockage avec Safari ;
+  - c'est un verrou de façade : les données restent protégées par la connexion et la sécurité de la base ;
+  - seule l'empreinte du code est dans l'app ; pour le changer, voir `src/components/AccessGate.tsx` ;
+  - le code est à donner aux personnes invitées ;
+  - à retirer à l'ouverture au public.
+
 ### À faire par Karl pour mettre en ligne
 - [x] **Base** : migrations appliquées et types régénérés le 02/11. Avec la CLI 3.0, il faut ajouter `--linked` à `db push`, sinon elle vise une base locale. Ceux de `src/data/database.types.ts` ont été écrits à la main en attendant.
 - [ ] **Premium offert** à Karl et Louna. Sinon, l'offre gratuite s'applique dès la mise en ligne : 5 lectures par l'IA déjà consommées, et 2 voyages avec photos. La requête est dans [docs/partage.md](docs/partage.md).

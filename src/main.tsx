@@ -8,6 +8,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
+import { AccessGate } from './components/AccessGate'
 import { AuthProvider } from './data/auth'
 import { captureInstallPrompt } from './lib/install'
 import { ThemeProvider } from './theme/theme'
@@ -33,11 +34,13 @@ captureInstallPrompt()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <AuthProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </AuthProvider>
+      <AccessGate>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </AccessGate>
+      <Analytics />
+      <SpeedInsights />
     </ThemeProvider>
   </StrictMode>,
 )
