@@ -6,7 +6,7 @@
  * et l'utilisateur valide.
  */
 import { ExtractError, extractBookings, newClient, partFromFile } from '../_shared/extract.ts'
-import { adminClient, corsHeaders, dailyLimit, json, recordUsage, today, usedToday, userClient } from '../_shared/supabase.ts'
+import { adminClient, aiAllowance, allowanceMessage, corsHeaders, dailyLimit, json, recordUsage, today, usedToday, userClient } from '../_shared/supabase.ts'
 
 /** ~10 Mo de fichier une fois encodé en base64 */
 const MAX_BASE64_CHARS = 14_000_000
@@ -40,6 +40,8 @@ Deno.serve(async (req) => {
     if (!member || !['owner', 'editor'].includes(member.role)) return json({ error: 'Vous ne pouvez pas modifier ce voyage.' }, 403)
 
     const admin = adminClient()
+    const allowance = await aiAllowance(admin, user.id, tripId)
+    if (!allowance.allowed) return json({ error: allowanceMessage(allowance), quota: true }, allowance.premium ? 429 : 402)
     if ((await usedToday(admin, user.id)) >= dailyLimit())
       return json({ error: `Limite de ${dailyLimit()} lectures par l’IA sur 24 h atteinte. Remplissez à la main ou réessayez demain.` }, 429)
 

@@ -287,6 +287,88 @@ export type Database = {
           },
         ]
       }
+      photo_reactions: {
+        Row: {
+          created_at: string
+          kind: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          photo_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_reactions_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_shares"
+            referencedColumns: ["photo_id"]
+          },
+        ]
+      }
+      photo_shares: {
+        Row: {
+          author_id: string
+          caption: string | null
+          city: string
+          country_code: string
+          destination_id: string | null
+          hidden_at: string | null
+          hidden_reason: string | null
+          lat: number
+          lng: number
+          photo_id: string
+          published_at: string
+          trip_id: string
+        }
+        Insert: {
+          author_id: string
+          caption?: string | null
+          city: string
+          country_code: string
+          destination_id?: string | null
+          hidden_at?: string | null
+          hidden_reason?: string | null
+          lat: number
+          lng: number
+          photo_id: string
+          published_at?: string
+          trip_id: string
+        }
+        Update: {
+          author_id?: string
+          caption?: string | null
+          city?: string
+          country_code?: string
+          destination_id?: string | null
+          hidden_at?: string | null
+          hidden_reason?: string | null
+          lat?: number
+          lng?: number
+          photo_id?: string
+          published_at?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_shares_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: true
+            referencedRelation: "trip_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_path: string | null
@@ -360,6 +442,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          billing_interval: string | null
+          cancel_at_period_end: boolean
+          current_period_end: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_interval?: string | null
+          cancel_at_period_end?: boolean
+          current_period_end?: string | null
+          status: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_interval?: string | null
+          cancel_at_period_end?: boolean
+          current_period_end?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       trip_destinations: {
         Row: {
@@ -684,6 +799,7 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      ai_allowance: { Args: { p_trip?: string; p_user: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       invitation_preview: {
         Args: { p_token: string }
@@ -695,6 +811,54 @@ export type Database = {
           status: string
           trip_title: string
         }[]
+      }
+      my_plan: { Args: never; Returns: Json }
+      photo_quota_check: {
+        Args: { p_bytes: number; p_trip: string }
+        Returns: string
+      }
+      public_photos: {
+        Args: {
+          p_before?: string
+          p_city?: string
+          p_country?: string
+          p_limit?: number
+          p_wishlist?: boolean
+        }
+        Returns: {
+          author_avatar: string
+          author_id: string
+          author_name: string
+          caption: string
+          city: string
+          country_code: string
+          duration_seconds: number
+          height: number
+          kind: string
+          my_reaction: string
+          path: string
+          photo_id: string
+          published_at: string
+          reactions: Json
+          taken_month: string
+          thumb_path: string
+          width: number
+        }[]
+      }
+      public_places: {
+        Args: never
+        Returns: {
+          city: string
+          country_code: string
+          cover_thumb_path: string
+          lat: number
+          lng: number
+          photo_count: number
+        }[]
+      }
+      publish_photo: {
+        Args: { p_caption?: string; p_destination: string; p_photo: string }
+        Returns: undefined
       }
       regenerate_import_alias: { Args: never; Returns: string }
       save_push_subscription: {

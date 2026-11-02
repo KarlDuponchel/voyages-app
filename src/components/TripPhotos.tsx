@@ -1,9 +1,10 @@
 import { ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { formatDayHeader } from '../lib/format'
-import { listPhotos, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
+import { listPhotos, QuotaError, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
 import { canEdit } from '../lib/trip'
 import { PhotoViewer } from './PhotoViewer'
 import { StoryPlayer } from './StoryPlayer'
@@ -46,6 +47,8 @@ export function TripPhotos({
   const [photos, setPhotos] = useState<TripPhoto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
+  /** Message de quota : affiché une fois pour le lot, avec le lien vers l'offre */
+  const [quota, setQuota] = useState<string | null>(null)
   const [open, setOpen] = useState<number | null>(null)
   const [reliving, setReliving] = useState(false)
   const input = useRef<HTMLInputElement>(null)
@@ -79,6 +82,7 @@ export function TripPhotos({
   const addFiles = async (files: File[]) => {
     if (files.length === 0) return
     const start = jobs.length
+    setQuota(null)
     setJobs((all) => [...all, ...files.map((f) => ({ name: f.name, step: 'attente' as const }))])
     const update = (i: number, patch: Partial<Job>) => setJobs((all) => all.map((j, k) => (k === start + i ? { ...j, ...patch } : j)))
     // Une à la fois : la compression d'une vidéo occupe déjà bien le téléphone
@@ -87,6 +91,11 @@ export function TripPhotos({
         await uploadMedia(trip.id, file, (step, progress) => update(i, { step, progress }))
         update(i, { step: 'fini' })
       } catch (e) {
+        if (e instanceof QuotaError) {
+          setQuota(e.message)
+          setJobs((all) => all.map((j, k) => (k >= start + i ? { ...j, step: 'erreur', error: undefined } : j)))
+          break
+        }
         update(i, { step: 'erreur', error: uploadError(e) })
       }
       await load()
@@ -131,13 +140,26 @@ export function TripPhotos({
                 {failed.length > 0 && `, ${failed.length} en échec`}
               </span>
             )}
-            {failed.map((j, k) => (
-              <span key={k} className="caption form-error">
-                {j.name} : {j.error}
+            {failed
+              .filter((j) => j.error)
+              .map((j, k) => (
+                <span key={k} className="caption form-error">
+                  {j.name} : {j.error}
+                </span>
+              ))}
+            {quota && (
+              <span className="caption form-error">
+                {quota} <Link to="/profil#offre">Voir l'offre</Link>
               </span>
-            ))}
+            )}
             {!uploading && (
-              <button className="photos__dismiss caption" onClick={() => setJobs([])}>
+              <button
+                className="photos__dismiss caption"
+                onClick={() => {
+                  setJobs([])
+                  setQuota(null)
+                }}
+              >
                 Masquer
               </button>
             )}

@@ -69,6 +69,9 @@ export async function listPhotos(tripId: string): Promise<TripPhoto[]> {
 
 export type UploadStep = 'preparation' | 'envoi'
 
+/** Espace photos plein, ou voyage en dehors de l'offre gratuite : inutile d'essayer les fichiers suivants */
+export class QuotaError extends Error {}
+
 /** Prépare (compresse) puis envoie une photo ou une vidéo ; les fichiers d'abord, la ligne ensuite */
 export async function uploadMedia(tripId: string, file: File, onStep: (step: UploadStep, progress?: number) => void): Promise<void> {
   onStep('preparation')
@@ -77,6 +80,11 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
   const ext = prepared.kind === 'video' ? (prepared.mimeType === 'video/quicktime' ? 'mov' : 'mp4') : 'jpg'
   const path = `${tripId}/${id}/original.${ext}`
   const thumbPath = `${tripId}/${id}/miniature.jpg`
+
+  // Le quota se vérifie avec le poids après compression ; la base le revérifie avec les vrais fichiers
+  const size = prepared.full.size + prepared.thumb.size
+  const quota = await supabase.rpc('photo_quota_check', { p_trip: tripId, p_bytes: size })
+  if (!quota.error && quota.data) throw new QuotaError(quota.data)
 
   onStep('envoi')
   const up1 = await supabase.storage.from(BUCKET).upload(thumbPath, prepared.thumb, { contentType: 'image/jpeg' })
@@ -98,12 +106,12 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
     width: prepared.width,
     height: prepared.height,
     duration_seconds: prepared.durationSeconds ?? null,
-    size_bytes: prepared.full.size + prepared.thumb.size,
+    size_bytes: size,
     taken_at: prepared.takenAt ?? null,
   })
   if (row.error) {
     await supabase.storage.from(BUCKET).remove([path, thumbPath])
-    throw row.error
+    throw row.error.hint === 'quota' ? new QuotaError(row.error.message) : row.error
   }
   // Déjà sur le téléphone : la miniature s'affiche tout de suite, même hors ligne
   await putInCache(thumbPath, prepared.thumb, 'image/jpeg')
@@ -112,7 +120,7 @@ export async function uploadMedia(tripId: string, file: File, onStep: (step: Upl
 
 /** Message lisible pour une erreur d'envoi */
 export function uploadError(e: unknown): string {
-  if (e instanceof MediaError) return e.message
+  if (e instanceof MediaError || e instanceof QuotaError) return e.message
   if (!navigator.onLine) return 'Pas de connexion.'
   return e instanceof Error ? e.message : 'Envoi impossible.'
 }

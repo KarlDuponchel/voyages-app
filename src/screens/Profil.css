@@ -68,3 +68,28 @@
   border-radius: 10px;
   font-size: 13px;
 }
+
+/* Offre gratuite ou premium */
+.plan__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.plan__name svg {
+  color: var(--accent-sunset);
+}
+.progress--full > span {
+  background: var(--accent-sunset);
+}
+.plan__offer {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.plan__perks {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-secondary);
+}

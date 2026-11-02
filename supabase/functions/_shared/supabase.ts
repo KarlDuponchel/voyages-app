@@ -32,7 +32,7 @@ export function adminClient(): SupabaseClient {
   })
 }
 
-/** Lectures par l'IA autorisées par personne et par 24 h (réglable : secret AI_DAILY_LIMIT) */
+/** Garde-fou contre les rafales, en plus de l'offre : lectures par personne et par 24 h (secret AI_DAILY_LIMIT) */
 export const dailyLimit = () => Number(Deno.env.get('AI_DAILY_LIMIT') || 40)
 
 export async function usedToday(admin: SupabaseClient, userId: string): Promise<number> {
@@ -40,6 +40,22 @@ export async function usedToday(admin: SupabaseClient, userId: string): Promise<
   const { count, error } = await admin.from('ai_usage').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', since)
   if (error) throw error
   return count ?? 0
+}
+
+/** Droits à l'IA selon l'offre (fonction ai_allowance de la base) : le propriétaire premium d'un voyage l'ouvre à ses membres */
+export type Allowance = { allowed: boolean; used: number; limit: number; premium: boolean }
+
+export async function aiAllowance(admin: SupabaseClient, userId: string, tripId?: string): Promise<Allowance> {
+  const { data, error } = await admin.rpc('ai_allowance', { p_user: userId, p_trip: tripId ?? null })
+  if (error) throw error
+  return data as Allowance
+}
+
+/** Message affiché quand les lectures de l'offre sont épuisées */
+export function allowanceMessage(a: Allowance): string {
+  return a.premium
+    ? `Limite de ${a.limit} lectures par l’IA sur 30 jours atteinte. Remplissez à la main en attendant.`
+    : `Vos ${a.limit} lectures offertes par l’IA sont utilisées. Passez premium (Profil) pour continuer, ou remplissez à la main.`
 }
 
 export async function recordUsage(
