@@ -153,10 +153,12 @@ export function TripPhotos({
                   {j.name} : {j.error}
                 </span>
               ))}
-            {quota && (
-              <span className="caption form-error">
-                {quota} <Link to="/profil#offre">Voir l'offre</Link>
-              </span>
+            {quota && <span className="caption form-error">{quota}</span>}
+            {/* Le propriétaire paie pour tous : le bouton ne sert qu'à lui (les autres voient un message qui le nomme) */}
+            {quota && trip.role === 'owner' && (
+              <Link to="/profil#offre" className="btn btn--accent photos__premium">
+                <Sparkles size={16} aria-hidden /> Passer Premium
+              </Link>
             )}
             {!uploading && (
               <button

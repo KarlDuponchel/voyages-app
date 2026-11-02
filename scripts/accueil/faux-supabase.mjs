@@ -45,7 +45,13 @@ const TABLES = {
   import_addresses: [{ alias: 'camille' }],
   profiles: [{ id: 'u1', display_name: 'Camille', home_city: 'Paris', home_lat: 48.85, home_lng: 2.35 }],
 }
-const RPC = { public_trending_places: [], public_photos: [], public_places: [] }
+const RPC = {
+  public_trending_places: [],
+  public_photos: [],
+  public_places: [],
+  // QUOTA_PLEIN=1 : l'envoi de photos est refusé, comme avec l'offre gratuite dépassée
+  photo_quota_check: process.env.QUOTA_PLEIN ? "Avec l'offre gratuite, les photos sont possibles dans 2 voyages. Passez premium pour en ajouter à tous vos voyages." : null,
+}
 
 http
   .createServer((req, res) => {

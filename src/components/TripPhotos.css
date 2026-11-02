@@ -44,6 +44,12 @@
   gap: 8px;
   padding: 14px 16px;
 }
+/* Invitation à passer Premium quand l'offre gratuite bloque l'envoi */
+.photos__premium {
+  align-self: stretch;
+  margin-top: 4px;
+}
+
 .photos__dismiss {
   align-self: flex-start;
   color: var(--text-secondary);
