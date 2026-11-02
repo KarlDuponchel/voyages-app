@@ -60,6 +60,18 @@ curl -sSL https://dokploy.com/install.sh | sh
 - **Ne pas toucher aux enregistrements MX et TXT** : ce sont ceux de Cloudflare Email Routing (import des e-mails et future boîte `contact@`).
 - Proxy désactivé au début, pour que Let's Encrypt délivre les certificats. On pourra l'activer ensuite, en mode SSL « Full (strict) ».
 
+### Cloudflare devant le serveur (proxy, nuage orange)
+
+C'est le réglage choisi par Karl le 02/11 : le site passe par Cloudflare, et l'adresse du serveur (57.131.148.58, OVH) n'apparaît pas.
+
+- **Certificat du serveur** : avec le proxy, Let's Encrypt n'obtient pas de certificat, et Traefik présente son certificat par défaut. Il faut donc :
+  1. Cloudflare → SSL/TLS → **Origin Server → Create Certificate** (RSA, `tripmates.app` et `*.tripmates.app`, 15 ans). Copier le certificat et la clé privée ;
+  2. Dokploy → **Settings → Certificates → Add Certificate** : coller le certificat et la clé ;
+  3. dans l'application, onglet **Domains** : pour `tripmates.app`, garder HTTPS et choisir le fournisseur de certificat **None** (Traefik utilise alors le certificat ajouté) ;
+  4. Cloudflare → SSL/TLS → mode **Full (strict)**.
+- **`www`** : Cloudflare → Rules → **Redirect Rules → modèle « Redirect from WWW to root »** (redirection 301 de `www.tripmates.app/*` vers `https://tripmates.app/${1}`), avec un enregistrement `www` proxifié.
+- **Cache** : Cloudflare respecte les en-têtes du serveur (un an pour `assets/`, revérification pour les pages). Rien à régler. Après un déploiement, inutile de vider le cache de Cloudflare.
+
 ## 3. Dokploy
 
 1. Ouvrir `http://IP-du-VPS:3000`, créer le compte administrateur.
