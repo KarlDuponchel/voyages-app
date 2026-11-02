@@ -70,7 +70,8 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
 
 À faire par Karl, dans cet ordre :
 1. **Regarder la preview Vercel** de `feat/design-wayfarer` : `/`, `/cgv`, `/monde`, connexion, et l'app installée sur l'iPhone (elle doit s'ouvrir sur l'app, pas sur l'accueil).
-2. **Suppression de compte** : fusionnée dans `feat/design-wayfarer` le 02/11. Reste à appliquer la migration (`npx supabase db push --linked`) et à déployer `delete-account` et `stripe-webhook`, **au moment de fusionner dans `main`** : la migration retire `delete_my_account()`, que l'app actuellement en ligne appelle encore. Marche à suivre dans « Suppression de compte complète », plus bas.
+2. ~~**Suppression de compte**~~ : **fait le 02/11**. `feat/design-wayfarer` fusionnée dans `main`, migration `20261103100000_suppression_compte.sql` appliquée, fonctions `delete-account` et `stripe-webhook` déployées par Claude avec l'accord de Karl. Vérifié : `delete-account` refuse un appel sans connexion (401). Reste le test avec un compte jetable (voir « Suppression de compte complète »).
+   - **`billing` n'est pas redéployée exprès** : la nouvelle version exige l'adresse des CGV dans les réglages Stripe. La déployer juste après l'avoir renseignée (étape 6).
 3. **Hébergement sur le VPS avec Dokploy** (décision de Karl, 02/11 : on le fait en premier, Vercel Hobby interdisant l'usage commercial). Le code est prêt et testé en local ; suivre [docs/hebergement.md](docs/hebergement.md) : VPS et Dokploy, DNS Cloudflare, application Dokploy (Dockerfile, arguments de compilation), puis bascule.
 4. **Domaine** (dans la bascule de docs/hebergement.md) : `tripmates.app` vers le VPS ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
 5. **Pages légales** : compléter ce qui est surligné en jaune (éditeur, SIRET, TVA, médiateur de la consommation), créer `contact@tripmates.app` (Cloudflare Email Routing), faire relire.
@@ -421,9 +422,9 @@ Découvert en écrivant la politique de confidentialité : supprimer son compte 
 ### À faire par Karl pour mettre en ligne (dans cet ordre, rapprochés)
 L'app actuelle appelle `delete_my_account()`, que la migration supprime. Faire les trois étapes à la suite. L'app n'est pas encore ouverte au public, donc le court intervalle est sans risque.
 - [ ] Vérifier : `npm run test:db` et `npm run test:functions`.
-- [ ] Appliquer la migration : `npx supabase db push --linked`. Puis régénérer les types : les fonctions `account_files` et `delete_my_account` sont déjà corrigées à la main dans `src/data/database.types.ts`.
-- [ ] Déployer les fonctions : `npx supabase functions deploy delete-account` (nouvelle) et `npx supabase functions deploy stripe-webhook` (modifiée). Pas de nouveau secret : elles utilisent `SUPABASE_SERVICE_ROLE_KEY` et `STRIPE_SECRET_KEY`, déjà réglés.
-- [ ] Mettre l'app en ligne (fusion dans `main`).
+- [x] Appliquer la migration (fait le 02/11 ; la CLI 3.0 dit maintenant `--remote` au lieu de `--linked`). Puis régénérer les types : les fonctions `account_files` et `delete_my_account` sont déjà corrigées à la main dans `src/data/database.types.ts`.
+- [x] Déployer les fonctions `delete-account` (nouvelle) et `stripe-webhook` (modifiée), fait le 02/11. Pas de nouveau secret : elles utilisent `SUPABASE_SERVICE_ROLE_KEY` et `STRIPE_SECRET_KEY`, déjà réglés.
+- [x] Mettre l'app en ligne (fusion dans `main`, le 02/11).
 - [ ] Tester avec un compte jetable : un voyage seul avec un billet et une photo, un voyage partagé avec Louna. Supprimer le compte, puis vérifier dans le tableau de bord que les fichiers du voyage seul ont disparu des buckets, et que Louna est propriétaire du voyage partagé.
 
 ## Feuille de route conseillée
