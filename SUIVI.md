@@ -214,6 +214,95 @@
 - [x] Migration photos appliquée (par Karl), types régénérés, requête des voyages vérifiée sur la vraie base, `feat/photos` fusionnée dans `main` (28/10).
 - [ ] Tester sur iPhone : choisir plusieurs photos et une vidéo dans la pellicule, la date de prise de vue, mettre en couverture, supprimer, l'affichage hors ligne.
 
+## Session du 2 novembre 2026
+
+### Décisions de Karl
+- **Partage public** des photos et vidéos : elles restent privées par défaut, et l'auteur peut les rendre publiques. Chacune est rattachée à une ville.
+- **Réactions** : J'aime ❤️, J'adore 😍, Waouh 🤩 et **Wishlist** 🧳 (l'anglicisme est voulu).
+- **Ordre de travail** : finir ce qui est ouvert, la base du partage, Photos C (quotas et premium), puis les étapes A, B, C et D du partage.
+- **Choix par défaut de Claude**, à confirmer :
+  - une photo publique est visible des utilisateurs connectés seulement, sans lien public ;
+  - l'auteur apparaît avec son prénom ;
+  - on montre le mois de prise de vue, pas le jour ;
+  - pas de commentaires.
+
+### Fait (branche `feat/partage`, pas encore fusionnée ni en ligne)
+- **Ce qui restait ouvert** : uniquement des vérifications sur iPhone, regroupées plus bas dans « À tester sur iPhone ».
+- **Base du partage** : migration `20261102100000_partage.sql`.
+  - L'auteur publie dans une ville du voyage.
+  - Les autres voient la photo, la ville, le mois et le prénom de l'auteur, jamais le voyage.
+  - Dépublier est immédiat : aucun fichier n'est copié.
+  - Une réaction par personne.
+- **Photos C, quotas et premium** : migration `20261102110000_premium.sql`.
+  - **Gratuit** : 5 lectures par l'IA, photos dans 2 voyages, 250 Mo. **Premium** : 300 lectures sur 30 jours, 20 Go.
+  - **Le propriétaire paie pour tous.**
+  - **Contrôles côté serveur** : poids réel des fichiers stockés, et `ai_allowance` dans `extract-booking` et `inbound-email`.
+  - **Paiement Stripe** : fonctions `billing` (paiement et portail client) et `stripe-webhook`.
+  - **Profil** : carte « Offre » avec la place utilisée et les lectures restantes.
+  - **Envoi des photos** : le quota est vérifié avant l'envoi. Si c'est plein, un seul message, avec « Voir l'offre ».
+- **A. Rendre publique** (visionneuse d'un voyage) :
+  - choix de la ville et légende publique ;
+  - case « j'ai pris cette photo, les personnes reconnaissables sont d'accord » ;
+  - badge 🌍 sur les miniatures ;
+  - « Retirer du public » pour l'auteur ou le propriétaire.
+- **B. Modération** :
+  - signalement avec un motif, et masquage automatique à 3 personnes ;
+  - blocage d'un utilisateur, dans les deux sens ;
+  - au plus 30 publications par jour ;
+  - marche à suivre pour Karl dans [docs/partage.md](docs/partage.md).
+- **C. Explorer**, nouvel onglet :
+  - photos publiques récentes, filtre par ville, onglet Wishlist ;
+  - visionneuse avec les réactions, « Signaler » et « Bloquer » ;
+  - lien « Ce que les voyageurs ont vu à … » dans l'onglet Photos d'un voyage.
+- **D. Notifications** : fonction `notify-reaction`, qui prévient l'auteur.
+  - « 😍 Marie adore votre photo » ;
+  - « ✨ Votre photo de Porto plaît : Marie, Tom et 2 autres ont réagi » ;
+  - au plus une par heure et par photo.
+- **Tests** :
+  - 107 tests de sécurité de la base, contre 63 avant ;
+  - 19 tests des fonctions serveur, contre 14 avant : signature Stripe, abonnements, messages.
+- **Vérifié dans le navigateur** avec un faux Supabase :
+  - Explorer, filtre par ville, Wishlist, réactions, signalement, blocage ;
+  - publication et retrait ;
+  - carte « Offre », en gratuit et en premium, en thème clair et sombre.
+  - Corrigé en chemin : la rangée de boutons de la visionneuse débordait sur iPhone.
+
+### À faire par Karl pour mettre en ligne
+- [ ] **Base** : `npm run test:db`, puis `npx supabase db push`, puis régénérer les types. Ceux de `src/data/database.types.ts` ont été écrits à la main en attendant.
+- [ ] **Premium offert** à Karl et Louna. Sinon, l'offre gratuite s'applique dès la mise en ligne : 5 lectures par l'IA déjà consommées, et 2 voyages avec photos. La requête est dans [docs/partage.md](docs/partage.md).
+- [ ] **Stripe en mode test** : produit, deux prix, portail, webhook, secrets. Voir [docs/partage.md](docs/partage.md).
+- [ ] **Fonctions** : `npx supabase functions deploy` pour `billing`, `stripe-webhook`, `notify-reaction`, puis `extract-booking` et `inbound-email`, qui ont changé.
+- [ ] Fusionner `feat/partage` dans `main` (Vercel met l'app en ligne).
+
+### À tester sur iPhone (tout ce qui reste ouvert)
+- [ ] **Photos** : choisir plusieurs photos et une vidéo dans la pellicule, la date de prise de vue, mettre en couverture, supprimer, l'affichage hors ligne.
+- [ ] **« Revivre »** : stories, son des vidéos, appui long, glisser pour fermer.
+- [ ] **Test à deux avec Louna** : invitation, puis chacun ajoute des billets et des photos.
+- [ ] **Billets** :
+  - joindre un PDF et une capture ;
+  - « Afficher le billet » ;
+  - mode avion, puis réouverture.
+  - L'app installée récupère bien le lecteur de PDF.
+- [ ] **Installation** :
+  - l'app installée se met à jour toute seule ;
+  - le voile clair sous la barre d'état sur l'iPhone 14 Pro a disparu.
+- [ ] **Partage** :
+  - rendre publique une photo ;
+  - la voir dans Explorer depuis le compte de Louna, et réagir ;
+  - recevoir la notification ;
+  - signaler, bloquer ;
+  - la Wishlist.
+- [ ] **Premium** : paiement test (carte `4242 4242 4242 4242`), retour sur le profil, « Gérer l'abonnement ».
+- [ ] **Figma** (thème clair) : retouches de la barre d'état des écrans 02 et 06, du QR code du billet 03 et du texte « PORTUGAL · 7 JOURS ».
+
+### Idées pour la suite du partage
+- **Globe** : un point par ville qui a des photos publiques, qui ouvre Explorer sur cette ville.
+- **Vérification par l'IA à la publication** (Haiku, moins d'un centime par photo) : refuser d'emblée les contenus choquants.
+- **Avant l'ouverture au public** :
+  - page « Mes photos publiques » ;
+  - CGU (licence d'affichage, droits, personnes photographiées) ;
+  - point de contact pour le DSA.
+
 ## Feuille de route conseillée
 
 ### 1. Consolider (court, avant d'inviter du monde)
@@ -279,7 +368,7 @@
   - Bascule vers Cloudflare R2 (sortie de données gratuite) au-delà d'environ 2 000 à 5 000 utilisateurs actifs, quand le trafic coûte plus de 30 $ par mois. Estimation : 10 000 utilisateurs actifs, environ 70 à 90 $ par mois avec Supabase seul contre environ 50 $ avec R2 ; 50 000, environ 400 à 500 $ contre environ 200 $.
   - À prévoir dès le départ : une colonne indiquant où est rangé chaque fichier, et un seul module pour l'accès au stockage.
 
-### 4. Photos et souvenirs — fait le 28/10 (photos, vidéos, couvertures, « Revivre ») ; quotas avec le premium
+### 4. Photos et souvenirs — fait le 28/10 (photos, vidéos, couvertures, « Revivre ») ; quotas et premium codés le 02/11 (branche `feat/partage`), partage public et réactions aussi
 - **Décisions de Karl (28/10)** :
   - **Qui ajoute** : le propriétaire et les participants (les lecteurs regardent seulement).
   - **Qui supprime** : l'auteur de la photo, et le propriétaire du voyage.

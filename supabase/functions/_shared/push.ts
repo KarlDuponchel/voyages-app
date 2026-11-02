@@ -87,3 +87,28 @@ export function importNotification(subject: string, drafts: BookingDraft[], fail
     tag: 'import',
   }
 }
+
+export type ReactionKind = 'jaime' | 'jadore' | 'waouh' | 'wishlist'
+
+/**
+ * Réactions à une photo publique, regroupées (au plus une notification par heure et par photo) :
+ * les plus récentes d'abord, sans l'auteur de la photo.
+ */
+export function reactionNotification(city: string, reactions: { name: string; kind: ReactionKind }[]): PushPayload {
+  const url = `/explorer?ville=${encodeURIComponent(city)}`
+  const tag = `reactions-${city}`
+  const [first] = reactions
+  if (reactions.length === 1) {
+    const single: Record<ReactionKind, { title: string; body: string }> = {
+      jaime: { title: `❤️ ${first.name} aime votre photo`, body: `Votre photo de ${city} fait son effet.` },
+      jadore: { title: `😍 ${first.name} adore votre photo`, body: `Votre photo de ${city} a conquis quelqu'un.` },
+      waouh: { title: `🤩 Waouh, dit ${first.name}`, body: `Votre photo de ${city} impressionne.` },
+      wishlist: { title: `🧳 ${first.name} rêve de ${city}`, body: `Votre photo est dans sa Wishlist.` },
+    }
+    return { ...single[first.kind], url, tag }
+  }
+  const names = [...new Set(reactions.map((r) => r.name))]
+  const others = names.length - 2
+  const who = names.length === 2 ? `${names[0]} et ${names[1]}` : `${names[0]}, ${names[1]} et ${others} autre${others > 1 ? 's' : ''}`
+  return { title: `✨ Votre photo de ${city} plaît`, body: `${who} ont réagi.`, url, tag }
+}

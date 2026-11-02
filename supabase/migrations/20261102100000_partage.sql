@@ -27,7 +27,9 @@ create table public.photo_shares (
   published_at timestamptz not null default now(),
   -- Modération : une photo masquée n'apparaît plus qu'à son auteur et aux membres du voyage
   hidden_at timestamptz,
-  hidden_reason text
+  hidden_reason text,
+  -- Dernière notification « réactions » envoyée à l'auteur (une par heure au plus, fonction notify-reaction)
+  last_notified_at timestamptz
 );
 create index photo_shares_place_idx on public.photo_shares (country_code, city, published_at desc) where hidden_at is null;
 create index photo_shares_published_idx on public.photo_shares (published_at desc) where hidden_at is null;

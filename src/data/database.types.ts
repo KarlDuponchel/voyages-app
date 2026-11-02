@@ -349,6 +349,7 @@ export type Database = {
           destination_id: string | null
           hidden_at: string | null
           hidden_reason: string | null
+          last_notified_at: string | null
           lat: number
           lng: number
           photo_id: string
@@ -363,6 +364,7 @@ export type Database = {
           destination_id?: string | null
           hidden_at?: string | null
           hidden_reason?: string | null
+          last_notified_at?: string | null
           lat: number
           lng: number
           photo_id: string
@@ -377,6 +379,7 @@ export type Database = {
           destination_id?: string | null
           hidden_at?: string | null
           hidden_reason?: string | null
+          last_notified_at?: string | null
           lat?: number
           lng?: number
           photo_id?: string

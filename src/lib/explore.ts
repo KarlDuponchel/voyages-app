@@ -95,6 +95,8 @@ export async function listPublicPlaces(): Promise<PublicPlace[]> {
 export async function setReaction(photoId: string, kind: ReactionKind | null): Promise<void> {
   const { error } = await supabase.rpc('react_to_photo', { p_photo: photoId, p_kind: kind })
   if (error) throw error
+  // Prévenir l'auteur (regroupé côté serveur) ; une notification manquée n'empêche pas de réagir
+  if (kind) supabase.functions.invoke('notify-reaction', { body: { photoId } }).catch(() => {})
 }
 
 /** Nouvel état local d'une photo après un appui sur une réaction (avant la réponse du serveur) */
