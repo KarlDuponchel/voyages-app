@@ -8,7 +8,7 @@
 import { checkoutConsent, stripeApi } from '../_shared/stripe.ts'
 import { adminClient, corsHeaders, json, userClient } from '../_shared/supabase.ts'
 
-const appUrl = () => (Deno.env.get('APP_URL') || 'https://voyages-app-chi.vercel.app').replace(/\/$/, '')
+const appUrl = () => (Deno.env.get('APP_URL') || 'https://tripmates.app').replace(/\/$/, '')
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })

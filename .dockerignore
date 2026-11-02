@@ -1,0 +1,13 @@
+# Inutile pour compiler le site (voir Dockerfile)
+node_modules
+dist
+dev-dist
+.git
+.claude
+.impeccable
+figma_mockups
+supabase
+email-worker
+scripts
+docs
+*.local

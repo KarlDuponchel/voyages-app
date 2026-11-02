@@ -71,8 +71,8 @@ Karl veut ouvrir l'app maintenant, et continuer d'ajouter des fonctions ensuite.
 À faire par Karl, dans cet ordre :
 1. **Regarder la preview Vercel** de `feat/design-wayfarer` : `/`, `/cgv`, `/monde`, connexion, et l'app installée sur l'iPhone (elle doit s'ouvrir sur l'app, pas sur l'accueil).
 2. **Suppression de compte** : fusionnée dans `feat/design-wayfarer` le 02/11. Reste à appliquer la migration (`npx supabase db push --linked`) et à déployer `delete-account` et `stripe-webhook`, **au moment de fusionner dans `main`** : la migration retire `delete_my_account()`, que l'app actuellement en ligne appelle encore. Marche à suivre dans « Suppression de compte complète », plus bas.
-3. **Hébergement commercial** : Vercel Hobby interdit l'usage commercial. Passer à Vercel Pro, ou faire l'étape 9 (Dokploy), **avant le premier paiement réel**.
-4. **Domaine** : `tripmates.app` vers l'app ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
+3. **Hébergement sur le VPS avec Dokploy** (décision de Karl, 02/11 : on le fait en premier, Vercel Hobby interdisant l'usage commercial). Le code est prêt et testé en local ; suivre [docs/hebergement.md](docs/hebergement.md) : VPS et Dokploy, DNS Cloudflare, application Dokploy (Dockerfile, arguments de compilation), puis bascule.
+4. **Domaine** (dans la bascule de docs/hebergement.md) : `tripmates.app` vers le VPS ; Supabase → Authentication → URL Configuration (Site URL et Redirect URLs) ; secret `APP_URL=https://tripmates.app`.
 5. **Pages légales** : compléter ce qui est surligné en jaune (éditeur, SIRET, TVA, médiateur de la consommation), créer `contact@tripmates.app` (Cloudflare Email Routing), faire relire.
 6. **Stripe en réel** (détail à l'étape 10) :
    - activer le compte (SIRET, compte bancaire) ;
@@ -580,6 +580,9 @@ L'app actuelle appelle `delete_my_account()`, que la migration supprime. Faire l
 - **Garder dans Git** le dossier `figma_mockups`, avec son sous-dossier `.figma`, que Figma Make demande de commiter. Il n'est pas compilé avec l'app : Vite ne lit que `src/`.
 
 ### 9. Héberger l'app sur un VPS avec Dokploy (au lieu de Vercel Pro)
+- **Code fait le 02/11** (branche `feat/design-wayfarer`) : `Dockerfile` (Node 22 puis nginx), `deploy/nginx.conf` et `deploy/securite.conf`, `.dockerignore`. Vercel Analytics et Speed Insights retirés, remplacés par Umami en option (`src/lib/analytics.ts`, variables `VITE_UMAMI_SRC` et `VITE_UMAMI_WEBSITE_ID`). Adresse de repli de `billing` : `https://tripmates.app`. Pages légales : hébergeur du VPS à compléter.
+  - **Testé en local avec Docker** : toutes les adresses (accueil, pages légales, app, redirections des `.html`, 404, `/sante`), cache, compression, en-têtes de sécurité, service worker actif dans Chrome.
+  - **Marche à suivre complète** : [docs/hebergement.md](docs/hebergement.md). Le plan ci-dessous reste comme historique.
 - **Pourquoi** :
   - Vercel Hobby interdit l'usage commercial, et Vercel Pro coûte 20 $ par mois.
   - L'app est un site statique (une PWA compilée par Vite, sans serveur) : un petit VPS suffit, pour environ 4 à 6 € par mois.

@@ -5,3 +5,6 @@ import '@fontsource/dm-sans/700.css'
 import '@fontsource/dm-serif-display/400.css'
 import '@fontsource/dm-serif-display/400-italic.css'
 import './site.css'
+import { loadAnalytics } from '../lib/analytics'
+
+loadAnalytics()

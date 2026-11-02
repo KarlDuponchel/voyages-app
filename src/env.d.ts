@@ -5,6 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_IMPORT_DOMAIN?: string
   /** Clé publique VAPID des notifications ; vide = notifications cachées dans l'app */
   readonly VITE_VAPID_PUBLIC_KEY?: string
+  /** Mesure d'audience Umami (src/lib/analytics.ts) ; vides = aucune mesure */
+  readonly VITE_UMAMI_SRC?: string
+  readonly VITE_UMAMI_WEBSITE_ID?: string
 }
 
 interface ImportMeta {

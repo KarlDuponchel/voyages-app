@@ -11,10 +11,9 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import { App } from './App'
 import { AuthProvider } from './data/auth'
+import { loadAnalytics } from './lib/analytics'
 import { captureInstallPrompt } from './lib/install'
 import { ThemeProvider } from './theme/theme'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from "@vercel/speed-insights/react"
 
 // Mise à jour automatique : l'app installée sur l'iPhone reste ouverte en arrière-plan,
 // on cherche donc une nouvelle version à chaque retour au premier plan. registerSW
@@ -32,14 +31,14 @@ registerSW({
 // Android : la proposition d'installation du navigateur arrive tôt, on la garde pour le message d'accueil
 captureInstallPrompt()
 
+loadAnalytics()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
       <AuthProvider>
         <App />
       </AuthProvider>
-      <Analytics />
-      <SpeedInsights />
     </ThemeProvider>
   </StrictMode>,
 )
