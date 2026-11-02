@@ -195,7 +195,8 @@ await ok('pays visités (voyage terminé + saisie manuelle)', async () => {
 await denied('Karl ne peut pas se rétrograder (dernier propriétaire)', () =>
   as('karl', `update public.trip_members set role = 'editor' where user_id = '${U.karl}'`), 'propriétaire')
 await ok("Karl supprime son compte → Léa (éditrice) devient propriétaire, pas le lecteur", async () => {
-  await as('karl', 'select public.delete_my_account()')
+  // Ce que fait la fonction serveur delete-account, après avoir effacé les fichiers
+  await db.query(`delete from auth.users where id = '${U.karl}'`)
   expect((await db.query(`select 1 from public.profiles where id = '${U.karl}'`)).rows.length === 0, 'profil restant')
   const r = await db.query(`select user_id, role from public.trip_members where trip_id = '${trip}' order by role`)
   expect(r.rows.find((m) => m.user_id === U.lea)?.role === 'owner', JSON.stringify(r.rows))
@@ -593,6 +594,59 @@ await ok('premium : seules les lectures des 30 derniers jours comptent', async (
   await db.query(`insert into public.ai_usage (user_id, source, model, created_at) select '${U.lea}', 'email', 'm', now() - interval '40 days' from generate_series(1, 300)`)
   const [{ a }] = await asService(`select public.ai_allowance('${U.lea}') as a`)
   expect(a.allowed && a.used === 0, JSON.stringify(a))
+})
+
+// ---- Suppression de compte (migration 20261103100000) ----
+Object.assign(U, { alix: '77777777-7777-7777-7777-777777777777', bao: '88888888-8888-8888-8888-888888888888', cyd: '99999999-9999-9999-9999-999999999999' })
+await db.exec(`insert into auth.users (id, email) values ('${U.alix}', 'alix@example.com'), ('${U.bao}', 'bao@example.com'), ('${U.cyd}', 'cyd@example.com')`)
+let solo, shared, soloPhoto, sharedPhoto
+await ok("préparation : un voyage d'Alix seule, un voyage partagé avec Bao puis Cyd, des fichiers partout", async () => {
+  solo = await newTrip('alix', 'Seule')
+  shared = await newTrip('alix', 'Ensemble')
+  await db.query(`insert into public.trip_members (trip_id, user_id, role, joined_at) values
+    ('${shared}', '${U.bao}', 'editor', now() - interval '2 days'), ('${shared}', '${U.cyd}', 'editor', now() - interval '1 day')`)
+  const [{ id: booking }] = await as('alix', `insert into public.bookings (trip_id, kind, title, starts_at) values ('${solo}', 'vol', 'CDG → LIS', '2025-08-01 07:00') returning id`)
+  await as('alix', `insert into storage.objects (bucket_id, name) values ('trip-files', '${solo}/billet.pdf'), ('trip-files', '${shared}/billet.pdf')`)
+  await as('alix', `insert into public.booking_files (booking_id, trip_id, storage_path, file_name) values ('${booking}', '${solo}', '${solo}/billet.pdf', 'billet.pdf')`)
+  soloPhoto = await addPhoto('alix', solo)
+  sharedPhoto = await addPhoto('alix', shared, { bytes: 3 * MB })
+  // Envoi interrompu : un fichier sans ligne trip_photos
+  await as('alix', `insert into storage.objects (bucket_id, name) values ('trip-photos', '${solo}/${uuid()}/thumb.jpg')`)
+  await db.query(`insert into storage.objects (bucket_id, name) values ('imports', '${U.alix}/${uuid()}/mail.pdf'), ('imports', '${U.bao}/${uuid()}/mail.pdf')`)
+  await db.query(`insert into public.subscriptions (user_id, status, stripe_subscription_id) values ('${U.alix}', 'active', 'sub_alix')`)
+})
+await denied("l'app ne peut pas lister les fichiers d'un compte", () => as('alix', `select * from public.account_files('${U.alix}')`), 'permission denied')
+await denied("l'ancienne suppression par la base (qui oubliait les fichiers) n'existe plus", () => as('alix', 'select public.delete_my_account()'), 'does not exist')
+await ok("fichiers à effacer : ceux du voyage d'Alix seule et ses e-mails, pas ceux du voyage partagé ni de Bao", async () => {
+  const files = (await asService(`select bucket_id || ':' || name as f from public.account_files('${U.alix}')`)).map((r) => r.f)
+  const expected = [`imports:${U.alix}/`, `trip-files:${solo}/billet.pdf`, `trip-photos:${solo}/${soloPhoto}/full.jpg`, `trip-photos:${solo}/`]
+  expect(files.length === 4 && expected.every((e) => files.some((f) => f.startsWith(e))), JSON.stringify(files))
+  expect(!files.some((f) => f.includes(shared) || f.includes(U.bao)), 'fichier partagé ou d’un autre compte')
+  const bao = (await asService(`select name from public.account_files('${U.bao}')`)).map((r) => r.name)
+  expect(bao.length === 1 && bao[0].startsWith(U.bao), 'Bao : ' + JSON.stringify(bao))
+})
+await ok('Alix supprime son compte → son voyage seul disparaît avec tout son contenu', async () => {
+  await db.query(`delete from auth.users where id = '${U.alix}'`)
+  const r = await db.query(`select
+    (select count(*) from public.trips where id = '${solo}')::int t,
+    (select count(*) from public.bookings where trip_id = '${solo}')::int b,
+    (select count(*) from public.booking_files where trip_id = '${solo}')::int f,
+    (select count(*) from public.trip_photos where trip_id = '${solo}')::int p,
+    (select count(*) from public.subscriptions where user_id = '${U.alix}')::int s,
+    (select count(*) from public.trips t where not exists (select 1 from public.trip_members m where m.trip_id = t.id))::int orphelins`)
+  expect(Object.values(r.rows[0]).every((n) => n === 0), JSON.stringify(r.rows[0]))
+})
+await ok('voyage partagé : il reste, Bao (le plus ancien) en devient propriétaire, Cyd reste participant', async () => {
+  const r = await db.query(`select user_id, role from public.trip_members where trip_id = '${shared}' order by joined_at`)
+  expect(r.rows.length === 2 && r.rows[0].user_id === U.bao && r.rows[0].role === 'owner' && r.rows[1].role === 'editor', JSON.stringify(r.rows))
+  const p = await db.query(`select uploaded_by from public.trip_photos where id = '${sharedPhoto}'`)
+  expect(p.rows.length === 1 && p.rows[0].uploaded_by === null, 'photo partagée perdue ou encore signée')
+})
+await ok("premium : les photos du voyage partagé comptent désormais chez Bao, qui le paie", async () => {
+  const [{ my_plan: p }] = await as('bao', 'select public.my_plan()')
+  expect(p.photoBytes === 3 * MB && p.photoTrips === 1, JSON.stringify(p))
+  const [{ m }] = await as('cyd', `select public.photo_quota_check('${shared}', 1000) as m`)
+  expect(m === null, 'Cyd ne peut plus ajouter de photo : ' + m)
 })
 
 await denied('anon ne lit rien', async () => {

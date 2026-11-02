@@ -124,8 +124,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await loadProfile()
     },
     deleteAccount: async () => {
-      const { error } = await supabase.rpc('delete_my_account')
-      if (error) throw error
+      // Fonction serveur : elle efface aussi les fichiers et résilie l'abonnement, ce que la base ne peut pas faire
+      const { error } = await supabase.functions.invoke('delete-account')
+      if (error) {
+        const context = (error as { context?: Response }).context
+        const res = context ? await context.json().catch(() => null) : null
+        throw new Error(res?.error ?? 'La suppression du compte a échoué. Réessayez dans un moment.')
+      }
       await supabase.auth.signOut()
       localStorage.clear()
       await clearFileCache()

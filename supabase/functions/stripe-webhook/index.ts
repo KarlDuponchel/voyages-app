@@ -44,6 +44,9 @@ Deno.serve(async (req) => {
       console.warn('stripe-webhook : abonnement sans compte', sub.id)
       return new Response('ok')
     }
+    // Compte supprimé (fonction delete-account, qui résilie l'abonnement) : plus rien à tenir à jour
+    const { data: profile } = await admin.from('profiles').select('id').eq('id', userId).maybeSingle()
+    if (!profile) return new Response('ok')
 
     // Un premium offert à la main n'est pas remplacé par Stripe
     const { data: current } = await admin.from('subscriptions').select('status').eq('user_id', userId).maybeSingle()
