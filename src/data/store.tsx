@@ -5,7 +5,10 @@ import { randomCover } from '../lib/trip'
 import type { TablesUpdate } from './database.types'
 import { deleteBookingFile, prefetchFiles, removeStoredFiles, uploadBookingFile } from '../lib/files'
 import { removeTripPhotos } from '../lib/photos'
-import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, Ticket, Transport, Trip, TripRole } from './types'
+import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, PlaceKind, Ticket, Transport, Trip, TripRole } from './types'
+
+/** Sorte d'une étape ; « ville » pour les étapes d'avant la colonne place_kind (copie hors ligne) */
+const placeKind = (k?: string): PlaceKind => (k === 'pays' || k === 'ile' || k === 'region' ? k : 'ville')
 
 /**
  * Voyages de l'utilisateur connecté, lus dans Supabase.
@@ -51,7 +54,7 @@ type TripRow = {
   cover_colors: string[] | null
   cover: { id: string; path: string; thumb_path: string } | null
   photo_count: { count: number }[] | null
-  trip_destinations: { id: string; position: number; city: string; country_code: string; lat: number; lng: number; timezone: string | null }[]
+  trip_destinations: { id: string; position: number; city: string; place_kind?: string; country_code: string; lat: number; lng: number; timezone: string | null }[]
   bookings: {
     id: string
     kind: Booking['kind']
@@ -74,7 +77,7 @@ const TRIP_SELECT = `
   id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors,
   cover:trip_photos!trips_cover_photo_id_fkey ( id, path, thumb_path ),
   photo_count:trip_photos!trip_photos_trip_id_fkey ( count ),
-  trip_destinations ( id, position, city, country_code, lat, lng, timezone ),
+  trip_destinations ( id, position, city, place_kind, country_code, lat, lng, timezone ),
   bookings ( id, kind, title, detail, starts_at, ends_at, timezone, reference, provider, source, imported_at, ticket,
     booking_files ( id, storage_path, file_name, mime_type, size_bytes, created_at ) ),
   trip_members ( user_id, role, profiles ( display_name ) )
@@ -98,7 +101,7 @@ function toTrip(r: TripRow, userId: string): Trip {
     photos: r.photo_count?.[0]?.count ?? 0,
     destinations: [...r.trip_destinations]
       .sort((a, b) => a.position - b.position)
-      .map((d) => ({ id: d.id, position: d.position, city: d.city, countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
+      .map((d) => ({ id: d.id, position: d.position, city: d.city, kind: placeKind(d.place_kind), countryId: d.country_code, lat: d.lat, lng: d.lng, timezone: d.timezone ?? undefined })),
     bookings: r.bookings
       .map((b) => ({
         id: b.id,
@@ -276,6 +279,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
           trip_id: trip.id,
           position: 0,
           city: place.name,
+          place_kind: place.kind,
           country_code: place.countryId,
           lat: place.lat,
           lng: place.lng,
@@ -394,6 +398,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
           trip_id: tripId,
           position: Math.max(-1, ...(trip?.destinations.map((d) => d.position) ?? [])) + 1,
           city: place.name,
+          place_kind: place.kind,
           country_code: place.countryId,
           lat: place.lat,
           lng: place.lng,

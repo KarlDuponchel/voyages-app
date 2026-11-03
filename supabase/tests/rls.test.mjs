@@ -667,7 +667,14 @@ await db.exec(`
   insert into public.places (id, name, admin1, country_code, lat, lng, timezone, population, kind) values
     (2629691, 'Islande', null, 'IS', 64.14, -21.9, 'Atlantic/Reykjavik', 392404, 'pays'),
     (3437598, 'Paraguay', null, 'PY', -25.29, -57.65, 'America/Asuncion', 6811297, 'pays'),
-    (1168579, 'Islamabad', 'Islamabad', 'PK', 33.72, 73.04, 'Asia/Karachi', 1014825, 'ville');
+    (1168579, 'Islamabad', 'Islamabad', 'PK', 33.72, 73.04, 'Asia/Karachi', 1014825, 'ville'),
+    (2513925, 'Minorque', 'Îles Baléares', 'ES', 39.97, 4.07, 'Europe/Madrid', 93397, 'ile'),
+    (3023519, 'Corse', null, 'FR', 42.06, 8.95, 'Europe/Paris', 355528, 'region'),
+    (2652245, 'Corse', 'Angleterre', 'GB', 51.97, -2.28, 'Europe/London', 900, 'ville'),
+    (3117735, 'Madrid', 'Communauté de Madrid', 'ES', 40.42, -3.7, 'Europe/Madrid', 3255944, 'ville'),
+    (3117732, 'Communauté de Madrid', null, 'ES', 40.43, -3.69, 'Europe/Madrid', 7009268, 'region');
+  insert into public.place_names (place_id, name) values (2513925, 'Minorque'), (2513925, 'Menorca'),
+    (3023519, 'Corse'), (2652245, 'Corse'), (3117735, 'Madrid'), (3117732, 'Communauté de Madrid'), (3117732, 'Madrid');
   insert into public.place_names (place_id, name, principal) values (2267057, 'Lisboa', false), (2629691, 'Ísland', false);
   insert into public.place_names (place_id, name) values (2629691, 'Islande'), (2629691, 'Iceland'), (3437598, 'Paraguay'), (1168579, 'Islamabad');
   insert into public.place_names (place_id, name) values
@@ -698,6 +705,17 @@ await ok("pays : sur un début de nom, il compte au plus pour 1 million (« isl 
   const r = await cities('isl')
   const par = await cities('par')
   expect(r[0] === 'Islamabad PK' && r[1] === 'Islande IS' && par[0] === 'Paris FR' && par[1] === 'Paraguay PY', JSON.stringify([r, par]))
+})
+await ok('îles et régions : « minorque » et « menorca » donnent l\'île, « corse » la région avant le village anglais', async () => {
+  const r = await as('lea', "select name, kind from public.search_places('minorque')")
+  const es = await cities('menorca')
+  const corse = await as('lea', "select name, country_code, kind from public.search_places('corse')")
+  expect(r[0]?.name === 'Minorque' && r[0]?.kind === 'ile' && es[0] === 'Minorque ES', JSON.stringify([r, es]))
+  expect(corse[0]?.kind === 'region' && corse[1]?.country_code === 'GB', JSON.stringify(corse))
+})
+await ok('îles et régions : une grande ville passe devant la région du même nom (« madrid »)', async () => {
+  const r = await as('lea', "select name, kind from public.search_places('madrid')")
+  expect(r[0]?.kind === 'ville' && r[1]?.kind === 'region', JSON.stringify(r))
 })
 await ok('villes : début de nom, au fil de la frappe', async () => {
   const r = await cities('Lis')

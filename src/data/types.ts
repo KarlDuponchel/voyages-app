@@ -49,11 +49,16 @@ export type BookingFile = {
 }
 
 /** Une étape du voyage (ville) */
+/** Sorte de lieu d'une étape : une ville, ou un pays, une île ou une région entière (road trip) */
+export type PlaceKind = 'ville' | 'pays' | 'ile' | 'region'
+
 export type Destination = {
   id: string
   /** Ordre dans le voyage */
   position: number
+  /** Nom du lieu (une ville le plus souvent, voir `kind`) */
   city: string
+  kind: PlaceKind
   /** Code ISO 3166 numérique du pays (identifiant utilisé par la carte du monde) */
   countryId: string
   lat: number

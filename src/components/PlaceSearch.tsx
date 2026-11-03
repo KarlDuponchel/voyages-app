@@ -1,22 +1,28 @@
-import { Globe2, MapPin, X } from 'lucide-react'
+import { Globe2, Map as MapIcon, MapPin, TreePalm, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { searchPlaces, type Place } from '../lib/places'
 import './PlaceSearch.css'
 
-/** Champ de recherche de ville (ou de pays) avec suggestions (nom, région, pays). */
+/** Icône de la sorte de lieu : repère pour une ville, globe pour un pays, palmier pour une île, carte pour une région */
+function KindIcon({ kind }: { kind: Place['kind'] }) {
+  const Icon = kind === 'pays' ? Globe2 : kind === 'ile' ? TreePalm : kind === 'region' ? MapIcon : MapPin
+  return <Icon size={16} aria-hidden />
+}
+
+/** Champ de recherche de lieu (ville, pays, île, région) avec suggestions (nom, région, pays). */
 export function PlaceSearch({
   label,
   value,
   onChange,
-  placeholder = 'Lisbonne, Kyoto, Islande…',
-  withCountries = true,
+  placeholder = 'Lisbonne, Islande, Minorque…',
+  citiesOnly = false,
 }: {
   label: string
   value: Place | null
   onChange: (place: Place | null) => void
   placeholder?: string
-  /** Proposer aussi les pays entiers (pas pour la ville de départ) */
-  withCountries?: boolean
+  /** Seulement des villes, sans pays, îles ni régions (ville de départ) */
+  citiesOnly?: boolean
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Place[]>([])
@@ -30,7 +36,7 @@ export function PlaceSearch({
     }
     const ctrl = new AbortController()
     const timer = setTimeout(() => {
-      searchPlaces(q, ctrl.signal, withCountries)
+      searchPlaces(q, ctrl.signal, citiesOnly)
         .then((r) => {
           setResults(r)
           setError(false)
@@ -41,7 +47,7 @@ export function PlaceSearch({
       clearTimeout(timer)
       ctrl.abort()
     }
-  }, [query, withCountries])
+  }, [query, citiesOnly])
 
   if (value)
     return (
@@ -89,7 +95,7 @@ export function PlaceSearch({
                   setResults([])
                 }}
               >
-                {p.isCountry ? <Globe2 size={16} aria-hidden /> : <MapPin size={16} aria-hidden />}
+                <KindIcon kind={p.kind} />
                 <span className="stack" style={{ gap: 0 }}>
                   <span className="strong">{p.name}</span>
                   <span className="caption muted">{p.detail}</span>

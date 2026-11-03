@@ -559,6 +559,7 @@ export type Database = {
           arrive_on: string | null
           city: string
           country_code: string
+          place_kind: string
           created_at: string
           id: string
           lat: number
@@ -572,6 +573,7 @@ export type Database = {
           arrive_on?: string | null
           city: string
           country_code: string
+          place_kind?: string
           created_at?: string
           id?: string
           lat: number
@@ -585,6 +587,7 @@ export type Database = {
           arrive_on?: string | null
           city?: string
           country_code?: string
+          place_kind?: string
           created_at?: string
           id?: string
           lat?: number

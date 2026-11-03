@@ -19,13 +19,13 @@ function tripKm(trip: Trip, home: Point | null) {
 }
 
 /** Villes des voyages terminés (une seule fois chacune), pour les repères du globe.
- *  Une étape « pays entier » (« Islande », recherche de lieux) n'est pas une ville : le pays est déjà colorié. */
+ *  Une étape pays, île ou région entière (« Islande », « Minorque ») n'est pas une ville : son pays est déjà colorié. */
 export function visitedCities(trips: Trip[], now = new Date()) {
   const cities = new Map<string, { name: string; lat: number; lng: number }>()
   for (const t of trips)
     if (parseLocal(t.end) < now)
       for (const d of t.destinations)
-        if (d.city !== countryById(d.countryId)?.name) cities.set(`${d.city}|${d.countryId}`, { name: d.city, lat: d.lat, lng: d.lng })
+        if (d.kind === 'ville') cities.set(`${d.city}|${d.countryId}`, { name: d.city, lat: d.lat, lng: d.lng })
   return [...cities.values()]
 }
 
