@@ -308,6 +308,20 @@ div.field {
   padding: 14px 20px 14px 18px;
   font-size: 15px;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-sunset) 40%, transparent);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* Suit la barre d'onglets réduite (TabBar.css), qui descend d'environ 16 px :
+   l'écart entre les deux reste le même. `translate` laisse `transform` au survol. */
+html.tabbar-reduite .fab {
+  translate: 0 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab {
+    transition: none;
+  }
 }
 /* Laisse la place au bouton flottant sous le dernier élément */
 .screen--fab {

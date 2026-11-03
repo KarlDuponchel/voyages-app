@@ -122,6 +122,10 @@ Fait le 02/11 : acceptation des CGV et de la politique de confidentialité indiq
   - balises iPhone sur la page d'accueil, pour que l'app installée depuis cette page s'ouvre en plein écran ;
   - acceptation des CGV sur l'écran de connexion ; e-mails de connexion et d'inscription aux couleurs de l'app ; Umami en service ; pages légales complètes sauf le médiateur.
   - **En attente d'un Deploy** (poussés, pas encore en ligne le 03/11) : barre d'onglets, animations de l'accueil, « Gérer l'abonnement ».
+- **Corrigé le 03/11 (après-midi)** :
+  - **« Gérer l'abonnement » répondait « Paiement indisponible »** : la case d'acceptation des CGV (commit c50f31d) avait été ajoutée à l'appel du portail client au lieu de celui du paiement. Stripe refusait le portail, et **le paiement ne demandait pas l'acceptation des CGV ni la renonciation au délai de rétractation**. Remis à sa place dans `billing`. **À redéployer** : `npx supabase functions deploy billing`, puis tester un paiement (la case doit apparaître) et « Gérer l'abonnement ».
+  - **Boutons flottants** (« Nouveau voyage », ajout de réservation, ajout de photos) : ils descendent avec la barre d'onglets réduite, pour garder le même écart (classe `tabbar-reduite` sur la page).
+  - Aperçu local avec le faux Supabase : configurations `faux-supabase` et `voyages-mock` dans `.claude/launch.json` (fichier `.env.mock.local` à créer, voir « Accueil public »).
 - **À vérifier sur iPhone** après le Deploy :
   - l'app installée depuis la page d'accueil s'ouvre bien en plein écran, sans les barres de Safari (constaté par Karl le 03/11 avec l'ancienne installation) ;
   - la barre d'onglets réduite et les animations de l'accueil sont fluides.

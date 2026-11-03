@@ -30,7 +30,6 @@ Deno.serve(async (req) => {
         customer: sub.stripe_customer_id,
         return_url: `${appUrl()}/profil`,
         locale: 'fr',
-      ...checkoutConsent(`${appUrl()}/cgv`),
       })
       return json({ url: portal.url })
     }
@@ -63,6 +62,7 @@ Deno.serve(async (req) => {
       automatic_tax: tax ? { enabled: true } : undefined,
       customer_update: tax ? { address: 'auto' } : undefined,
       locale: 'fr',
+      ...checkoutConsent(`${appUrl()}/cgv`),
       success_url: `${appUrl()}/profil?premium=merci`,
       cancel_url: `${appUrl()}/profil`,
     })

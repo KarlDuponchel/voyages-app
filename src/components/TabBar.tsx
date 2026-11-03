@@ -46,6 +46,12 @@ function useCompact() {
 
 export function TabBar() {
   const compact = useCompact()
+  // Les boutons flottants (« Nouveau voyage »…) descendent avec la barre réduite
+  useEffect(() => {
+    const root = document.documentElement
+    root.classList.toggle('tabbar-reduite', compact)
+    return () => root.classList.remove('tabbar-reduite')
+  }, [compact])
   return (
     <nav className={`tabbar${compact ? ' tabbar--compact' : ''}`} aria-label="Navigation principale">
       {tabs.map(({ to, label, Icon, end }) => (
