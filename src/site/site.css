@@ -992,3 +992,92 @@ blockquote {
     translate: 0 -8px;
   }
 }
+
+/* ---------- QR code de l'app (ordinateur) ---------- */
+.qr {
+  width: min(420px, calc(100% - 32px));
+  padding: 32px 32px 24px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--paper);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(15, 48, 42, 0.28);
+}
+.qr::backdrop {
+  background: rgba(15, 48, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+.qr h2 {
+  margin-top: 8px;
+  font-size: 30px;
+  line-height: 1.1;
+}
+.qr > p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.qr__cadre {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.qr__code {
+  display: block;
+  width: 176px;
+  height: 176px;
+}
+/* Écrans d'ordinateur peu hauts : le code reste lisible sans faire défiler la fenêtre */
+@media (max-height: 620px) {
+  .qr {
+    padding-top: 24px;
+  }
+  .qr > p {
+    display: none;
+  }
+  .qr__code {
+    width: 150px;
+    height: 150px;
+  }
+}
+.qr > .qr__adresse {
+  margin-top: 10px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.qr__navigateur {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.qr__fermer {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.qr__fermer:hover {
+  background: var(--sage);
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .qr[open] {
+    animation: surgit 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}

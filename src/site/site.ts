@@ -48,3 +48,23 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'Intersect
     })
   }
 }
+
+/**
+ * Sur ordinateur (souris), « Ouvrir l'app » montre un QR code au lieu d'ouvrir l'app, pensée pour le téléphone.
+ * Les liens restent de vrais liens vers /monde (téléphone, tablette, sans JavaScript, moteurs de recherche) ;
+ * « Continuer sur cet ordinateur » ouvre l'app quand même.
+ */
+const qr = document.querySelector<HTMLDialogElement>('#qr-app')
+if (qr && typeof qr.showModal === 'function' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  document.querySelectorAll<HTMLAnchorElement>('a[href="/monde"]:not(.qr__navigateur)').forEach((lien) =>
+    lien.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+      e.preventDefault()
+      qr.showModal()
+    }),
+  )
+  // Un clic sur le voile (hors de la fenêtre) la ferme
+  qr.addEventListener('click', (e) => {
+    if (e.target === qr) qr.close()
+  })
+}
