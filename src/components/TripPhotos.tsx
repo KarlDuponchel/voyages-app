@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { formatDayHeader } from '../lib/format'
+import { MEDIA_ACCEPT } from '../lib/media'
 import { listPhotos, QuotaError, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
 import { canEdit, mainPlace } from '../lib/trip'
 import { PhotoViewer } from './PhotoViewer'
@@ -237,7 +238,7 @@ export function TripPhotos({
       <input
         ref={input}
         type="file"
-        accept="image/*,video/*"
+        accept={MEDIA_ACCEPT}
         multiple
         hidden
         onChange={(e) => {

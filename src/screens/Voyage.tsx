@@ -9,6 +9,7 @@ import { useTrips } from '../data/store'
 import type { Booking } from '../data/types'
 import { formatDayHeader, formatNumber, formatRange, nightsBetween } from '../lib/format'
 import { canEdit, tripCountries } from '../lib/trip'
+import { coverTopColor } from '../lib/covers'
 import { useStatusBarColor } from '../theme/theme'
 import { AddBookingSheet } from './AddBookingSheet'
 import { EditTripSheet } from './EditTripSheet'
@@ -40,7 +41,7 @@ export function Voyage() {
   const [sharing, setSharing] = useState(false)
   const [editingTrip, setEditingTrip] = useState(false)
   const trip = trips.find((t) => t.id === tripId)
-  useStatusBarColor(trip?.cover[0])
+  useStatusBarColor(trip ? coverTopColor(trip) : undefined)
   if (!trip) return status === 'chargement' ? null : <Navigate to="/voyages" replace />
   const editable = canEdit(trip)
   const money = (n: number) => `${formatNumber(n)} ${trip.currency === 'EUR' ? '€' : trip.currency}`

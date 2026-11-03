@@ -6,6 +6,7 @@ import { useTrips } from '../data/store'
 import type { BookingDraft, Trip } from '../data/types'
 import { canReadWithAi, readTicket } from '../lib/ai'
 import { checkFile, FILE_ACCEPT, formatSize } from '../lib/files'
+import { MEDIA_ACCEPT } from '../lib/media'
 import { errorMessage } from '../lib/supabase'
 import { draftTimezone } from '../lib/trip'
 import './AddBookingSheet.css'
@@ -141,7 +142,7 @@ export function AddBookingSheet({
               <input
                 ref={photoInput}
                 type="file"
-                accept="image/*,video/*"
+                accept={MEDIA_ACCEPT}
                 multiple
                 hidden
                 onChange={(e) => {

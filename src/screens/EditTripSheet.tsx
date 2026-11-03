@@ -1,9 +1,11 @@
 import { Check, Trash2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CoverPicker } from '../components/CoverPicker'
 import { Sheet } from '../components/Sheet'
 import { useTrips } from '../data/store'
-import type { Transport, Trip } from '../data/types'
+import type { CoverTheme, Transport, Trip } from '../data/types'
+import { coverThemeOf } from '../lib/covers'
 import { errorMessage } from '../lib/supabase'
 import { transports } from './NewTripSheet'
 
@@ -30,6 +32,7 @@ export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boole
   const [confirmDelete, setConfirmDelete] = useState(false)
   const fileCount = trip.bookings.reduce((n, b) => n + b.files.length, 0)
   const [start, setStart] = useState(trip.start)
+  const [cover, setCover] = useState<CoverTheme>(coverThemeOf(trip))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,7 +57,11 @@ export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boole
 
   // À chaque ouverture, on repart de la date enregistrée
   useEffect(() => {
-    if (open) setStart(trip.start)
+    if (open) {
+      setStart(trip.start)
+      setCover(coverThemeOf(trip))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, trip.start])
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
@@ -75,6 +82,8 @@ export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boole
         end: String(f.get('end')),
         transport: f.get('transport') as Transport,
         budget,
+        // Enregistrée seulement si on la change : sinon elle reste devinée d'après les étapes
+        ...(cover !== coverThemeOf(trip) ? { coverTheme: cover } : {}),
       })
       close()
     } catch (err) {
@@ -118,6 +127,8 @@ export function EditTripSheet({ trip, open, onClose }: { trip: Trip; open: boole
             <input className="input" name="budget" inputMode="decimal" placeholder="Facultatif" defaultValue={trip.budget ?? ''} />
           </label>
         </div>
+        <CoverPicker value={cover} onChange={setCover} />
+        {trip.coverPhoto && <span className="caption muted">La photo de couverture choisie dans l'onglet Photos passe devant.</span>}
         {error && (
           <p className="caption form-error" role="alert">
             {error}

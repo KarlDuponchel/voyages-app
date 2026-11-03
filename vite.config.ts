@@ -66,7 +66,15 @@ export default defineConfig({
         // Les billets eux-mêmes sont copiés à part (src/lib/files.ts).
         // pdf.js (worker en .mjs, 1,4 Mo) : on relève la limite par défaut de 2 Mo par fichier par sécurité
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,woff,woff2,otf,ttf,json}'],
+        // + les miniatures des couvertures par thème (environ 150 Ko) ; les grands formats sont gardés à la première vue
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,woff,woff2,otf,ttf,json}', 'couvertures/*-mini.webp'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/couvertures/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'couvertures', expiration: { maxEntries: 20 } },
+          },
+        ],
         // Réception des notifications et ouverture de la bonne page au toucher (public/push-sw.js)
         importScripts: ['/push-sw.js'],
         // Hors ligne, les adresses de l'app s'ouvrent sur app.html (« / » et les pages légales sont en cache à part)

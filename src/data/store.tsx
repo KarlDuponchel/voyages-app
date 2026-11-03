@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Place } from '../lib/places'
 import { supabase } from '../lib/supabase'
 import { randomCover } from '../lib/trip'
+import { asCoverTheme } from '../lib/covers'
 import type { TablesUpdate } from './database.types'
 import { deleteBookingFile, prefetchFiles, removeStoredFiles, uploadBookingFile } from '../lib/files'
 import { removeTripPhotos } from '../lib/photos'
-import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, PlaceKind, Ticket, Transport, Trip, TripRole } from './types'
+import type { Booking, BookingDraft, BookingFile, ImportFile, PendingImport, PlaceKind, Ticket, CoverTheme, Transport, Trip, TripRole } from './types'
 
 /** Sorte d'une étape ; « ville » pour les étapes d'avant la colonne place_kind (copie hors ligne) */
 const placeKind = (k?: string): PlaceKind => (k === 'pays' || k === 'ile' || k === 'region' ? k : 'ville')
@@ -52,6 +53,7 @@ type TripRow = {
   budget_amount: number | null
   budget_currency: string
   cover_colors: string[] | null
+  cover_theme?: string | null
   cover: { id: string; path: string; thumb_path: string } | null
   photo_count: { count: number }[] | null
   trip_destinations: { id: string; position: number; city: string; place_kind?: string; country_code: string; lat: number; lng: number; timezone: string | null }[]
@@ -74,7 +76,7 @@ type TripRow = {
 }
 
 const TRIP_SELECT = `
-  id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors,
+  id, title, start_date, end_date, transport, budget_amount, budget_currency, cover_colors, cover_theme,
   cover:trip_photos!trips_cover_photo_id_fkey ( id, path, thumb_path ),
   photo_count:trip_photos!trip_photos_trip_id_fkey ( count ),
   trip_destinations ( id, position, city, place_kind, country_code, lat, lng, timezone ),
@@ -98,6 +100,7 @@ function toTrip(r: TripRow, userId: string): Trip {
     currency: r.budget_currency,
     cover,
     coverPhoto: r.cover ? { id: r.cover.id, path: r.cover.path, thumbPath: r.cover.thumb_path } : undefined,
+    coverTheme: asCoverTheme(r.cover_theme),
     photos: r.photo_count?.[0]?.count ?? 0,
     destinations: [...r.trip_destinations]
       .sort((a, b) => a.position - b.position)
@@ -135,9 +138,11 @@ export type NewTrip = {
   end: string
   transport: Transport
   budget?: number
+  /** Couverture choisie à la création ; sinon devinée d'après les étapes */
+  coverTheme?: CoverTheme
 }
 
-export type TripPatch = Partial<Pick<Trip, 'title' | 'start' | 'end' | 'transport'>> & { budget?: number | null }
+export type TripPatch = Partial<Pick<Trip, 'title' | 'start' | 'end' | 'transport'>> & { budget?: number | null; coverTheme?: CoverTheme | null }
 export type BookingPatch = Pick<Booking, 'kind' | 'title' | 'detail' | 'start' | 'end' | 'reference'>
 
 type TripsContextValue = Cache & {
@@ -266,11 +271,11 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
     status,
     refresh,
 
-    createTrip: async ({ title, place, start, end, transport, budget }) => {
+    createTrip: async ({ title, place, start, end, transport, budget, coverTheme }) => {
       const trip = must(
         await supabase
           .from('trips')
-          .insert({ title, start_date: start, end_date: end, transport, budget_amount: budget ?? null, cover_colors: randomCover() })
+          .insert({ title, start_date: start, end_date: end, transport, budget_amount: budget ?? null, cover_colors: randomCover(), cover_theme: coverTheme ?? null })
           .select('id')
           .single(),
       ) as { id: string }
@@ -311,6 +316,7 @@ export function TripsProvider({ userId, children }: { userId: string; children: 
       if (patch.end !== undefined) row.end_date = patch.end
       if (patch.transport !== undefined) row.transport = patch.transport
       if (patch.budget !== undefined) row.budget_amount = patch.budget
+      if (patch.coverTheme !== undefined) row.cover_theme = patch.coverTheme
       must(await supabase.from('trips').update(row).eq('id', tripId))
       await refresh()
     },

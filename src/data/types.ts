@@ -48,10 +48,13 @@ export type BookingFile = {
   size?: number
 }
 
-/** Une étape du voyage (ville) */
+/** Photos d'ambiance des couvertures (public/couvertures) */
+export type CoverTheme = 'ville' | 'plage' | 'montagne' | 'neige' | 'nature' | 'desert' | 'campagne' | 'lac'
+
 /** Sorte de lieu d'une étape : une ville, ou un pays, une île ou une région entière (road trip) */
 export type PlaceKind = 'ville' | 'pays' | 'ile' | 'region'
 
+/** Une étape du voyage (ville) */
 export type Destination = {
   id: string
   /** Ordre dans le voyage */
@@ -84,8 +87,10 @@ export type Trip = {
   transport: Transport
   /** Trois couleurs du dégradé de couverture, du haut vers le bas */
   cover: [string, string, string]
-  /** Photo de couverture choisie (sinon le dégradé `cover`) */
+  /** Photo de couverture choisie (sinon la photo d'ambiance, avec le dégradé `cover` dessous pendant le chargement) */
   coverPhoto?: { id: string; path: string; thumbPath: string }
+  /** Photo d'ambiance choisie pour un voyage sans photo de couverture ; vide : devinée (src/lib/covers.ts) */
+  coverTheme?: CoverTheme
   /** Nombre de photos et vidéos du voyage */
   photos: number
   bookings: Booking[]

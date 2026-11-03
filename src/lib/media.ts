@@ -8,6 +8,13 @@
  * - Chaque élément a une miniature JPEG légère pour les grilles.
  */
 
+/**
+ * Types acceptés par le choix de photos et vidéos. Le HEIC est nommé exprès : avec « image/* » seul, l'iPhone
+ * convertit chaque photo en JPEG avant de la donner à l'app, ce qui fait attendre plusieurs secondes après
+ * « Ajouter » pour une dizaine de photos. Safari sait lire le HEIC depuis iOS 17, et l'app le réenregistre en JPEG.
+ */
+export const MEDIA_ACCEPT = 'image/heic,image/heif,image/*,video/*'
+
 export const MAX_VIDEO_BYTES = 30 * 1024 * 1024
 /** Au-delà, la compression sur le téléphone serait trop longue et dépasserait de toute façon 30 Mo */
 export const MAX_VIDEO_SECONDS = 180

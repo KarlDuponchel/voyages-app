@@ -781,6 +781,7 @@ export type Database = {
           budget_amount: number | null
           budget_currency: string
           cover_colors: string[] | null
+          cover_theme: string | null
           cover_path: string | null
           cover_photo_id: string | null
           created_at: string
@@ -796,6 +797,7 @@ export type Database = {
           budget_amount?: number | null
           budget_currency?: string
           cover_colors?: string[] | null
+          cover_theme?: string | null
           cover_path?: string | null
           cover_photo_id?: string | null
           created_at?: string
@@ -811,6 +813,7 @@ export type Database = {
           budget_amount?: number | null
           budget_currency?: string
           cover_colors?: string[] | null
+          cover_theme?: string | null
           cover_path?: string | null
           cover_photo_id?: string | null
           created_at?: string

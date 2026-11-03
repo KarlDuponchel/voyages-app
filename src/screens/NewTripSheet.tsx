@@ -1,10 +1,12 @@
 import { Check } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CoverPicker } from '../components/CoverPicker'
 import { PlaceSearch } from '../components/PlaceSearch'
 import { Sheet } from '../components/Sheet'
 import { useTrips } from '../data/store'
-import type { Transport } from '../data/types'
+import type { CoverTheme, Transport } from '../data/types'
+import { guessCoverTheme } from '../lib/covers'
 import type { Place } from '../lib/places'
 import { errorMessage } from '../lib/supabase'
 
@@ -34,12 +36,15 @@ export function NewTripSheet({
   const { createTrip } = useTrips()
   const navigate = useNavigate()
   const [place, setPlace] = useState<Place | null>(null)
+  /** Couverture choisie ; sinon devinée d'après la destination (et enregistrée vide, pour suivre les étapes) */
+  const [cover, setCover] = useState<CoverTheme | null>(null)
   const [start, setStart] = useState(defaults?.start ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const close = () => {
     setPlace(null)
+    setCover(null)
     setStart(defaults?.start ?? '')
     setError(null)
     onClose()
@@ -63,6 +68,7 @@ export function NewTripSheet({
         end: String(f.get('end')),
         transport: f.get('transport') as Transport,
         budget: budget > 0 ? budget : undefined,
+        coverTheme: cover ?? undefined,
       })
       close()
       if (onCreated) onCreated(id)
@@ -79,6 +85,7 @@ export function NewTripSheet({
       <form className="stack" style={{ gap: 12 }} onSubmit={submit}>
         <h2 className="display-l">Nouveau voyage</h2>
         <PlaceSearch label="Destination" value={place} onChange={setPlace} />
+        {place && <CoverPicker value={cover ?? guessCoverTheme(place)} onChange={setCover} />}
         <label className="field">
           <span className="overline muted">Nom du voyage</span>
           <input className="input" name="title" placeholder={place ? place.name : 'Facultatif : « Road trip en Écosse »'} maxLength={120} />
