@@ -1,5 +1,5 @@
 import { Globe2, Map as MapIcon, MapPin, TreePalm, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { searchPlaces, type Place } from '../lib/places'
 import './PlaceSearch.css'
 
@@ -27,6 +27,12 @@ export function PlaceSearch({
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Place[]>([])
   const [error, setError] = useState(false)
+  const field = useRef<HTMLDivElement>(null)
+
+  // Suggestions affichées : le champ remonte en haut du panneau, pour qu'elles tiennent au-dessus du clavier
+  useEffect(() => {
+    if (results.length > 0) field.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [results.length])
 
   useEffect(() => {
     const q = query.trim()
@@ -67,7 +73,7 @@ export function PlaceSearch({
     )
 
   return (
-    <div className="field place-search">
+    <div ref={field} className="field place-search">
       <label className="overline muted" htmlFor="place-search">
         {label}
       </label>

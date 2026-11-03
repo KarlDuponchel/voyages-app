@@ -10,10 +10,12 @@ const CLOSE_VELOCITY = 0.6
 /**
  * Panneau qui monte du bas de l'écran (bottom sheet).
  * Se ferme par la croix, en touchant le fond, avec Échap, ou en le faisant glisser vers le bas
- * (depuis la poignée, ou depuis n'importe où quand le contenu est déjà tout en haut).
+ * (depuis la poignée, ou depuis n'importe où quand le contenu est déjà tout en haut et que le clavier est fermé).
+ * Clavier ouvert, le panneau tient dans la partie visible de l'écran (visualViewport) : rien ne passe sous le clavier.
  */
 export function Sheet({ open, onClose, children, label }: { open: boolean; onClose: () => void; children: ReactNode; label: string }) {
   const sheet = useRef<HTMLDivElement>(null)
+  const backdrop = useRef<HTMLDivElement>(null)
   const close = useRef(onClose)
   close.current = onClose
 
@@ -25,6 +27,26 @@ export function Sheet({ open, onClose, children, label }: { open: boolean; onClo
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
+    }
+  }, [open])
+
+  // Clavier ouvert sur iPhone : la zone visible rétrécit (et peut défiler) sans que la page change de taille.
+  // Le fond suit cette zone, pour que le bas du panneau reste au-dessus du clavier.
+  useEffect(() => {
+    const vv = window.visualViewport
+    const el = backdrop.current
+    if (!open || !vv || !el) return
+    const fit = () => {
+      el.style.top = `${vv.offsetTop}px`
+      el.style.height = `${vv.height}px`
+      el.style.bottom = 'auto'
+    }
+    fit()
+    vv.addEventListener('resize', fit)
+    vv.addEventListener('scroll', fit)
+    return () => {
+      vv.removeEventListener('resize', fit)
+      vv.removeEventListener('scroll', fit)
     }
   }, [open])
 
@@ -41,8 +63,10 @@ export function Sheet({ open, onClose, children, label }: { open: boolean; onClo
 
     const onStart = (e: TouchEvent) => {
       const fromHandle = (e.target as HTMLElement).closest('.sheet__top') !== null
-      // Dans le contenu, on ne ferme que si le panneau est déjà tout en haut (sinon on défile)
-      tracking = fromHandle || el.scrollTop <= 0
+      // Dans le contenu, on ne ferme que si le panneau est déjà tout en haut (sinon on défile),
+      // et jamais clavier ouvert : on fait alors défiler les suggestions, pas fermer par erreur
+      const typing = el.contains(document.activeElement) && !!document.activeElement?.matches('input, textarea, select')
+      tracking = fromHandle || (el.scrollTop <= 0 && !typing)
       dragging = false
       dy = 0
       startY = e.touches[0].clientY
@@ -90,7 +114,7 @@ export function Sheet({ open, onClose, children, label }: { open: boolean; onClo
 
   if (!open) return null
   return createPortal(
-    <div className="sheet-backdrop" onClick={onClose}>
+    <div ref={backdrop} className="sheet-backdrop" onClick={onClose}>
       <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>
         <div className="sheet__top">
           <div className="sheet__grab" aria-hidden />

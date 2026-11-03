@@ -4,7 +4,7 @@
  */
 import { assert, assertEquals, assertMatch } from 'jsr:@std/assert@1.0.13'
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
-import { importNotification, reactionNotification } from '../_shared/push.ts'
+import { flightReminder, importNotification, reactionNotification } from '../_shared/push.ts'
 
 const draft = (title: string) => ({ kind: 'hotel' as const, title, detail: '', start: '2026-11-14T15:00' })
 
@@ -72,4 +72,22 @@ Deno.test('envoi chiffré (RFC 8291) avec signature VAPID vers un faux service d
   assertMatch(r.headers.get('authorization') ?? '', /^vapid t=.+, k=.+/)
   assertEquals(r.headers.get('topic'), 'import')
   assert(r.size > 100, 'message chiffré vide')
+})
+
+Deno.test('rappel de vol : avec un billet lu, puis sans billet', () => {
+  const withTicket = flightReminder({
+    booking_id: 'b1',
+    trip_id: 't1',
+    title: 'Paris → Lisbonne',
+    starts_at: '2026-11-20T07:15:00',
+    ticket: { carrier: 'TAP Air Portugal', number: 'TP 433', fromCity: 'Paris', toCity: 'Lisbonne', departure: '07:15' },
+  })
+  assertEquals(withTicket.title, '✈️ Demain : Paris → Lisbonne')
+  assertEquals(withTicket.body, "Départ à 07:15 · TAP Air Portugal TP 433. Pensez à l'enregistrement en ligne et gardez le billet à portée de main.")
+  assertEquals(withTicket.url, '/voyages/t1/reservations/b1')
+
+  const plain = flightReminder({ booking_id: 'b2', trip_id: 't1', title: 'Vol retour', starts_at: '2026-11-27 18:40:00', ticket: null })
+  assertEquals(plain.title, '✈️ Demain : Vol retour')
+  assertEquals(plain.body, "Départ à 18:40. Pensez à l'enregistrement en ligne et gardez le billet à portée de main.")
+  assertEquals(plain.tag, 'vol-b2')
 })

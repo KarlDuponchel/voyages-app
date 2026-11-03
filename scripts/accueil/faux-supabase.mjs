@@ -44,6 +44,23 @@ const TABLES = {
   pending_imports: [],
   import_addresses: [{ alias: 'camille' }],
   profiles: [{ id: 'u1', display_name: 'Camille', home_city: 'Paris', home_lat: 48.85, home_lng: 2.35 }],
+  // Photos de l'onglet Photos (les mêmes pour chaque voyage) : deux de Camille, une de Hugo, une déjà publique
+  trip_photos: ['lisbonne', 'cyclades', 'islande', 'kyoto', 'marrakech', 'mexico'].map((nom, i) => ({
+    id: `p${i + 1}`,
+    kind: 'photo',
+    path: `t1/${nom}.jpg`,
+    thumb_path: `t1/${nom}.jpg`,
+    mime_type: 'image/jpeg',
+    width: 1600,
+    height: 1200,
+    duration_seconds: null,
+    size_bytes: 300000,
+    taken_at: `2026-11-2${i < 3 ? 1 : 2}T10:0${i}:00Z`,
+    created_at: '2026-11-23T10:00:00Z',
+    uploaded_by: i === 2 ? 'u2' : 'u1',
+    caption: null,
+    photo_shares: i === 1 ? { city: 'Lisbonne', destination_id: 'd1', caption: null, hidden_at: null } : null,
+  })),
 }
 const RPC = {
   public_trending_places: [],

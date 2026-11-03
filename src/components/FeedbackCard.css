@@ -1,0 +1,55 @@
+/* « Un bug, une idée ? » (profil) */
+.feedback__kinds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+}
+.feedback__kinds button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.feedback__kinds button.is-active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+.feedback__message {
+  resize: vertical;
+  min-height: 96px;
+  font: inherit;
+  font-size: 16px; /* en dessous de 16px, Safari iOS zoome sur le champ */
+  line-height: 1.45;
+}
+.feedback__attach {
+  padding-inline: 14px;
+}
+.feedback__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 45%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.feedback__file button {
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+}
+.feedback__thanks {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-text);
+}

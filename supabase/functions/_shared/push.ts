@@ -112,3 +112,20 @@ export function reactionNotification(city: string, reactions: { name: string; ki
   const who = names.length === 2 ? `${names[0]} et ${names[1]}` : `${names[0]}, ${names[1]} et ${others} autre${others > 1 ? 's' : ''}`
   return { title: `✨ Votre photo de ${city} plaît`, body: `${who} ont réagi.`, url, tag }
 }
+
+/**
+ * Rappel la veille d'un vol, pour l'enregistrement en ligne. Avec un billet lu par l'IA, on reprend
+ * l'itinéraire, l'heure et le numéro ; sinon le titre de la réservation et l'heure locale du départ.
+ */
+export function flightReminder(flight: { booking_id: string; trip_id: string; title: string; starts_at: string; ticket: Record<string, string> | null }): PushPayload {
+  const t = flight.ticket ?? {}
+  const route = t.fromCity && t.toCity ? `${t.fromCity} → ${t.toCity}` : flight.title
+  const time = t.departure || flight.starts_at.slice(11, 16)
+  const number = [t.carrier, t.number].filter(Boolean).join(' ')
+  return {
+    title: `✈️ Demain : ${route}`,
+    body: `Départ à ${time}${number ? ` · ${number}` : ''}. Pensez à l'enregistrement en ligne et gardez le billet à portée de main.`,
+    url: `/voyages/${flight.trip_id}/reservations/${flight.booking_id}`,
+    tag: `vol-${flight.booking_id}`,
+  }
+}

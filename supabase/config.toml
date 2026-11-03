@@ -443,3 +443,16 @@ verify_jwt = false
 
 [functions.delete-account]
 verify_jwt = false
+
+[functions.export-data]
+verify_jwt = false
+
+# Appelée par pg_cron (secret dans l'en-tête x-cron-secret), sans session
+[functions.flight-reminders]
+verify_jwt = false
+
+[functions.notify-report]
+verify_jwt = false
+
+[functions.feedback]
+verify_jwt = false

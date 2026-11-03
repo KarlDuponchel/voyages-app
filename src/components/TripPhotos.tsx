@@ -1,12 +1,14 @@
-import { Compass, Globe, ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
+import { Check, CheckCircle2, Compass, Globe, ImagePlus, Play, Plus, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../data/auth'
 import { useTrips } from '../data/store'
 import type { Trip } from '../data/types'
 import { formatDayHeader } from '../lib/format'
 import { MEDIA_ACCEPT } from '../lib/media'
 import { listPhotos, QuotaError, uploadError, uploadMedia, usePhotoUrl, type TripPhoto, type UploadStep } from '../lib/photos'
 import { canEdit, mainPlace } from '../lib/trip'
+import { PhotoSelectionBar } from './PhotoSelectionBar'
 import { PhotoViewer } from './PhotoViewer'
 import { StoryPlayer } from './StoryPlayer'
 import './TripPhotos.css'
@@ -19,11 +21,75 @@ export const formatDuration = (s: number) => `${Math.floor(s / 60)}:${String(Mat
 /** Jour local (AAAA-MM-JJ) d'une date ISO */
 const localDay = (iso: string) => new Date(iso).toLocaleDateString('sv-SE')
 
-function Thumb({ photo, onOpen }: { photo: TripPhoto; onOpen: () => void }) {
+/** Durée d'un appui long (ms) et mouvement toléré (px) avant que ce soit un défilement */
+const LONG_PRESS = 450
+const MOVE_TOLERANCE = 10
+
+/**
+ * Miniature : un toucher ouvre la visionneuse ; un appui long démarre la sélection.
+ * Pendant la sélection, un toucher ajoute ou retire la photo.
+ */
+function Thumb({
+  photo,
+  onOpen,
+  selected,
+  onLongPress,
+}: {
+  photo: TripPhoto
+  onOpen: () => void
+  /** undefined hors sélection */
+  selected?: boolean
+  onLongPress?: () => void
+}) {
   const url = usePhotoUrl(photo.thumbPath)
+  const press = useRef<{ x: number; y: number; timer: number } | null>(null)
+  const longPressed = useRef(false)
+  const cancel = () => {
+    if (press.current) clearTimeout(press.current.timer)
+    press.current = null
+  }
+  const selecting = selected !== undefined
+  const label = photo.kind === 'video' ? 'vidéo' : 'photo'
   return (
-    <button className="photos__thumb" onClick={onOpen} aria-label={photo.kind === 'video' ? 'Ouvrir la vidéo' : 'Ouvrir la photo'}>
+    <button
+      className={`photos__thumb${selected ? ' is-selected' : ''}`}
+      aria-label={selecting ? `Sélectionner la ${label}` : `Ouvrir la ${label}`}
+      aria-pressed={selecting ? selected : undefined}
+      onPointerDown={(e) => {
+        longPressed.current = false
+        if (!onLongPress || selecting || e.button !== 0) return
+        const timer = window.setTimeout(() => {
+          longPressed.current = true
+          press.current = null
+          navigator.vibrate?.(10)
+          onLongPress()
+        }, LONG_PRESS)
+        press.current = { x: e.clientX, y: e.clientY, timer }
+      }}
+      onPointerMove={(e) => {
+        const p = press.current
+        if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > MOVE_TOLERANCE) cancel()
+      }}
+      onPointerUp={cancel}
+      onPointerCancel={cancel}
+      onPointerLeave={cancel}
+      // Le menu du navigateur (Android, clic droit) ne doit pas gêner l'appui long
+      onContextMenu={(e) => onLongPress && e.preventDefault()}
+      onClick={() => {
+        // Le toucher qui a démarré la sélection ne compte pas comme un toucher
+        if (longPressed.current) {
+          longPressed.current = false
+          return
+        }
+        onOpen()
+      }}
+    >
       {url && <img src={url} alt="" loading="lazy" draggable={false} />}
+      {selecting && (
+        <span className="photos__check" aria-hidden>
+          {selected && <Check size={13} strokeWidth={3} />}
+        </span>
+      )}
       {photo.share && !photo.share.hidden && (
         <span className="photos__public" title={`Publique · ${photo.share.city}`}>
           <Globe size={11} />
@@ -38,7 +104,7 @@ function Thumb({ photo, onOpen }: { photo: TripPhoto; onOpen: () => void }) {
   )
 }
 
-/** Onglet Photos d'un voyage : grille par jour, ajout (photos et vidéos), visionneuse */
+/** Onglet Photos d'un voyage : grille par jour, ajout (photos et vidéos), visionneuse, sélection (appui long) */
 export function TripPhotos({
   trip,
   incoming,
@@ -50,6 +116,7 @@ export function TripPhotos({
   onIncomingHandled?: () => void
 }) {
   const { refresh } = useTrips()
+  const { session } = useAuth()
   const [photos, setPhotos] = useState<TripPhoto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
@@ -57,6 +124,8 @@ export function TripPhotos({
   const [quota, setQuota] = useState<string | null>(null)
   const [open, setOpen] = useState<number | null>(null)
   const [reliving, setReliving] = useState(false)
+  /** Identifiants sélectionnés ; null hors sélection */
+  const [selection, setSelection] = useState<Set<string> | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const editable = canEdit(trip)
   const place = mainPlace(trip)
@@ -85,6 +154,14 @@ export function TripPhotos({
   }, [incoming])
 
   const uploading = jobs.some((j) => j.step !== 'fini' && j.step !== 'erreur')
+
+  const toggle = (id: string) =>
+    setSelection((sel) => {
+      const next = new Set(sel)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
 
   const addFiles = async (files: File[]) => {
     if (files.length === 0) return
@@ -199,11 +276,24 @@ export function TripPhotos({
               {photos.length - videos} photo{photos.length - videos > 1 ? 's' : ''}
               {videos > 0 && ` · ${videos} vidéo${videos > 1 ? 's' : ''}`}
             </span>
-            {photos.length > 1 && (
-              <button className="photos__relive caption" onClick={() => setReliving(true)}>
-                <Sparkles size={14} /> Revivre
-              </button>
-            )}
+            <div className="row" style={{ gap: 14 }}>
+              {/* Pour la souris (pas d'appui long) et pour ceux qui ne le connaissent pas */}
+              {editable && !selection && (
+                <button className="photos__select caption" onClick={() => setSelection(new Set())}>
+                  <CheckCircle2 size={14} /> Sélectionner
+                </button>
+              )}
+              {photos.length > 1 && !selection && (
+                <button className="photos__relive caption" onClick={() => setReliving(true)}>
+                  <Sparkles size={14} /> Revivre
+                </button>
+              )}
+              {selection && photos.length > 1 && (
+                <button className="photos__select caption" onClick={() => setSelection(new Set(photos.map((p) => p.id)))}>
+                  Tout sélectionner
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -215,7 +305,13 @@ export function TripPhotos({
             </h2>
             <div className="photos__grid">
               {items.map(({ photo, index }) => (
-                <Thumb key={photo.id} photo={photo} onOpen={() => setOpen(index)} />
+                <Thumb
+                  key={photo.id}
+                  photo={photo}
+                  selected={selection ? selection.has(photo.id) : undefined}
+                  onLongPress={editable ? () => setSelection(new Set([photo.id])) : undefined}
+                  onOpen={() => (selection ? toggle(photo.id) : setOpen(index))}
+                />
               ))}
             </div>
           </div>
@@ -247,7 +343,7 @@ export function TripPhotos({
           addFiles(files)
         }}
       />
-      {editable && (
+      {editable && !selection && (
         <button className="fab btn btn--accent" onClick={() => input.current?.click()} disabled={uploading}>
           <Plus size={20} /> Photos
         </button>
@@ -261,6 +357,18 @@ export function TripPhotos({
           onIndex={setOpen}
           onClose={() => setOpen(null)}
           onChanged={async () => {
+            await load()
+            await refresh()
+          }}
+        />
+      )}
+      {selection && (
+        <PhotoSelectionBar
+          trip={trip}
+          me={session?.user.id}
+          selected={(photos ?? []).filter((p) => selection.has(p.id))}
+          onClear={() => setSelection(null)}
+          onDone={async () => {
             await load()
             await refresh()
           }}

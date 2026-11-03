@@ -20,6 +20,7 @@
 - **À 3 signalements**, la photo est masquée automatiquement (`photo_shares.hidden_at`). L'auteur et les membres du voyage la voient toujours, avec la mention « Masquée après des signalements ».
 - **Bloquer** quelqu'un : on ne voit plus ses photos, et il ne voit plus les nôtres.
 - **Limite** : 30 nouvelles publications par jour et par personne.
+- **Alerte e-mail** (depuis le 03/11) : à chaque signalement, la fonction `notify-report` écrit à `contact@tripmates.app` (secret `TEAM_EMAIL` pour une autre adresse) : motif, nombre de signalements, photo masquée ou non, lien vers la photo valable 7 jours. Le motif « on me reconnaît » est signalé comme à traiter vite (RGPD). Il faut le secret `RESEND_API_KEY` (voir « Retours des utilisateurs » ci-dessous).
 
 ### Traiter les signalements (Karl, dans le tableau de bord Supabase → SQL Editor)
 
@@ -112,3 +113,24 @@ Un premium offert n'est jamais remplacé par Stripe. Pour le retirer : `delete f
    - l'offre du profil passe à « Premium » en quelques secondes ;
    - « Gérer l'abonnement » ouvre le portail.
 7. **Passage en mode réel** à l'ouverture au public, avec les CGV et la TVA (voir l'étape 7 de [SUIVI.md](../SUIVI.md)).
+
+## Retours des utilisateurs (bug, idée)
+
+- **Dans l'app** : Profil → « Un bug, une idée ? » : un choix Bug ou Idée, un texte, une capture facultative. L'appareil (navigateur, app installée ou non, taille d'écran) est joint tout seul.
+- **Où ça arrive** : un e-mail à `contact@tripmates.app` (ou `TEAM_EMAIL`), avec l'adresse de l'utilisateur en « Répondre à » : il suffit de répondre. La capture est un lien valable 7 jours. Tout est aussi gardé dans la table `feedback` (Table Editor).
+- **Limite** : 10 envois par 24 h et par personne.
+- **Fichiers** : migration `20261103170000_retours.sql` (table `feedback`, bucket privé `feedback`), fonction `feedback`, textes des e-mails dans `supabase/functions/_shared/mail.ts`.
+
+### Mise en route (Karl, une fois)
+
+1. **Resend** → API Keys → Create API Key : nom « Tripmates fonctions », permission **Sending access**, domaine `tripmates.app`. Copier la clé (elle ne s'affiche qu'une fois).
+2. Dans PowerShell, sans l'afficher :
+```powershell
+$env:RESEND_API_KEY = Read-Host "Clé Resend"
+```
+```powershell
+npx supabase secrets set "RESEND_API_KEY=$env:RESEND_API_KEY"
+```
+3. Facultatif : `npx supabase secrets set TEAM_EMAIL=autre@adresse.fr` pour recevoir ailleurs que `contact@tripmates.app`.
+
+Sans cette clé, les signalements et les retours sont bien enregistrés en base, mais aucun e-mail ne part.

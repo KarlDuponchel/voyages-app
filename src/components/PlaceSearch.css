@@ -1,5 +1,7 @@
 .place-search {
   position: relative;
+  /* Remonté en haut du panneau (suggestions) : sous la poignée et la croix, qui restent collées en haut */
+  scroll-margin-top: 56px;
 }
 
 .place-results {

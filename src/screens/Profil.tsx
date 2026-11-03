@@ -1,6 +1,7 @@
-import { Check, Copy, LogOut, Plus, RefreshCw, Trash2, X } from 'lucide-react'
+import { Check, Copy, Download, LogOut, Plus, RefreshCw, Trash2, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { FeedbackCard } from '../components/FeedbackCard'
 import { InstallSteps } from '../components/InstallSteps'
 import { NotificationsSwitch } from '../components/NotificationsSwitch'
 import { PlanCard } from '../components/PlanCard'
@@ -8,6 +9,7 @@ import { PlaceSearch } from '../components/PlaceSearch'
 import { useAuth } from '../data/auth'
 import { allCountries, countryById } from '../data/countries'
 import { useTrips } from '../data/store'
+import { downloadMyData } from '../lib/account'
 import { importAddress } from '../lib/importAddress'
 import { installPlatform, isInstalled } from '../lib/install'
 import { PUSH_CONFIGURED } from '../lib/push'
@@ -225,7 +227,20 @@ function ImportByEmail({ address }: { address: string }) {
 function Account() {
   const { session, signOut, deleteAccount } = useAuth()
   const [confirm, setConfirm] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const exportData = async () => {
+    setExporting(true)
+    setError(null)
+    try {
+      await downloadMyData()
+    } catch (e) {
+      setError(errorMessage(e))
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div className="card profil-card">
@@ -234,6 +249,10 @@ function Account() {
       </p>
       <button className="btn btn--ghost" onClick={signOut}>
         <LogOut size={16} /> Se déconnecter
+      </button>
+      {/* Droit d'accès et de portabilité (RGPD), promis par la politique de confidentialité */}
+      <button className="btn btn--ghost" onClick={exportData} disabled={exporting}>
+        <Download size={16} /> {exporting ? 'Préparation…' : 'Télécharger mes données'}
       </button>
       {confirm ? (
         <>
@@ -317,6 +336,11 @@ export function Profil() {
             <InstallSteps platform={installPlatform()} />
           )}
         </div>
+      </section>
+
+      <section className="px stack" style={{ gap: 10 }}>
+        <h2 className="overline muted">Un bug, une idée ?</h2>
+        <FeedbackCard />
       </section>
 
       <section className="px stack" style={{ gap: 10 }}>

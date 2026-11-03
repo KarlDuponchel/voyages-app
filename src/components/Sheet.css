@@ -12,7 +12,8 @@
 .sheet {
   width: 100%;
   max-width: 480px;
-  max-height: 92dvh;
+  /* % du fond, qui suit la partie visible de l'écran quand le clavier est ouvert (Sheet.tsx) */
+  max-height: 92%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

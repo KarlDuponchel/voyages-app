@@ -96,3 +96,100 @@
   gap: 6px;
   color: var(--accent-text);
 }
+
+/* ---------- Sélection (appui long sur une miniature) ---------- */
+.photos__thumb {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.photos__thumb img {
+  transition: scale 0.15s ease;
+}
+/* En haut à droite : le badge « publique » est en haut à gauche */
+.photos__check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  background: rgba(15, 48, 42, 0.25);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.photos__thumb.is-selected {
+  box-shadow: inset 0 0 0 3px var(--accent-sunset);
+}
+.photos__thumb.is-selected img {
+  scale: 0.9;
+  border-radius: 4px;
+}
+.photos__thumb.is-selected .photos__check {
+  border-color: var(--accent-sunset);
+  background: var(--accent-sunset);
+}
+.photos__select {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Barre des actions, à la place du bouton flottant, au-dessus de la barre d'onglets */
+.photos-select {
+  position: fixed;
+  z-index: 15;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 448px);
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 12px 32px rgba(15, 48, 42, 0.22);
+  transition: translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html.tabbar-reduite .photos-select {
+  translate: 0 16px;
+}
+.photos-select__actions {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.photos-select__action {
+  flex: 1 1 auto;
+  padding-inline: 12px;
+}
+.photos-select__cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.photos-select__cities button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.photos-select__cities button.is-active {
+  border-color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
+}
+.photos-select__rights {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.photos-select__rights input {
+  margin-top: 2px;
+  accent-color: var(--accent-sunset);
+}
+@media (prefers-reduced-motion: reduce) {
+  .photos__thumb img,
+  .photos-select {
+    transition: none;
+  }
+}

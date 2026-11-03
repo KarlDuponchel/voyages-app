@@ -74,3 +74,29 @@ Ces tests vérifient le texte des notifications, ainsi que l'envoi chiffré et s
 npm run test:db
 ```
 Ces tests vérifient la sécurité de `push_subscriptions` : chacun ne voit que ses appareils, on ne peut pas inscrire un appareil au nom d'un autre, et un appareil qui change de compte passe au nouveau.
+
+## Rappel la veille d'un vol
+
+Environ 24 h avant un vol, chaque voyageur du voyage reçoit :
+« ✈️ Demain : Paris → Lisbonne · Départ à 07:15 · TAP Air Portugal TP 433. Pensez à l'enregistrement en ligne… ».
+Un appui ouvre le billet.
+
+- **Quels vols** : les réservations « vol » qui partent dans 22 à 26 h, à l'heure du lieu de départ (fuseau de la réservation, sinon de la première étape, sinon Paris). Fonction de base `due_flight_reminders()`, réservée au serveur.
+- **Une seule fois** : `bookings.reminded_at` est rempli à l'envoi. Si l'heure du vol change, il est remis à zéro et le rappel repart.
+- **Quand** : toutes les heures (à la 5ᵉ minute), `pg_cron` appelle la fonction `flight-reminders` avec `pg_net`.
+- **Sécurité** : la fonction n'accepte que l'en-tête `x-cron-secret` égal au secret `CRON_SECRET`. Le même secret est rangé dans le coffre de Supabase (Vault) sous le nom `cron_secret`, où la tâche planifiée le lit. Rien de secret n'est dans le dépôt.
+- **Fichiers** : migration `20261103160000_rappels_vol.sql`, `supabase/functions/flight-reminders`, texte dans `_shared/push.ts` (`flightReminder`).
+
+**Mise en route (une fois)**, dans PowerShell, sans afficher le secret :
+```powershell
+$env:CRON_SECRET = [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
+```
+```powershell
+npx supabase secrets set "CRON_SECRET=$env:CRON_SECRET"
+```
+```powershell
+npx supabase db query --remote "select vault.create_secret('$env:CRON_SECRET', 'cron_secret')"
+```
+Puis `npx supabase db push --remote` et `npx supabase functions deploy flight-reminders`.
+
+**Vérifier** : Supabase → Integrations → Cron → `rappels-vol` (historique des appels), et les journaux de la fonction `flight-reminders` (`{ flights, sent }`).

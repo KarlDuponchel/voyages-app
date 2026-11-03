@@ -749,6 +749,46 @@ await denied('villes : anon ne peut pas chercher', async () => {
   }
 }, 'permission denied')
 
+// ---------------------------------------------------------------------
+// Rappel la veille d'un vol (migration 20261103160000_rappels_vol.sql)
+// ---------------------------------------------------------------------
+let soonFlight, flightTrip
+await ok('rappels de vol : seuls les vols partant dans 22 à 26 h (heure du lieu), une seule fois', async () => {
+  ;[{ id: flightTrip }] = await as('karl', `insert into public.trips (title, start_date, end_date) values ('Retour', current_date, current_date + 5) returning id`)
+  // Heure locale de Lisbonne dans 24 h, et dans 3 jours (trop tôt pour un rappel)
+  const local = async (hours) => (await db.query(`select to_char((now() + interval '${hours} hours') at time zone 'Europe/Lisbon', 'YYYY-MM-DD HH24:MI') as t`)).rows[0].t
+  ;[{ id: soonFlight }] = await as(
+    'karl',
+    `insert into public.bookings (trip_id, kind, title, starts_at, timezone) values ('${flightTrip}', 'vol', 'LIS → CDG', '${await local(24)}', 'Europe/Lisbon') returning id`,
+  )
+  await as('karl', `insert into public.bookings (trip_id, kind, title, starts_at, timezone) values ('${flightTrip}', 'vol', 'Plus tard', '${await local(72)}', 'Europe/Lisbon')`)
+  await as('karl', `insert into public.bookings (trip_id, kind, title, starts_at, timezone) values ('${flightTrip}', 'hotel', 'Hôtel', '${await local(24)}', 'Europe/Lisbon')`)
+  const due = await asService('select booking_id from public.due_flight_reminders()')
+  expect(due.length === 1 && due[0].booking_id === soonFlight, JSON.stringify(due))
+  // Ce que fait la fonction flight-reminders après l'envoi (ici sans rôle : service_role n'a pas les tables dans cette base de test)
+  await db.query(`update public.bookings set reminded_at = now() where id = '${soonFlight}'`)
+  const after = await asService('select booking_id from public.due_flight_reminders()')
+  expect(after.length === 0, JSON.stringify(after))
+})
+await ok('rappels de vol : un vol déplacé est rappelé de nouveau', async () => {
+  await as('karl', `update public.bookings set starts_at = starts_at + interval '1 hour' where id = '${soonFlight}'`)
+  const [{ reminded_at }] = (await db.query(`select reminded_at from public.bookings where id = '${soonFlight}'`)).rows
+  expect(reminded_at === null, String(reminded_at))
+})
+await denied('rappels de vol : réservés au serveur', () => as('karl', 'select * from public.due_flight_reminders()'), 'permission denied')
+
+// ---------------------------------------------------------------------
+// Retours (bug, idée) : écrits par la fonction feedback seulement (migration 20261103170000_retours.sql)
+// ---------------------------------------------------------------------
+await denied('retours : pas d’écriture directe depuis l’app', () => as('lea', `insert into public.feedback (user_id, kind, message) values ('${U.lea}', 'bug', 'x')`), 'permission denied')
+await ok('retours : chacun relit les siens, pas ceux des autres', async () => {
+  await db.query(`insert into public.feedback (user_id, kind, message) values ('${U.lea}', 'idee', 'Un mode sombre'), ('${U.karl}', 'bug', 'Bouton cassé')`)
+  const r = await as('lea', 'select message from public.feedback')
+  expect(r.length === 1 && r[0].message === 'Un mode sombre', JSON.stringify(r))
+})
+await ok('retours : capture dans son propre dossier', () => as('lea', `insert into storage.objects (bucket_id, name) values ('feedback', '${U.lea}/capture.jpg')`))
+await denied('retours : pas de capture dans le dossier d’un autre', () => as('lea', `insert into storage.objects (bucket_id, name) values ('feedback', '${U.karl}/capture.jpg')`), 'row-level security')
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {
