@@ -130,7 +130,7 @@ function Identity() {
         </button>
       </form>
       {editingHome || !profile?.homeCity ? (
-        <PlaceSearch label="Ville de départ (pour les distances)" value={null} onChange={saveHome} placeholder="Paris, Lyon, Bruxelles…" />
+        <PlaceSearch label="Ville de départ (pour les distances)" value={null} onChange={saveHome} placeholder="Paris, Lyon, Bruxelles…" withCountries={false} />
       ) : (
         <div className="row between">
           <div className="stack" style={{ gap: 2 }}>

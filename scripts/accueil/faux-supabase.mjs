@@ -50,9 +50,10 @@ const RPC = {
   public_photos: [],
   public_places: [],
   search_places: [
-    { id: 2267057, name: 'Lisbonne', admin1: 'District de Lisbonne', country_code: 'PT', lat: 38.72509, lng: -9.1498, timezone: 'Europe/Lisbon' },
-    { id: 3410315, name: 'João Lisboa', admin1: 'Maranhão', country_code: 'BR', lat: -5.06, lng: -47.4, timezone: 'America/Fortaleza' },
-    { id: 4969398, name: 'Lisbon', admin1: 'Maine', country_code: 'US', lat: 44.03, lng: -70.1, timezone: 'America/New_York' },
+    { id: 2267057, name: 'Lisbonne', admin1: 'District de Lisbonne', country_code: 'PT', lat: 38.72509, lng: -9.1498, timezone: 'Europe/Lisbon', kind: 'ville' },
+    { id: 2629691, name: 'Islande', admin1: null, country_code: 'IS', lat: 64.13548, lng: -21.89541, timezone: 'Atlantic/Reykjavik', kind: 'pays' },
+    { id: 3410315, name: 'João Lisboa', admin1: 'Maranhão', country_code: 'BR', lat: -5.06, lng: -47.4, timezone: 'America/Fortaleza', kind: 'ville' },
+    { id: 4969398, name: 'Lisbon', admin1: 'Maine', country_code: 'US', lat: 44.03, lng: -70.1, timezone: 'America/New_York', kind: 'ville' },
   ],
   // QUOTA_PLEIN=1 : l'envoi de photos est refusé, comme avec l'offre gratuite dépassée
   photo_quota_check: process.env.QUOTA_PLEIN ? "Avec l'offre gratuite, les photos sont possibles dans 2 voyages. Passez premium pour en ajouter à tous vos voyages." : null,

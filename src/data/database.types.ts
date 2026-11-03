@@ -976,6 +976,7 @@ export type Database = {
           admin1: string | null
           country_code: string
           id: number
+          kind: string
           lat: number
           lng: number
           name: string

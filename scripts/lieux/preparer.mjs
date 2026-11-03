@@ -23,12 +23,15 @@ for (const line of lignes('admin1CodesASCII.txt')) {
 }
 
 // Langue principale de chaque pays (« PT » → « pt ») : pour chercher aussi « Lisboa », « München »
+// Les pays eux-mêmes sont aussi cherchables (« Islande »), avec leur population et leur identifiant GeoNames
 const langues = new Map()
+const pays = []
 for (const line of lignes('countryInfo.txt')) {
   if (line.startsWith('#')) continue
   const c = line.split('\t')
   const langue = (c[15] ?? '').split(',')[0].split('-')[0]
   if (c[0] && langue) langues.set(c[0], langue)
+  if (c[0] && c[16]) pays.push({ id: Number(c[16]), country: c[0], name: c[4], population: Number(c[7]) || 0 })
 }
 
 // Lieux habités
@@ -46,14 +49,24 @@ for (const line of lignes('cities500.txt')) {
     region: regions.get(`${c[8]}.${c[10]}`),
     population: Number(c[14]) || 0,
     timezone: c[17],
+    capitale: c[7] === 'PPLC',
   })
 }
 console.log(`${lieux.length} lieux`)
 
+// Un pays prend la position et le fuseau de sa capitale (sinon de son lieu le plus peuplé)
+const centres = new Map()
+for (const l of lieux) {
+  const actuel = centres.get(l.country)
+  if (!actuel || (l.capitale && !actuel.capitale) || (l.capitale === actuel.capitale && l.population > actuel.population)) centres.set(l.country, l)
+}
+const paysGardes = pays.filter((p) => centres.has(p.country))
+console.log(`${paysGardes.length} pays`)
+
 // Noms français, anglais et dans la langue du pays, des lieux et des régions
 // (le préféré, sinon le premier ; ni familier ni historique)
-const voulus = new Set([...lieux.map((l) => l.id), ...[...regions.values()].map((r) => r.id)])
-const langueLocale = new Map(lieux.map((l) => [l.id, langues.get(l.country)]))
+const voulus = new Set([...lieux.map((l) => l.id), ...[...regions.values()].map((r) => r.id), ...paysGardes.map((p) => p.id)])
+const langueLocale = new Map([...lieux, ...paysGardes].map((l) => [l.id, langues.get(l.country)]))
 const noms = { fr: new Map(), en: new Map(), local: new Map() }
 const prefere = new Set()
 const lecture = createInterface({ input: createReadStream(join(SOURCE, 'alternateNamesV2.txt'), 'utf8'), crlfDelay: Infinity })
@@ -87,6 +100,21 @@ rmSync(OUT, { recursive: true, force: true })
 mkdirSync(OUT, { recursive: true })
 writeFileSync(join(OUT, '000-vider.sql'), '-- Rechargement complet : on repart de tables vides\ntruncate public.places cascade;\n')
 
+/** Noms cherchables d'un lieu ou d'un pays : français, GeoNames, ASCII, anglais, puis langue du pays */
+const nomsDe = (l) => {
+  const vus = new Set()
+  const valeurs = []
+  const ajouter = (n, principal) => {
+    const cle = n && normalise(n)
+    if (!cle || vus.has(cle)) return
+    vus.add(cle)
+    valeurs.push(`(${l.id},${sql(n)},${principal})`)
+  }
+  for (const n of [noms.fr.get(l.id), l.name, l.ascii, noms.en.get(l.id)]) ajouter(n, true)
+  ajouter(noms.local.get(l.id), false)
+  return valeurs
+}
+
 let fichiers = 0
 let lignesNoms = 0
 for (let i = 0; i < lieux.length; i += PAR_FICHIER) {
@@ -96,19 +124,7 @@ for (let i = 0; i < lieux.length; i += PAR_FICHIER) {
     const region = l.region ? (noms.fr.get(l.region.id) ?? l.region.name) : null
     return `(${l.id},${sql(name)},${sql(region)},${sql(l.country)},${arrondi(l.lat)},${arrondi(l.lng)},${sql(l.timezone)},${l.population})`
   })
-  const names = lot.flatMap((l) => {
-    const vus = new Set()
-    const valeurs = []
-    const ajouter = (n, principal) => {
-      const cle = n && normalise(n)
-      if (!cle || vus.has(cle)) return
-      vus.add(cle)
-      valeurs.push(`(${l.id},${sql(n)},${principal})`)
-    }
-    for (const n of [noms.fr.get(l.id), l.name, l.ascii, noms.en.get(l.id)]) ajouter(n, true)
-    ajouter(noms.local.get(l.id), false)
-    return valeurs
-  })
+  const names = lot.flatMap(nomsDe)
   lignesNoms += names.length
   fichiers++
   writeFileSync(
@@ -117,4 +133,17 @@ for (let i = 0; i < lieux.length; i += PAR_FICHIER) {
       `insert into public.place_names (place_id, name, principal) values\n${names.join(',\n')};\n`,
   )
 }
-console.log(`${fichiers} fichiers SQL, ${lignesNoms} noms cherchables, dans ${OUT}`)
+// Pays, dans un fichier à part : chargé en dernier, il peut aussi se recharger seul
+const lignesPays = paysGardes.map((p) => {
+  const centre = centres.get(p.country)
+  return `(${p.id},${sql(noms.fr.get(p.id) ?? p.name)},null,${sql(p.country)},${arrondi(centre.lat)},${arrondi(centre.lng)},${sql(centre.timezone)},${p.population},'pays')`
+})
+const nomsPays = paysGardes.flatMap(nomsDe)
+lignesNoms += nomsPays.length
+writeFileSync(
+  join(OUT, '900-pays.sql'),
+  `delete from public.places where kind = 'pays';\n` +
+    `insert into public.places (id, name, admin1, country_code, lat, lng, timezone, population, kind) values\n${lignesPays.join(',\n')};\n` +
+    `insert into public.place_names (place_id, name, principal) values\n${nomsPays.join(',\n')};\n`,
+)
+console.log(`${fichiers + 1} fichiers SQL (dont 900-pays.sql), ${lignesNoms} noms cherchables, dans ${OUT}`)

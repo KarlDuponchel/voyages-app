@@ -664,7 +664,12 @@ await db.exec(`
     (3412093, 'Vík', 'Suðurland', 'IS', 63.42, -19.01, 'Atlantic/Reykjavik', 600),
     (2640729, 'Par', 'Angleterre', 'GB', 50.35, -4.7, 'Europe/London', 1600),
     (3143244, 'Vikersund', 'Buskerud', 'NO', 59.97, 10.03, 'Europe/Oslo', 3000);
-  insert into public.place_names (place_id, name, principal) values (2267057, 'Lisboa', false);
+  insert into public.places (id, name, admin1, country_code, lat, lng, timezone, population, kind) values
+    (2629691, 'Islande', null, 'IS', 64.14, -21.9, 'Atlantic/Reykjavik', 392404, 'pays'),
+    (3437598, 'Paraguay', null, 'PY', -25.29, -57.65, 'America/Asuncion', 6811297, 'pays'),
+    (1168579, 'Islamabad', 'Islamabad', 'PK', 33.72, 73.04, 'Asia/Karachi', 1014825, 'ville');
+  insert into public.place_names (place_id, name, principal) values (2267057, 'Lisboa', false), (2629691, 'Ísland', false);
+  insert into public.place_names (place_id, name) values (2629691, 'Islande'), (2629691, 'Iceland'), (3437598, 'Paraguay'), (1168579, 'Islamabad');
   insert into public.place_names (place_id, name) values
     (2988507, 'Paris'), (4717560, 'Paris'),
     (2267057, 'Lisbonne'), (2267057, 'Lisbon'),
@@ -683,6 +688,16 @@ await ok("villes : « paris » donne Paris (France) avant Paris (Texas), le plus
 await ok('villes : « par » donne Paris avant le village de Par (la population compte)', async () => {
   const r = await cities('par')
   expect(r[0] === 'Paris FR' && r.includes('Par GB'), JSON.stringify(r))
+})
+await ok('pays : « Islande » et « Iceland » donnent le pays, avec sa sorte', async () => {
+  const r = await as('lea', "select name, kind from public.search_places('islande')")
+  const en = await cities('iceland')
+  expect(r[0]?.name === 'Islande' && r[0]?.kind === 'pays' && en[0] === 'Islande IS', JSON.stringify([r, en]))
+})
+await ok("pays : sur un début de nom, il compte au plus pour 1 million (« isl » : Islamabad puis l'Islande)", async () => {
+  const r = await cities('isl')
+  const par = await cities('par')
+  expect(r[0] === 'Islamabad PK' && r[1] === 'Islande IS' && par[0] === 'Paris FR' && par[1] === 'Paraguay PY', JSON.stringify([r, par]))
 })
 await ok('villes : début de nom, au fil de la frappe', async () => {
   const r = await cities('Lis')

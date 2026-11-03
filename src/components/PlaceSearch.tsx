@@ -1,19 +1,22 @@
-import { MapPin, X } from 'lucide-react'
+import { Globe2, MapPin, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { searchPlaces, type Place } from '../lib/places'
 import './PlaceSearch.css'
 
-/** Champ de recherche de ville avec suggestions (nom, région, pays). */
+/** Champ de recherche de ville (ou de pays) avec suggestions (nom, région, pays). */
 export function PlaceSearch({
   label,
   value,
   onChange,
-  placeholder = 'Lisbonne, Kyoto, New York…',
+  placeholder = 'Lisbonne, Kyoto, Islande…',
+  withCountries = true,
 }: {
   label: string
   value: Place | null
   onChange: (place: Place | null) => void
   placeholder?: string
+  /** Proposer aussi les pays entiers (pas pour la ville de départ) */
+  withCountries?: boolean
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Place[]>([])
@@ -27,7 +30,7 @@ export function PlaceSearch({
     }
     const ctrl = new AbortController()
     const timer = setTimeout(() => {
-      searchPlaces(q, ctrl.signal)
+      searchPlaces(q, ctrl.signal, withCountries)
         .then((r) => {
           setResults(r)
           setError(false)
@@ -38,7 +41,7 @@ export function PlaceSearch({
       clearTimeout(timer)
       ctrl.abort()
     }
-  }, [query])
+  }, [query, withCountries])
 
   if (value)
     return (
@@ -86,7 +89,7 @@ export function PlaceSearch({
                   setResults([])
                 }}
               >
-                <MapPin size={16} aria-hidden />
+                {p.isCountry ? <Globe2 size={16} aria-hidden /> : <MapPin size={16} aria-hidden />}
                 <span className="stack" style={{ gap: 0 }}>
                   <span className="strong">{p.name}</span>
                   <span className="caption muted">{p.detail}</span>
