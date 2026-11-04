@@ -27,8 +27,9 @@ export function usePinchZoom(area: RefObject<HTMLElement | null>, content: RefOb
 
   useEffect(() => {
     const zone = area.current
-    const el = content.current
-    if (!zone || !el) return
+    if (!zone || !content.current) return
+    // Lu à chaque geste : dans une visionneuse, l'élément affiché change d'une photo à l'autre
+    const current = () => content.current ?? document.createElement('div')
 
     let scale = 1
     let tx = 0
@@ -39,11 +40,12 @@ export function usePinchZoom(area: RefObject<HTMLElement | null>, content: RefOb
 
     /** Coin haut-gauche du contenu sans zoom, en coordonnées d'écran */
     const origin = (): Point => {
-      const r = el.getBoundingClientRect()
+      const r = current().getBoundingClientRect()
       return { x: r.left - tx, y: r.top - ty }
     }
 
     const apply = (animate = false) => {
+      const el = current()
       // Le contenu agrandi ne doit pas sortir entièrement de l'écran
       const w = el.offsetWidth
       const h = el.offsetHeight

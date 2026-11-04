@@ -9,13 +9,13 @@ import { unpublishPhoto } from '../lib/sharing'
 import { errorMessage } from '../lib/supabase'
 import { canEdit } from '../lib/trip'
 import { usePinchZoom } from '../lib/usePinchZoom'
+import { useSwipeStrip } from '../lib/useSwipeStrip'
 import { PublishPanel } from './PublishPanel'
+import { ViewerStrip } from './ViewerStrip'
 import './PhotoViewer.css'
 
-/** Distance horizontale (px) au-delà de laquelle un glissement passe à l'élément suivant */
-const SWIPE = 60
-
-function Media({ photo }: { photo: TripPhoto }) {
+/** `active` : photo affichée ; ses voisines chargent leur image, mais pas leur vidéo */
+function Media({ photo, active }: { photo: TripPhoto; active: boolean }) {
   const thumb = usePhotoUrl(photo.thumbPath)
   const full = usePhotoUrl(photo.kind === 'photo' ? photo.path : undefined)
   const [video, setVideo] = useState<string | null>(null)
@@ -24,11 +24,11 @@ function Media({ photo }: { photo: TripPhoto }) {
   useEffect(() => {
     setVideo(null)
     setError(null)
-    if (photo.kind !== 'video') return
+    if (photo.kind !== 'video' || !active) return
     videoUrl(photo.path)
       .then(setVideo)
       .catch(() => setError(navigator.onLine ? 'Vidéo introuvable.' : 'Hors ligne : les vidéos se lisent avec du réseau.'))
-  }, [photo])
+  }, [photo, active])
 
   if (photo.kind === 'video')
     return (
@@ -65,8 +65,8 @@ export function PhotoViewer({
   const photo = photos[index]
   const stage = useRef<HTMLDivElement>(null)
   const zoomed = useRef<HTMLDivElement>(null)
+  const track = useRef<HTMLDivElement>(null)
   const resetZoom = usePinchZoom(stage, zoomed)
-  const swipe = useRef<{ x: number; y: number } | null>(null)
   const [confirm, setConfirm] = useState(false)
   /** Panneau de publication, ou confirmation du retrait */
   const [sharing, setSharing] = useState<'publier' | 'retirer' | null>(null)
@@ -88,12 +88,13 @@ export function PhotoViewer({
     setError(null)
     onIndex(i)
   }
+  const slide = useSwipeStrip(stage, track, { index, count: photos.length, go })
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') go(index - 1)
-      if (e.key === 'ArrowRight') go(index + 1)
+      if (e.key === 'ArrowLeft') slide(-1)
+      if (e.key === 'ArrowRight') slide(1)
     }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -157,32 +158,15 @@ export function PhotoViewer({
         </button>
       </header>
 
-      <div
-        ref={stage}
-        className="viewer-photo__stage"
-        onTouchStart={(e) => {
-          swipe.current = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null
-        }}
-        onTouchEnd={(e) => {
-          const start = swipe.current
-          swipe.current = null
-          // Pas de changement de photo pendant un zoom : le doigt déplace alors la photo
-          if (!start || stage.current?.classList.contains('is-zoomed')) return
-          const dx = e.changedTouches[0].clientX - start.x
-          const dy = e.changedTouches[0].clientY - start.y
-          if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? index + 1 : index - 1)
-        }}
-      >
-        <div ref={zoomed} className="viewer-photo__zoom" key={photo.id}>
-          <Media photo={photo} />
-        </div>
+      <div ref={stage} className="viewer-photo__stage">
+        <ViewerStrip items={photos} index={index} track={track} zoomed={zoomed} render={(p, active) => <Media photo={p} active={active} />} />
         {index > 0 && (
-          <button className="viewer-photo__nav viewer-photo__nav--prev" onClick={() => go(index - 1)} aria-label="Précédente">
+          <button className="viewer-photo__nav viewer-photo__nav--prev" onClick={() => slide(-1)} aria-label="Précédente">
             <ChevronLeft size={22} />
           </button>
         )}
         {index < photos.length - 1 && (
-          <button className="viewer-photo__nav viewer-photo__nav--next" onClick={() => go(index + 1)} aria-label="Suivante">
+          <button className="viewer-photo__nav viewer-photo__nav--next" onClick={() => slide(1)} aria-label="Suivante">
             <ChevronRight size={22} />
           </button>
         )}

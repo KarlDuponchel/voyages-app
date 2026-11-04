@@ -74,7 +74,14 @@ const TABLES = {
   })),
 }
 const RPC = {
-  public_trending_places: [],
+  // Villes tendances de « Souvenirs de la communauté » (accueil /monde)
+  public_trending_places: [
+    ['Lisbonne', '620', ['lisbonne', 'cyclades', 'islande'], 124, 38, 512, 21],
+    ['Kyoto', '392', ['kyoto', 'mexico'], 88, 25, 301, 9],
+    ['Marrakech', '504', ['marrakech'], 41, 12, 97, 0],
+  ].map(([city, country_code, noms, photo_count, traveler_count, reaction_count, recent_count]) => ({
+    city, country_code, photo_count, traveler_count, reaction_count, recent_count, thumb_paths: noms.map((n) => `t1/${n}.jpg`),
+  })),
   public_photos: [],
   public_places: [],
   search_places: [

@@ -31,6 +31,17 @@
   /* Le pincement et le glissement sont gérés par l'app, pas par Safari */
   touch-action: none;
 }
+/* Bande : la photo et ses voisines, déplacée par le doigt (voir useSwipeStrip) */
+.viewer-photo__track {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.viewer-photo__slide {
+  position: absolute;
+  inset: 0;
+  translate: calc(var(--offset) * (100% + 16px)) 0;
+}
 .viewer-photo__zoom {
   width: 100%;
   height: 100%;
