@@ -65,6 +65,15 @@
         ],
         "createdAt": "2026-11-02T21:03:53.782Z",
         "reason": "Claude : palette de la marque Tripmates (Warm Cream #F7F3E9), reprise des maquettes Figma choisies par Karl"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "cubic-bezier(0.3, 0.7, 0.4, 1.4)",
+        "files": [
+          "src/components/TabBar.css"
+        ],
+        "createdAt": "2026-11-04T14:47:05.418Z",
+        "reason": "Claude: rebond demandé explicitement par Karl (retour au toucher des onglets, comme Instagram), 0,42 s, désactivé si les animations sont réduites"
       }
     ]
   }

@@ -93,6 +93,27 @@ export function TabBar() {
   const current = tabIndex(pathname)
   const shown = hover ?? current
 
+  /**
+   * Retour au toucher, comme la barre d'Instagram : l'icône rebondit, et toute la barre ondule comme une gelée
+   * à partir de l'onglet touché (penchée de son côté, un peu plus ou moins fort à chaque fois).
+   */
+  const pop = (item: Element | null | undefined) => {
+    const bar = nav.current
+    if (!item || !bar) return
+    const barRect = bar.getBoundingClientRect()
+    const itemRect = item.getBoundingClientRect()
+    const x = (itemRect.left + itemRect.width / 2 - barRect.left) / barRect.width
+    bar.style.setProperty('--jelly-x', `${Math.round(x * 100)}%`)
+    bar.style.setProperty('--jelly-tilt', `${((x - 0.5) * 1.6).toFixed(2)}deg`)
+    bar.style.setProperty('--jelly-amp', (0.8 + Math.random() * 0.4).toFixed(2))
+    // Attributs data-*, que React ne réécrit pas au changement d'onglet (une classe serait effacée en pleine animation)
+    for (const el of [item, bar] as HTMLElement[]) {
+      delete el.dataset.pop
+      void el.offsetWidth
+      el.dataset.pop = ''
+    }
+  }
+
   const indexAt = (clientX: number) => {
     const rect = nav.current?.getBoundingClientRect()
     if (!rect) return current
@@ -131,6 +152,7 @@ export function TabBar() {
     setTimeout(() => (justDragged.current = false), 300)
     const target = hover
     setHover(null)
+    if (target !== null) pop(nav.current?.querySelectorAll('.tabbar__item')[target])
     if (target !== null && target !== current) go(tabs[target].to)
   }
   const onLinkClick = (e: MouseEvent, to: string) => {
@@ -140,6 +162,7 @@ export function TabBar() {
       justDragged.current = false
       return
     }
+    pop(e.currentTarget)
     go(to)
   }
 
@@ -152,6 +175,7 @@ export function TabBar() {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
+      onAnimationEnd={(e) => e.target === e.currentTarget && delete e.currentTarget.dataset.pop}
     >
       {/* Pastille de l'onglet actif : elle glisse d'un onglet à l'autre */}
       <span className="tabbar__indicator" style={{ '--tab': Math.max(0, shown) } as CSSProperties} data-hidden={shown < 0} aria-hidden />
@@ -163,6 +187,7 @@ export function TabBar() {
           className={`tabbar__item${i === shown ? ' is-shown' : ''}`}
           aria-label={label}
           onClick={(e) => onLinkClick(e, to)}
+          onAnimationEnd={(e) => delete e.currentTarget.dataset.pop}
           draggable={false}
         >
           <Icon size={21} strokeWidth={1.9} aria-hidden />

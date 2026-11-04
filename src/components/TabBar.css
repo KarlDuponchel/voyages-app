@@ -142,3 +142,68 @@
     transition: none;
   }
 }
+
+/* Retour au toucher : l'icône s'enfonce sous le doigt, puis rebondit légèrement en changeant d'onglet (TabBar.tsx) */
+.tabbar__item svg {
+  transition: scale 0.12s ease;
+}
+.tabbar__item:active svg {
+  scale: 0.86;
+}
+.tabbar__item[data-pop] svg {
+  animation: tabbar-pop 0.42s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+}
+@keyframes tabbar-pop {
+  0% {
+    transform: scale(0.84);
+  }
+  55% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* Toute la barre ondule comme une gelée touchée (TabBar.tsx : point touché, penchant et force).
+   scale et rotate, et non transform, qui centre déjà la barre */
+.tabbar[data-pop] {
+  transform-origin: var(--jelly-x, 50%) 100%;
+  animation: tabbar-jelly 0.62s linear;
+}
+@keyframes tabbar-jelly {
+  0% {
+    scale: 1 1;
+    rotate: 0deg;
+  }
+  14% {
+    scale: calc(1 + 0.035 * var(--jelly-amp, 1)) calc(1 - 0.07 * var(--jelly-amp, 1));
+    rotate: var(--jelly-tilt, 0deg);
+  }
+  32% {
+    scale: calc(1 - 0.02 * var(--jelly-amp, 1)) calc(1 + 0.04 * var(--jelly-amp, 1));
+    rotate: calc(var(--jelly-tilt, 0deg) * -0.6);
+  }
+  50% {
+    scale: calc(1 + 0.012 * var(--jelly-amp, 1)) calc(1 - 0.02 * var(--jelly-amp, 1));
+    rotate: calc(var(--jelly-tilt, 0deg) * 0.3);
+  }
+  70% {
+    scale: calc(1 - 0.005 * var(--jelly-amp, 1)) calc(1 + 0.008 * var(--jelly-amp, 1));
+    rotate: 0deg;
+  }
+  100% {
+    scale: 1 1;
+    rotate: 0deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabbar[data-pop] {
+    animation: none;
+  }
+  .tabbar__item:active svg {
+    scale: 1;
+  }
+  .tabbar__item[data-pop] svg {
+    animation: none;
+  }
+}
