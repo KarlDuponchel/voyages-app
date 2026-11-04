@@ -1,0 +1,196 @@
+/* Onglet Budget d'un voyage */
+.budget__summary,
+.budget__settle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+.budget__progress.is-over span {
+  background: var(--accent-sunset);
+}
+
+.budget__categories {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.budget__categories li {
+  display: grid;
+  grid-template-columns: 18px 84px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.budget__categories svg {
+  color: var(--accent-text);
+}
+.budget__cat-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+.budget__cat-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-sun);
+}
+
+.budget__plus {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.budget__minus {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.budget__even {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.budget__transfers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.budget__transfers li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.budget__who {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.budget__paid {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.budget__expense {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+.budget__expense:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.budget__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  color: var(--accent-text);
+}
+.budget__title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.budget__empty-icon {
+  color: var(--accent-text);
+}
+
+.budget__settlement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+.budget__undo {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+
+/* Formulaire d'une dépense */
+.expense-form__amount {
+  font-family: var(--font-display);
+  font-size: 28px;
+  height: auto;
+  padding: 10px 16px;
+}
+.expense-form__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.expense-form__chips button,
+.expense-form__mode button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.expense-form__chips button.is-active,
+.expense-form__mode button.is-active {
+  border-color: var(--accent-sunset);
+  background: color-mix(in srgb, var(--accent-sunset) 14%, transparent);
+}
+.expense-form__mode {
+  display: flex;
+  gap: 4px;
+}
+.expense-form__mode button {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.expense-form__people {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.expense-form__people li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+}
+.expense-form__person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.expense-form__person input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-sunset);
+}
+.expense-form__part {
+  width: 110px;
+  text-align: right;
+  padding-block: 8px;
+}

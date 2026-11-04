@@ -2,6 +2,7 @@ import { CalendarDays, ChevronLeft, PenLine, Plus, Users, Wallet } from 'lucide-
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BookingCard } from '../components/BookingCard'
+import { TripBudget } from '../components/TripBudget'
 import { TripCover } from '../components/TripCover'
 import { TripPhotos } from '../components/TripPhotos'
 import { TripStops } from '../components/TripStops'
@@ -123,19 +124,12 @@ export function Voyage() {
         </section>
       )}
 
-      {tab === 'Budget' && (
-        <section className="px fade-in">
-          <div className="card voyage__empty">
-            <span className="numeric-l">{trip.budget != null ? money(trip.budget) : '—'}</span>
-            <span className="caption muted">Budget prévu. Le suivi des dépenses partagées (qui a payé quoi) arrive dans une prochaine version.</span>
-          </div>
-        </section>
-      )}
+      {tab === 'Budget' && <TripBudget trip={trip} />}
 
       {tab === 'Photos' && <TripPhotos trip={trip} incoming={pendingPhotos} onIncomingHandled={() => setPendingPhotos(null)} />}
 
-      {/* Sur l'onglet Photos, le bouton flottant ajoute des photos (dans TripPhotos) */}
-      {editable && tab !== 'Photos' && (
+      {/* Sur les onglets Photos et Budget, le bouton flottant ajoute des photos ou une dépense (dans leur composant) */}
+      {editable && tab !== 'Photos' && tab !== 'Budget' && (
         <button className="fab btn btn--accent" onClick={() => setAdding(true)}>
           <Plus size={20} /> Ajouter
         </button>

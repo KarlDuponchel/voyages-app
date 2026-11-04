@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host",
     "icons": "pwa-assets-generator",
+    "test:app": "node --experimental-strip-types --test src/lib/*.test.ts",
     "test:db": "node supabase/tests/rls.test.mjs",
     "test:functions": "npx -y deno@2.9.6 test --node-modules-dir=none --allow-env --allow-net supabase/functions/tests/"
   },

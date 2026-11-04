@@ -44,6 +44,17 @@ const TABLES = {
   pending_imports: [],
   import_addresses: [{ alias: 'camille' }],
   profiles: [{ id: 'u1', display_name: 'Camille', home_city: 'Paris', home_lat: 48.85, home_lng: 2.35 }],
+  // Budget partagé (les mêmes pour chaque voyage) : Camille et Hugo
+  expenses: [
+    ['e1', 'Dîner à l’Alfama', 8400, 'repas', 'u1', '2026-11-21', [['u1', 4200], ['u2', 4200]]],
+    ['e2', 'Casa do Largo', 36000, 'logement', 'u2', '2026-11-20', [['u1', 18000], ['u2', 18000]]],
+    ['e3', 'Taxi aéroport', 3200, 'transport', 'u1', '2026-11-20', [['u1', 1600], ['u2', 1600]]],
+    ['e4', 'Pastéis de nata', 900, 'repas', 'u2', '2026-11-21', [['u2', 900]]],
+  ].map(([id, title, amount_cents, category, paid_by, spent_on, parts]) => ({
+    id, title, amount_cents, category, paid_by, spent_on,
+    expense_shares: parts.map(([user_id, amount]) => ({ user_id, amount_cents: amount })),
+  })),
+  settlements: [],
   // Photos de l'onglet Photos (les mêmes pour chaque voyage) : deux de Camille, une de Hugo, une déjà publique
   trip_photos: ['lisbonne', 'cyclades', 'islande', 'kyoto', 'marrakech', 'mexico'].map((nom, i) => ({
     id: `p${i + 1}`,

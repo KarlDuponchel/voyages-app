@@ -207,6 +207,87 @@ export type Database = {
           },
         ]
       }
+      expense_shares: {
+        Row: { amount_cents: number; expense_id: string; user_id: string }
+        Insert: { amount_cents: number; expense_id: string; user_id: string }
+        Update: { amount_cents?: number; expense_id?: string; user_id?: string }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount_cents: number
+          booking_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_by: string | null
+          spent_on: string
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          booking_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_by?: string | null
+          spent_on?: string
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_by?: string | null
+          spent_on?: string
+          title?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      settlements: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          created_by: string | null
+          from_user: string
+          id: string
+          settled_on: string
+          to_user: string
+          trip_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          created_by?: string | null
+          from_user: string
+          id?: string
+          settled_on?: string
+          to_user: string
+          trip_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string | null
+          from_user?: string
+          id?: string
+          settled_on?: string
+          to_user?: string
+          trip_id?: string
+        }
+        Relationships: []
+      }
       import_addresses: {
         Row: {
           alias: string
@@ -975,6 +1056,20 @@ export type Database = {
           lng: number
           photo_count: number
         }[]
+      }
+      save_expense: {
+        Args: {
+          p_amount_cents: number
+          p_booking?: string
+          p_category: string
+          p_id: string | null
+          p_paid_by: string | null
+          p_shares: Json
+          p_spent_on: string
+          p_title: string
+          p_trip: string
+        }
+        Returns: string
       }
       search_places: {
         Args: { p_limit?: number; p_query: string }

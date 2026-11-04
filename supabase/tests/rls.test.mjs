@@ -789,6 +789,50 @@ await ok('retours : chacun relit les siens, pas ceux des autres', async () => {
 await ok('retours : capture dans son propre dossier', () => as('lea', `insert into storage.objects (bucket_id, name) values ('feedback', '${U.lea}/capture.jpg')`))
 await denied('retours : pas de capture dans le dossier d’un autre', () => as('lea', `insert into storage.objects (bucket_id, name) values ('feedback', '${U.karl}/capture.jpg')`), 'row-level security')
 
+// ---------------------------------------------------------------------
+// Budget partagé (migration 20261104100000_depenses.sql)
+// ---------------------------------------------------------------------
+let budgetTrip, dinner
+const shares = (...pairs) => `'${JSON.stringify(pairs.map(([user_id, amount_cents]) => ({ user_id, amount_cents })))}'::jsonb`
+await ok('budget : Karl crée un voyage avec Léa (participante) et l’inconnu (lecteur)', async () => {
+  ;[{ id: budgetTrip }] = await as('karl', `insert into public.trips (title, start_date, end_date) values ('Budget', '2026-07-01', '2026-07-10') returning id`)
+  await db.query(`insert into public.trip_members (trip_id, user_id, role) values ('${budgetTrip}', '${U.lea}', 'editor'), ('${budgetTrip}', '${U.inconnu}', 'viewer')`)
+})
+await ok('budget : Léa ajoute un dîner de 60 € payé par Karl, partagé en deux', async () => {
+  ;[{ id: dinner }] = await as(
+    'lea',
+    `select public.save_expense('${budgetTrip}', null, 'Dîner', 6000, 'repas', '${U.karl}', '2026-07-02', ${shares([U.karl, 3000], [U.lea, 3000])}) as id`,
+  )
+  const r = await as('inconnu', `select e.title, (select sum(amount_cents) from public.expense_shares s where s.expense_id = e.id) as total from public.expenses e where e.trip_id = '${budgetTrip}'`)
+  expect(r.length === 1 && Number(r[0].total) === 6000, JSON.stringify(r))
+})
+await denied('budget : les parts doivent faire le total', () =>
+  as('lea', `select public.save_expense('${budgetTrip}', null, 'Taxi', 3000, 'transport', '${U.lea}', '2026-07-02', ${shares([U.karl, 1000], [U.lea, 1000])})`), 'ne correspond pas')
+await denied('budget : uniquement des voyageurs du voyage', () =>
+  as('lea', `select public.save_expense('${budgetTrip}', null, 'Taxi', 2000, 'transport', '${U.lea}', '2026-07-02', ${shares([U.tiers, 2000])})`), 'voyageurs du voyage')
+await denied('budget : un lecteur ne peut pas ajouter de dépense', () =>
+  as('inconnu', `select public.save_expense('${budgetTrip}', null, 'Glace', 500, 'repas', '${U.inconnu}', '2026-07-02', ${shares([U.inconnu, 500])})`), 'participants')
+await ok('budget : modifier une dépense remplace ses parts', async () => {
+  await as('karl', `select public.save_expense('${budgetTrip}', '${dinner}', 'Dîner', 9000, 'repas', '${U.karl}', '2026-07-02', ${shares([U.karl, 3000], [U.lea, 3000], [U.inconnu, 3000])})`)
+  const r = await as('lea', `select count(*)::int as n, sum(amount_cents)::int as total from public.expense_shares where expense_id = '${dinner}'`)
+  expect(r[0].n === 3 && r[0].total === 9000, JSON.stringify(r))
+})
+await ok('budget : Léa enregistre qu’elle a remboursé 30 € à Karl', () =>
+  as('lea', `insert into public.settlements (trip_id, from_user, to_user, amount_cents) values ('${budgetTrip}', '${U.lea}', '${U.karl}', 3000)`))
+await denied('budget : pas de remboursement avec quelqu’un d’extérieur', () =>
+  as('lea', `insert into public.settlements (trip_id, from_user, to_user, amount_cents) values ('${budgetTrip}', '${U.lea}', '${U.tiers}', 1000)`), 'row-level security')
+await ok('budget : un inconnu au voyage ne voit ni dépenses, ni parts, ni remboursements', async () => {
+  const e = await as('tiers', `select * from public.expenses where trip_id = '${budgetTrip}'`)
+  const s = await as('tiers', `select * from public.expense_shares where expense_id = '${dinner}'`)
+  const r = await as('tiers', `select * from public.settlements where trip_id = '${budgetTrip}'`)
+  expect(e.length + s.length + r.length === 0, 'fuite')
+})
+await ok('budget : supprimer une dépense efface ses parts', async () => {
+  await as('karl', `delete from public.expenses where id = '${dinner}'`)
+  const s = (await db.query(`select count(*)::int as n from public.expense_shares where expense_id = '${dinner}'`)).rows
+  expect(s[0].n === 0, JSON.stringify(s))
+})
+
 await denied('anon ne lit rien', async () => {
   await db.exec('set role anon')
   try {
