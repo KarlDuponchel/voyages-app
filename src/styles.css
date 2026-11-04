@@ -333,3 +333,55 @@ html.tabbar-reduite .fab {
   margin: 0;
   color: var(--accent-text);
 }
+
+/* ---------- Changement d'onglet (TabBar.tsx, View Transitions) ----------
+   L'écran glisse légèrement dans le sens de l'onglet choisi ; la barre d'onglets reste en place
+   et sa pastille passe d'un onglet à l'autre. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html[data-tab-direction='avant']::view-transition-old(root) {
+  animation-name: ecran-part-gauche;
+}
+html[data-tab-direction='avant']::view-transition-new(root) {
+  animation-name: ecran-arrive-droite;
+}
+html[data-tab-direction='arriere']::view-transition-old(root) {
+  animation-name: ecran-part-droite;
+}
+html[data-tab-direction='arriere']::view-transition-new(root) {
+  animation-name: ecran-arrive-gauche;
+}
+::view-transition-group(tabbar-indicator) {
+  animation-duration: 0.38s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-group(tabbar) {
+  animation: none;
+}
+@keyframes ecran-part-gauche {
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes ecran-arrive-droite {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes ecran-part-droite {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes ecran-arrive-gauche {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}

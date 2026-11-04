@@ -24,6 +24,8 @@
   background: var(--glass-bg);
   backdrop-filter: blur(18px) saturate(145%);
   -webkit-backdrop-filter: blur(18px) saturate(145%);
+  view-transition-name: tabbar;
+  touch-action: pan-y;
   box-shadow:
     0 12px 28px rgba(15, 48, 42, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
@@ -84,19 +86,59 @@
   }
 }
 
-.tabbar__item.active {
+/* Onglet actif (ou survolé par le doigt qui glisse) : texte foncé ; le fond est la pastille ci-dessous */
+.tabbar__item.is-shown {
   color: var(--text-primary);
+}
+.tabbar__item {
+  z-index: 1;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Pastille de l'onglet actif : une seule, qui glisse d'un onglet à l'autre (5 colonnes, écart 2 px) */
+.tabbar__indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 7px;
+  width: calc((100% - 14px - 4 * 2px) / 5);
+  border-radius: 16px;
   background: var(--glass-active);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 3px 8px rgba(24, 63, 55, 0.07);
+  transform: translateX(calc(var(--tab, 0) * (100% + 2px)));
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+  /* Transition d'écran (TabBar.tsx) : la pastille garde son propre mouvement */
+  view-transition-name: tabbar-indicator;
+}
+.tabbar__indicator[data-hidden='true'] {
+  opacity: 0;
 }
 /* Petit point corail sur l'onglet actif */
-.tabbar__item.active::before {
+.tabbar__indicator::before {
   content: '';
   position: absolute;
   top: 4px;
+  left: 50%;
+  translate: -50% 0;
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: var(--accent-sunset);
   box-shadow: 0 0 8px rgba(242, 107, 75, 0.65);
+}
+/* Doigt qui glisse : la pastille suit plus vite, sans rebond */
+.tabbar--dragging .tabbar__indicator {
+  transition: transform 0.16s ease-out;
+}
+.tabbar--compact .tabbar__indicator {
+  border-radius: 14px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabbar__indicator {
+    transition: none;
+  }
 }

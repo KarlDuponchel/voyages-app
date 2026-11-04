@@ -109,6 +109,10 @@ Ce que les CGV, la politique de confidentialité ou les licences promettent, et 
 
 Fait le 02/11 : acceptation des CGV et de la politique de confidentialité indiquée sur l'écran de connexion (liens ouverts dans un nouvel onglet) ; Open-Meteo décrit correctement (OpenMeteo GmbH, Suisse, journaux 90 jours) et crédité ; Cloudflare décrit comme proxy du site.
 
+### Séance du 04/11
+- **Barre d'onglets plus fluide** (demande de Karl) : une seule pastille glisse d'un onglet à l'autre (avec le point corail) ; on peut faire glisser le doigt le long de la barre, la pastille suit et l'onglet change au lâcher ; l'écran glisse dans le sens de l'onglet choisi (View Transitions, Safari 18+ et Chrome ; sinon changement immédiat). Rien ne bouge si l'iPhone réduit les animations. **À tester sur iPhone.**
+- **Estimations demandées** (sans développement) : version ordinateur et publication sur l'App Store et Google Play, voir la réponse du 04/11 (à reporter ici une fois les choix faits).
+
 ### Pour reprendre (mis à jour le 03/11)
 - **Tripmates est en ligne et ouvert au public** sur https://tripmates.app (VPS OVH avec Dokploy, derrière Cloudflare). Tout est sur `main`. État détaillé et prochaines étapes : « Ouverture au public : où on en est », juste au-dessus.
 - **Pas encore de vente du Premium** : il manque le médiateur de la consommation et Supabase Pro (voir la liste « Avant le premier vrai paiement »).
