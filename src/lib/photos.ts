@@ -145,6 +145,8 @@ export async function deletePhoto(photo: TripPhoto): Promise<void> {
   if (files.error) throw files.error
   const row = await supabase.from('trip_photos').delete().eq('id', photo.id)
   if (row.error) throw row.error
+  forgetUrl(photo.path)
+  forgetUrl(photo.thumbPath)
   await Promise.all([dropFromCache(photo.path), dropFromCache(photo.thumbPath)])
 }
 
@@ -155,6 +157,7 @@ export async function removeTripPhotos(tripId: string): Promise<void> {
   if (paths.length === 0) return
   const { error } = await supabase.storage.from(BUCKET).remove(paths)
   if (error) throw error
+  paths.forEach(forgetUrl)
   await Promise.all(paths.map(dropFromCache))
 }
 
@@ -171,27 +174,79 @@ export async function videoUrl(path: string): Promise<string> {
 }
 
 /**
+ * Adresses (blob:) des photos déjà affichées, gardées le temps de la session : une photo revue
+ * (couverture d'un voyage rouvert, miniature) s'affiche aussitôt, sans repasser par le cache du téléphone.
+ * Les plus anciennes sont libérées au-delà de MAX_URLS.
+ */
+const MAX_URLS = 150
+const urls = new Map<string, string>()
+const loading = new Map<string, Promise<string>>()
+
+function remember(path: string, url: string) {
+  urls.delete(path)
+  urls.set(path, url)
+  while (urls.size > MAX_URLS) {
+    const [oldest, oldUrl] = urls.entries().next().value as [string, string]
+    urls.delete(oldest)
+    URL.revokeObjectURL(oldUrl)
+  }
+}
+
+function forgetUrl(path: string) {
+  const url = urls.get(path)
+  if (url) URL.revokeObjectURL(url)
+  urls.delete(path)
+}
+
+/** Libère toutes les adresses (déconnexion) */
+export function forgetPhotoUrls() {
+  for (const url of urls.values()) URL.revokeObjectURL(url)
+  urls.clear()
+}
+
+/** Adresse d'une photo : immédiate si elle a déjà été affichée, sinon lue dans le cache ou téléchargée */
+export function loadPhotoUrl(path: string): Promise<string> {
+  const known = urls.get(path)
+  if (known) {
+    remember(path, known)
+    return Promise.resolve(known)
+  }
+  let pending = loading.get(path)
+  if (!pending) {
+    pending = getCachedBlob(BUCKET, path, 'image/jpeg')
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        remember(path, url)
+        return url
+      })
+      .finally(() => loading.delete(path))
+    loading.set(path, pending)
+  }
+  return pending
+}
+
+/** Prépare une photo avant qu'on en ait besoin (survol d'un voyage dans la liste) */
+export function preloadPhoto(path: string | undefined) {
+  if (path) loadPhotoUrl(path).catch(() => {})
+}
+
+/**
  * Adresse affichable d'une image stockée (miniature ou photo), via la copie locale.
  * Renvoie null tant qu'elle charge ou si elle est introuvable.
  */
 export function usePhotoUrl(path: string | undefined): string | null {
-  const [url, setUrl] = useState<string | null>(null)
+  // Photo déjà vue : son adresse est connue dès le premier affichage, sans fond générique entre-temps
+  const [loaded, setLoaded] = useState<{ path: string; url: string | null } | null>(null)
   useEffect(() => {
-    if (!path) return
-    let objectUrl: string | null = null
+    if (!path || urls.has(path)) return
     let cancelled = false
-    getCachedBlob(BUCKET, path, 'image/jpeg')
-      .then((blob) => {
-        if (cancelled) return
-        objectUrl = URL.createObjectURL(blob)
-        setUrl(objectUrl)
-      })
-      .catch(() => !cancelled && setUrl(null))
+    loadPhotoUrl(path)
+      .then((url) => !cancelled && setLoaded({ path, url }))
+      .catch(() => !cancelled && setLoaded({ path, url: null }))
     return () => {
       cancelled = true
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-      setUrl(null)
     }
   }, [path])
-  return url
+  if (!path) return null
+  return urls.get(path) ?? (loaded?.path === path ? loaded.url : null)
 }

@@ -8,7 +8,7 @@ import { blockUser, REPORT_REASONS, reportPhoto, type ReportReason } from '../li
 import { errorMessage } from '../lib/supabase'
 import { usePinchZoom } from '../lib/usePinchZoom'
 import { useSwipeStrip } from '../lib/useSwipeStrip'
-import { ViewerStrip } from './ViewerStrip'
+import { ViewerBackdrop, ViewerStrip } from './ViewerStrip'
 import './PhotoViewer.css'
 
 /** `active` : photo affichée ; ses voisines chargent déjà leur image en grand */
@@ -102,6 +102,7 @@ export function PublicViewer({
 
   return createPortal(
     <div className="viewer-photo" role="dialog" aria-modal="true" aria-label={`Photos à ${photo.city}`}>
+      <ViewerBackdrop src={photo.thumbUrl} />
       <header className="viewer-photo__bar">
         <button className="icon-btn icon-btn--glass" onClick={onClose} aria-label="Fermer">
           <X size={20} />

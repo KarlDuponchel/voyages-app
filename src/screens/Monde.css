@@ -23,6 +23,11 @@
   position: relative;
 }
 
+/* Colonne des chiffres : invisible sur téléphone (ses blocs suivent le globe), colonne de droite sur ordinateur */
+.monde__side {
+  display: contents;
+}
+
 .monde__view {
   display: flex;
   flex-direction: column;

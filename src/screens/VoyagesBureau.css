@@ -1,0 +1,107 @@
+/* Voyages sur ordinateur : liste à gauche, voyage ouvert à droite (seulement à partir de 1024 px, App.tsx) */
+.voyages-bureau__body {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 1200px) {
+  .voyages-bureau__body {
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+/* La liste reste visible pendant qu'on fait défiler le voyage */
+.voyages-bureau__list {
+  position: sticky;
+  top: calc(var(--dock-h, 88px) + 12px);
+  max-height: calc(100dvh - var(--dock-h, 88px) - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 12px;
+  scrollbar-width: thin;
+}
+.voyages-bureau__heading {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 8px 4px;
+}
+.voyages-bureau__heading span {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.voyages-bureau__list .imports-banner {
+  margin: 0;
+}
+
+.bureau-trip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease;
+}
+.bureau-trip:hover {
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent);
+}
+.bureau-trip.is-active {
+  background: var(--bg-elevated);
+}
+.bureau-trip__cover {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.bureau-trip__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.15;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.bureau-trip__meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.bureau-trip__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent-sunset) 16%, var(--bg-surface));
+  color: var(--accent-text);
+}
+
+/* Le voyage ouvert : sans marges d'écran, il remplit la colonne de droite */
+.voyage--embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.voyage--embedded .px {
+  padding-left: 0;
+  padding-right: 0;
+}
+.voyage--embedded .voyage__hero {
+  height: 340px;
+  margin: 0;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.voyage--embedded .voyage__title {
+  padding-inline: 28px;
+}

@@ -29,7 +29,11 @@ function groupByDay(bookings: Booking[]) {
   return [...days.entries()]
 }
 
-export function Voyage() {
+/**
+ * Un voyage : couverture, onglets Itinéraire, Billets, Budget et Photos.
+ * `embedded` : affiché à droite de la liste des voyages sur ordinateur (VoyagesBureau), sans bouton retour.
+ */
+export function Voyage({ embedded = false }: { embedded?: boolean }) {
   const { tripId } = useParams()
   const { trips, status } = useTrips()
   const navigate = useNavigate()
@@ -53,13 +57,17 @@ export function Voyage() {
   const shown = tab === 'Billets' ? trip.bookings.filter((b) => b.ticket || b.reference) : trip.bookings
 
   return (
-    <main className={`screen voyage ${editable ? 'screen--fab' : ''}`} style={{ paddingTop: 0 }}>
+    <main className={embedded ? 'voyage voyage--embedded' : `screen voyage ${editable ? 'screen--fab' : ''}`} style={embedded ? undefined : { paddingTop: 0 }}>
       <section className="voyage__hero">
         <TripCover trip={trip} large skyline fadeTo="var(--bg-base)" />
         <div className="voyage__nav">
-          <button className="icon-btn icon-btn--glass" onClick={() => navigate(-1)} aria-label="Retour">
-            <ChevronLeft size={20} />
-          </button>
+          {embedded ? (
+            <span />
+          ) : (
+            <button className="icon-btn icon-btn--glass" onClick={() => navigate(-1)} aria-label="Retour">
+              <ChevronLeft size={20} />
+            </button>
+          )}
           <div className="row" style={{ gap: 8 }}>
             {editable && (
               <button className="icon-btn icon-btn--glass" onClick={() => setEditingTrip(true)} aria-label="Modifier le voyage">

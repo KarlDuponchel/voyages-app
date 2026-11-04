@@ -43,7 +43,7 @@ export function Voyages() {
   const past = sorted.filter((t) => daysUntil(t.end) < 0)
 
   return (
-    <main className="screen">
+    <main className="screen voyages">
       <header className="row between px">
         <div className="stack" style={{ gap: 4 }}>
           <span className="overline muted">
@@ -92,7 +92,7 @@ export function Voyages() {
       )}
 
       {upcoming.length > 0 && (
-        <section className="px stack" style={{ gap: 10 }}>
+        <section className="px stack voyages__list" style={{ gap: 10 }}>
           <h2 className="overline muted">À venir</h2>
           {upcoming.map((t) => (
             <TripRow key={t.id} trip={t} />
@@ -100,7 +100,7 @@ export function Voyages() {
         </section>
       )}
       {past.length > 0 && (
-        <section className="px stack" style={{ gap: 10 }}>
+        <section className="px stack voyages__list" style={{ gap: 10 }}>
           <h2 className="overline muted">Passés</h2>
           {past.map((t) => (
             <TripRow key={t.id} trip={t} />

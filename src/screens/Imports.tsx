@@ -209,7 +209,7 @@ export function Imports() {
   }, [reading, refresh])
 
   return (
-    <main className="screen">
+    <main className="screen imports">
       <header className="px stack" style={{ gap: 10 }}>
         <button className="icon-btn" onClick={() => navigate(-1)} aria-label="Retour">
           <ChevronLeft size={20} />

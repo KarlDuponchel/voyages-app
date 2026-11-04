@@ -1036,7 +1036,8 @@ blockquote {
   .qr {
     padding-top: 24px;
   }
-  .qr > p {
+  /* Le message principal reste ; la consigne et l'adresse s'effacent */
+  .qr > p:not(:first-of-type) {
     display: none;
   }
   .qr__code {
@@ -1053,10 +1054,7 @@ blockquote {
   text-transform: uppercase;
 }
 .qr__navigateur {
-  display: inline-block;
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 14px;
+  margin-top: 18px;
 }
 .qr__fermer {
   position: absolute;

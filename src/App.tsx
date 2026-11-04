@@ -16,6 +16,10 @@ import { Souvenirs } from './screens/Souvenirs'
 import { Stats } from './screens/Stats'
 import { Voyage } from './screens/Voyage'
 import { Voyages } from './screens/Voyages'
+import { VoyagesBureau } from './screens/VoyagesBureau'
+import { useDesktop } from './lib/useDesktop'
+// En dernier : la version ordinateur passe après les styles des écrans
+import './desktop.css'
 
 /** Écrans de détail sans barre d'onglets */
 const hideTabBar = (path: string) => path.startsWith('/stats') || path.includes('/reservations/') || path.startsWith('/invitation/')
@@ -24,6 +28,8 @@ function Shell() {
   const { pathname } = useLocation()
   const { refresh } = useTrips()
   const { reloadProfile } = useAuth()
+  // Sur ordinateur, la liste des voyages et le voyage ouvert sont côte à côte
+  const desktop = useDesktop()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
@@ -34,8 +40,8 @@ function Shell() {
         {/* « / » est la page d'accueil publique (index.html) : l'app commence à /monde */}
         <Route path="/" element={<Navigate to="/monde" replace />} />
         <Route path="/monde" element={<Monde />} />
-        <Route path="/voyages" element={<Voyages />} />
-        <Route path="/voyages/:tripId" element={<Voyage />} />
+        <Route path="/voyages" element={desktop ? <VoyagesBureau /> : <Voyages />} />
+        <Route path="/voyages/:tripId" element={desktop ? <VoyagesBureau /> : <Voyage />} />
         <Route path="/voyages/:tripId/reservations/:bookingId" element={<Billet />} />
         <Route path="/souvenirs" element={<Souvenirs />} />
         <Route path="/explorer" element={<Explorer />} />

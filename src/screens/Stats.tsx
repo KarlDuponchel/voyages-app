@@ -31,7 +31,7 @@ export function Stats() {
   ]
 
   return (
-    <main className="screen screen--no-tabbar">
+    <main className="screen screen--no-tabbar stats">
       <header className="px stack" style={{ gap: 10 }}>
         <button className="icon-btn" onClick={() => navigate(-1)} aria-label="Retour">
           <ChevronLeft size={20} />

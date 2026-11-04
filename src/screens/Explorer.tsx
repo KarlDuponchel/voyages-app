@@ -3,12 +3,60 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PublicViewer } from '../components/PublicViewer'
 import { formatDuration } from '../components/TripPhotos'
-import { listPublicPhotos, listPublicPlaces, PAGE, REACTIONS, setReaction, toggled, type PublicPhoto, type PublicPlace, type ReactionKind } from '../lib/explore'
+import { listPublicPhotos, listPublicPlaces, PAGE, REACTIONS, setReaction, signedUrls, toggled, type PublicPhoto, type PublicPlace, type ReactionKind } from '../lib/explore'
+import { useDesktop } from '../lib/useDesktop'
 import { errorMessage } from '../lib/supabase'
 import '../components/TripPhotos.css'
 import './Explorer.css'
 
 type Tab = 'recentes' | 'wishlist'
+
+/**
+ * Grille éditoriale (ordinateur) : sur chaque série de 10 photos, une grande (2 × 2), deux hautes et une large,
+ * les autres en simple case (voir .explorer__grid dans src/desktop.css). Mêmes rangs que les règles CSS.
+ */
+const LARGE_TILES = new Set([0, 3, 6, 7])
+
+/** Une photo de la grille ; en grande case sur ordinateur, la photo entière remplace la miniature (trop petite) */
+function Tile({ photo, index, onOpen }: { photo: PublicPhoto; index: number; onOpen: () => void }) {
+  const desktop = useDesktop()
+  const large = desktop && photo.kind === 'photo' && LARGE_TILES.has(index % 10)
+  const [full, setFull] = useState<string | null>(null)
+  useEffect(() => {
+    if (!large) return
+    let cancelled = false
+    signedUrls([photo.path])
+      .then((urls) => {
+        const url = urls[photo.path]
+        if (!url || cancelled) return
+        // Remplacée seulement une fois chargée : la miniature reste affichée entre-temps
+        const img = new Image()
+        img.onload = () => !cancelled && setFull(url)
+        img.src = url
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [large, photo.path])
+  const src = (large && full) || photo.thumbUrl
+  return (
+    <button className="photos__thumb" onClick={onOpen} aria-label={`Photo à ${photo.city}, par ${photo.author.name}`}>
+      {src && <img src={src} alt="" loading="lazy" draggable={false} />}
+      {photo.kind === 'video' && (
+        <span className="photos__duration">
+          <Play size={11} fill="currentColor" /> {photo.durationSeconds ? formatDuration(photo.durationSeconds) : ''}
+        </span>
+      )}
+      {photo.mine && <span className="explorer__mine">{REACTIONS.find((r) => r.kind === photo.mine)?.emoji}</span>}
+      {/* Ville et auteur, au survol de la souris (ordinateur) */}
+      <span className="explorer__caption" aria-hidden>
+        <span className="strong">{photo.city}</span>
+        <span>par {photo.author.name}</span>
+      </span>
+    </button>
+  )
+}
 
 /** Photos publiques des voyageurs : par ville, les plus récentes d'abord ; et ma Wishlist */
 export function Explorer() {
@@ -154,17 +202,9 @@ export function Explorer() {
         )}
 
         {photos && photos.length > 0 && (
-          <div className="photos__grid">
+          <div className="photos__grid explorer__grid">
             {photos.map((p, i) => (
-              <button key={p.id} className="photos__thumb" onClick={() => setOpen(i)} aria-label={`Photo à ${p.city}, par ${p.author.name}`}>
-                {p.thumbUrl && <img src={p.thumbUrl} alt="" loading="lazy" draggable={false} />}
-                {p.kind === 'video' && (
-                  <span className="photos__duration">
-                    <Play size={11} fill="currentColor" /> {p.durationSeconds ? formatDuration(p.durationSeconds) : ''}
-                  </span>
-                )}
-                {p.mine && <span className="explorer__mine">{REACTIONS.find((r) => r.kind === p.mine)?.emoji}</span>}
-              </button>
+              <Tile key={p.id} photo={p} index={i} onOpen={() => setOpen(i)} />
             ))}
           </div>
         )}

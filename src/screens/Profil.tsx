@@ -288,7 +288,7 @@ export function Profil() {
   const address = importAddress(importAlias)
 
   return (
-    <main className="screen">
+    <main className="screen profil">
       <header className="px stack" style={{ gap: 4 }}>
         <span className="overline muted">{profile?.displayName}</span>
         <h1 className="display-xl">Profil</h1>

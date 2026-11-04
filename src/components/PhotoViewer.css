@@ -9,6 +9,44 @@
   color: #f7f3e9;
   animation: viewer-photo-in 0.2s ease both;
 }
+/* Fond flou : la photo affichée, agrandie, floutée et assombrie (ViewerBackdrop) */
+.viewer-photo__backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.viewer-photo__backdrop img {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  filter: blur(48px) saturate(1.35) brightness(0.48);
+  animation: viewer-backdrop-in 0.45s ease both;
+}
+/* Voile léger en bas et en haut : les textes et les boutons restent lisibles sur une photo claire */
+.viewer-photo__backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.28), transparent 18%, transparent 70%, rgba(0, 0, 0, 0.4));
+}
+.viewer-photo > :not(.viewer-photo__backdrop) {
+  position: relative;
+  z-index: 1;
+}
+@keyframes viewer-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer-photo__backdrop img {
+    animation: none;
+  }
+}
+
 .viewer-photo__bar {
   display: flex;
   align-items: center;

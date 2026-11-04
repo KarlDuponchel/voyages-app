@@ -1,0 +1,10 @@
+{
+  "description": "Visualisez les pays, continents et villes visités sur un globe interactif et suivez vos statistiques de voyage en un coup d’œil.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

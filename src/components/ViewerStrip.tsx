@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, RefObject } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
 
 /**
  * Bande d'une visionneuse : la photo affichée et ses deux voisines, déjà chargées de part et d'autre.
@@ -31,6 +31,25 @@ export function ViewerStrip<T extends { id: string }>({
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/**
+ * Fond de la visionneuse : la photo affichée, très floue et assombrie, qui déborde jusqu'aux bords de l'écran.
+ * La précédente reste dessous le temps du fondu, pour ne jamais repasser par le noir.
+ * `src` : la miniature (petite, donc légère à flouter).
+ */
+export function ViewerBackdrop({ src }: { src?: string | null }) {
+  const [layers, setLayers] = useState<string[]>([])
+  useEffect(() => {
+    if (src) setLayers((list) => (list.at(-1) === src ? list : [...list.slice(-1), src]))
+  }, [src])
+  return (
+    <div className="viewer-photo__backdrop" aria-hidden>
+      {layers.map((url) => (
+        <img key={url} src={url} alt="" draggable={false} />
+      ))}
     </div>
   )
 }

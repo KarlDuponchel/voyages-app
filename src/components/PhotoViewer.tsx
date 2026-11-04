@@ -11,7 +11,7 @@ import { canEdit } from '../lib/trip'
 import { usePinchZoom } from '../lib/usePinchZoom'
 import { useSwipeStrip } from '../lib/useSwipeStrip'
 import { PublishPanel } from './PublishPanel'
-import { ViewerStrip } from './ViewerStrip'
+import { ViewerBackdrop, ViewerStrip } from './ViewerStrip'
 import './PhotoViewer.css'
 
 /** `active` : photo affichée ; ses voisines chargent leur image, mais pas leur vidéo */
@@ -67,6 +67,8 @@ export function PhotoViewer({
   const zoomed = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLDivElement>(null)
   const resetZoom = usePinchZoom(stage, zoomed)
+  // Fond flou : la miniature de la photo affichée (déjà en mémoire, voir usePhotoUrl)
+  const backdrop = usePhotoUrl(photo?.thumbPath)
   const [confirm, setConfirm] = useState(false)
   /** Panneau de publication, ou confirmation du retrait */
   const [sharing, setSharing] = useState<'publier' | 'retirer' | null>(null)
@@ -146,6 +148,7 @@ export function PhotoViewer({
 
   return createPortal(
     <div className="viewer-photo" role="dialog" aria-modal="true" aria-label="Photos du voyage">
+      <ViewerBackdrop src={backdrop} />
       <header className="viewer-photo__bar">
         <button className="icon-btn icon-btn--glass" onClick={onClose} aria-label="Fermer">
           <X size={20} />

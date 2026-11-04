@@ -82,7 +82,14 @@ const RPC = {
   ].map(([city, country_code, noms, photo_count, traveler_count, reaction_count, recent_count]) => ({
     city, country_code, photo_count, traveler_count, reaction_count, recent_count, thumb_paths: noms.map((n) => `t1/${n}.jpg`),
   })),
-  public_photos: [],
+  // Photos publiques d'Explorer : 14 photos pour voir la grille éditoriale sur ordinateur
+  public_photos: ['lisbonne', 'kyoto', 'islande', 'marrakech', 'newyork', 'cyclades', 'mexico'].flatMap((nom, i) =>
+    [0, 1].map((k) => ({
+      photo_id: `pub-${nom}-${k}`, kind: 'photo', path: `pub/${nom}.jpg`, thumb_path: `pub/${nom}.jpg`, width: 1600, height: 1200, duration_seconds: null,
+      taken_month: '2026-10-01', city: ['Lisbonne', 'Kyoto', 'Reykjavik', 'Marrakech', 'New York', 'Santorin', 'Mexico'][i], country_code: ['620', '392', '352', '504', '840', '300', '484'][i],
+      caption: null, published_at: `2026-10-${String(20 - i * 2 - k).padStart(2, '0')}T10:00:00Z`, author_id: k ? 'u2' : 'u3', author_name: k ? 'Hugo' : 'Léa', reactions: { envie: 12 + i }, my_reaction: null,
+    })),
+  ),
   public_places: [],
   search_places: [
     { id: 2267057, name: 'Lisbonne', admin1: 'District de Lisbonne', country_code: 'PT', lat: 38.72509, lng: -9.1498, timezone: 'Europe/Lisbon', kind: 'ville' },
