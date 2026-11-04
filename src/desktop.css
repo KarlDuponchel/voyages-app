@@ -45,8 +45,10 @@
     width: 640px;
     max-width: calc(100vw - 48px);
     height: 56px;
-    padding: 6px;
     border-radius: 22px;
+  }
+  .tabbar__inner {
+    padding: 6px;
   }
   .tabbar__item {
     flex-direction: row;

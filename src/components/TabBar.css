@@ -15,24 +15,31 @@
     height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     bottom 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     border-radius 0.35s ease;
+  border-radius: 24px;
+  /* La barre reste immobile pendant la transition d'écran ; seul son intérieur ondule au toucher */
+  view-transition-name: tabbar;
+  touch-action: pan-y;
+}
+/* Le verre et son contenu */
+.tabbar__inner {
+  position: relative;
+  height: 100%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 6px 7px;
   border: 1px solid var(--glass-border);
-  border-radius: 24px;
+  border-radius: inherit;
   background: var(--glass-bg);
   backdrop-filter: blur(18px) saturate(145%);
   -webkit-backdrop-filter: blur(18px) saturate(145%);
-  view-transition-name: tabbar;
-  touch-action: pan-y;
   box-shadow:
     0 12px 28px rgba(15, 48, 42, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -1px 0 rgba(24, 63, 55, 0.08);
 }
 /* Reflet sur le bord du verre */
-.tabbar::before {
+.tabbar__inner::before {
   content: '';
   position: absolute;
   width: 42%;
@@ -111,8 +118,6 @@
   transition:
     transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.2s ease;
-  /* Transition d'écran (TabBar.tsx) : la pastille garde son propre mouvement */
-  view-transition-name: tabbar-indicator;
 }
 .tabbar__indicator[data-hidden='true'] {
   opacity: 0;
@@ -148,56 +153,46 @@
   transition: scale 0.12s ease;
 }
 .tabbar__item:active svg {
-  scale: 0.86;
+  scale: 0.9;
 }
 .tabbar__item[data-pop] svg {
-  animation: tabbar-pop 0.42s cubic-bezier(0.3, 0.7, 0.4, 1.4);
+  animation: tabbar-pop 0.4s cubic-bezier(0.3, 0.7, 0.4, 1.25);
 }
 @keyframes tabbar-pop {
   0% {
-    transform: scale(0.84);
+    transform: scale(0.9);
   }
   55% {
-    transform: scale(1.14);
+    transform: scale(1.07);
   }
   100% {
     transform: scale(1);
   }
 }
-/* Toute la barre ondule comme une gelée touchée (TabBar.tsx : point touché, penchant et force).
-   scale et rotate, et non transform, qui centre déjà la barre */
-.tabbar[data-pop] {
+/* L'intérieur de la barre ondule doucement comme une gelée touchée (TabBar.tsx : point touché, penchant, force) */
+.tabbar__inner[data-pop] {
   transform-origin: var(--jelly-x, 50%) 100%;
-  animation: tabbar-jelly 0.62s linear;
+  animation: tabbar-jelly 0.5s cubic-bezier(0.25, 0.8, 0.35, 1);
 }
 @keyframes tabbar-jelly {
   0% {
-    scale: 1 1;
-    rotate: 0deg;
+    transform: none;
   }
-  14% {
-    scale: calc(1 + 0.035 * var(--jelly-amp, 1)) calc(1 - 0.07 * var(--jelly-amp, 1));
-    rotate: var(--jelly-tilt, 0deg);
+  18% {
+    transform: scale(calc(1 + 0.016 * var(--jelly-amp, 1)), calc(1 - 0.032 * var(--jelly-amp, 1))) rotate(var(--jelly-tilt, 0deg));
   }
-  32% {
-    scale: calc(1 - 0.02 * var(--jelly-amp, 1)) calc(1 + 0.04 * var(--jelly-amp, 1));
-    rotate: calc(var(--jelly-tilt, 0deg) * -0.6);
+  42% {
+    transform: scale(calc(1 - 0.008 * var(--jelly-amp, 1)), calc(1 + 0.016 * var(--jelly-amp, 1))) rotate(calc(var(--jelly-tilt, 0deg) * -0.4));
   }
-  50% {
-    scale: calc(1 + 0.012 * var(--jelly-amp, 1)) calc(1 - 0.02 * var(--jelly-amp, 1));
-    rotate: calc(var(--jelly-tilt, 0deg) * 0.3);
-  }
-  70% {
-    scale: calc(1 - 0.005 * var(--jelly-amp, 1)) calc(1 + 0.008 * var(--jelly-amp, 1));
-    rotate: 0deg;
+  68% {
+    transform: scale(calc(1 + 0.003 * var(--jelly-amp, 1)), calc(1 - 0.005 * var(--jelly-amp, 1)));
   }
   100% {
-    scale: 1 1;
-    rotate: 0deg;
+    transform: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tabbar[data-pop] {
+  .tabbar__inner[data-pop] {
     animation: none;
   }
   .tabbar__item:active svg {

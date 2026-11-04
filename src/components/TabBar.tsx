@@ -78,6 +78,7 @@ export function TabBar() {
   const { pathname } = useLocation()
   const go = useTabNavigate()
   const nav = useRef<HTMLElement>(null)
+  const inner = useRef<HTMLDivElement>(null)
   // Doigt qui glisse sur la barre : la pastille le suit, l'onglet change au lâcher
   const drag = useRef<{ x: number; active: boolean } | null>(null)
   const [hover, setHover] = useState<number | null>(null)
@@ -98,13 +99,14 @@ export function TabBar() {
    * à partir de l'onglet touché (penchée de son côté, un peu plus ou moins fort à chaque fois).
    */
   const pop = (item: Element | null | undefined) => {
-    const bar = nav.current
+    // L'intérieur de la barre ondule ; la barre elle-même reste immobile pour la transition d'écran
+    const bar = inner.current
     if (!item || !bar) return
     const barRect = bar.getBoundingClientRect()
     const itemRect = item.getBoundingClientRect()
     const x = (itemRect.left + itemRect.width / 2 - barRect.left) / barRect.width
     bar.style.setProperty('--jelly-x', `${Math.round(x * 100)}%`)
-    bar.style.setProperty('--jelly-tilt', `${((x - 0.5) * 1.6).toFixed(2)}deg`)
+    bar.style.setProperty('--jelly-tilt', `${((x - 0.5) * 0.8).toFixed(2)}deg`)
     bar.style.setProperty('--jelly-amp', (0.8 + Math.random() * 0.4).toFixed(2))
     // Attributs data-*, que React ne réécrit pas au changement d'onglet (une classe serait effacée en pleine animation)
     for (const el of [item, bar] as HTMLElement[]) {
@@ -175,25 +177,27 @@ export function TabBar() {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
-      onAnimationEnd={(e) => e.target === e.currentTarget && delete e.currentTarget.dataset.pop}
     >
-      {/* Pastille de l'onglet actif : elle glisse d'un onglet à l'autre */}
-      <span className="tabbar__indicator" style={{ '--tab': Math.max(0, shown) } as CSSProperties} data-hidden={shown < 0} aria-hidden />
-      {tabs.map(({ to, label, Icon, end }, i) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={end}
-          className={`tabbar__item${i === shown ? ' is-shown' : ''}`}
-          aria-label={label}
-          onClick={(e) => onLinkClick(e, to)}
-          onAnimationEnd={(e) => delete e.currentTarget.dataset.pop}
-          draggable={false}
-        >
-          <Icon size={21} strokeWidth={1.9} aria-hidden />
-          <span aria-hidden>{label}</span>
-        </NavLink>
-      ))}
+      {/* Le verre, la pastille et les icônes : c'est cette partie qui ondule au toucher */}
+      <div ref={inner} className="tabbar__inner" onAnimationEnd={(e) => e.target === e.currentTarget && delete e.currentTarget.dataset.pop}>
+        {/* Pastille de l'onglet actif : elle glisse d'un onglet à l'autre */}
+        <span className="tabbar__indicator" style={{ '--tab': Math.max(0, shown) } as CSSProperties} data-hidden={shown < 0} aria-hidden />
+        {tabs.map(({ to, label, Icon, end }, i) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={`tabbar__item${i === shown ? ' is-shown' : ''}`}
+            aria-label={label}
+            onClick={(e) => onLinkClick(e, to)}
+            onAnimationEnd={(e) => delete e.currentTarget.dataset.pop}
+            draggable={false}
+          >
+            <Icon size={21} strokeWidth={1.9} aria-hidden />
+            <span aria-hidden>{label}</span>
+          </NavLink>
+        ))}
+      </div>
     </nav>
   )
 }

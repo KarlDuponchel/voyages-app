@@ -354,12 +354,13 @@ html[data-tab-direction='arriere']::view-transition-old(root) {
 html[data-tab-direction='arriere']::view-transition-new(root) {
   animation-name: ecran-arrive-gauche;
 }
-::view-transition-group(tabbar-indicator) {
-  animation-duration: 0.38s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-::view-transition-group(tabbar) {
+/* La barre n'est pas photographiée : seule sa version vivante s'affiche (pastille qui glisse, ondulation) */
+::view-transition-group(tabbar),
+::view-transition-new(tabbar) {
   animation: none;
+}
+::view-transition-old(tabbar) {
+  display: none;
 }
 @keyframes ecran-part-gauche {
   to {
