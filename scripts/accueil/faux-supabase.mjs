@@ -86,6 +86,18 @@ http
     res.setHeader('Access-Control-Allow-Methods', '*')
     res.setHeader('Access-Control-Expose-Headers', '*')
     if (req.method === 'OPTIONS') return res.end()
+    // Liens signés groupés (createSignedUrls) : un lien par chemin, servi ensuite par la règle ci-dessous
+    if (req.method === 'POST' && url.pathname.startsWith('/storage/v1/object/sign/')) {
+      const bucket = url.pathname.split('/').pop()
+      let raw = ''
+      req.on('data', (c) => (raw += c))
+      req.on('end', () => {
+        const { paths = [] } = JSON.parse(raw || '{}')
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify(paths.map((path) => ({ path, signedURL: `/object/sign/${bucket}/${path}?token=demo`, error: null }))))
+      })
+      return
+    }
     // Stockage : on sert la photo d'après le nom du fichier demandé
     if (url.pathname.startsWith('/storage/v1/object/')) {
       try {

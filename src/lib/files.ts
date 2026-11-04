@@ -112,15 +112,88 @@ export async function isCached(path: string): Promise<boolean> {
   return Boolean(await cache?.match(cacheUrl(path)))
 }
 
-/** Contenu d'un fichier stocké : copie locale d'abord, sinon téléchargement (puis mise en cache). */
-export async function getCachedBlob(bucket: string, path: string, contentType?: string): Promise<Blob> {
+// ---- Liens signés groupés ------------------------------------------------------------
+// Une grille de photos demande ses fichiers d'un coup : au lieu d'un téléchargement par fichier (droits vérifiés
+// à chaque fois par la base), les chemins demandés dans le même instant sont signés en une seule requête, puis
+// lus directement. Avec Supabase Pro, ces liens passent par le CDN (Smart CDN), qui garde un fichier par lien :
+// on réutilise donc le même lien tant qu'il est valable. Durée courte : un voyageur retiré perd vite l'accès.
+
+const SIGNED_SECONDS = 3600
+/** Délai de regroupement des demandes (ms) */
+const BATCH_MS = 15
+const signedLinks = new Map<string, { url: string; until: number }>()
+type Waiter = { resolve: (url: string) => void; reject: (e: unknown) => void }
+const queued = new Map<string, Map<string, Waiter[]>>()
+
+async function signQueued(bucket: string) {
+  const waiting = queued.get(bucket)
+  queued.delete(bucket)
+  if (!waiting) return
+  const paths = [...waiting.keys()]
+  for (let i = 0; i < paths.length; i += 100) {
+    const chunk = paths.slice(i, i + 100)
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrls(chunk, SIGNED_SECONDS)
+    for (const path of chunk) {
+      const found = data?.find((d) => d.path === path)
+      const waiters = waiting.get(path) ?? []
+      const url = found?.signedUrl
+      if (url) {
+        signedLinks.set(`${bucket}:${path}`, { url, until: Date.now() + SIGNED_SECONDS * 1000 })
+        waiters.forEach((w) => w.resolve(url))
+      } else waiters.forEach((w) => w.reject(error ?? new Error(found?.error ?? 'Fichier introuvable')))
+    }
+  }
+}
+
+function signedUrl(bucket: string, path: string): Promise<string> {
+  const known = signedLinks.get(`${bucket}:${path}`)
+  // Encore valable au moins 5 minutes : même lien, donc même entrée dans le cache du CDN
+  if (known && known.until - Date.now() > 300_000) return Promise.resolve(known.url)
+  return new Promise((resolve, reject) => {
+    let waiting = queued.get(bucket)
+    if (!waiting) {
+      waiting = new Map()
+      queued.set(bucket, waiting)
+      setTimeout(() => signQueued(bucket).catch(() => {}), BATCH_MS)
+    }
+    waiting.set(path, [...(waiting.get(path) ?? []), { resolve, reject }])
+  })
+}
+
+async function downloadSigned(bucket: string, path: string): Promise<Blob> {
+  const res = await fetch(await signedUrl(bucket, path))
+  if (!res.ok) throw new Error(`Fichier indisponible (${res.status})`)
+  return res.blob()
+}
+
+/** Téléchargements en cours : deux demandes du même fichier au même moment n'en font qu'un */
+const inFlight = new Map<string, Promise<Blob>>()
+
+/** Contenu d'un fichier stocké : copie locale d'abord, sinon lien signé (puis mise en cache). */
+export function getCachedBlob(bucket: string, path: string, contentType?: string): Promise<Blob> {
+  const key = `${bucket}:${path}`
+  const running = inFlight.get(key)
+  if (running) return running
+  const job = loadBlob(bucket, path, contentType).finally(() => inFlight.delete(key))
+  inFlight.set(key, job)
+  return job
+}
+
+async function loadBlob(bucket: string, path: string, contentType?: string): Promise<Blob> {
   const cache = await openCache()
   const hit = await cache?.match(cacheUrl(path))
   if (hit) return hit.blob()
-  const { data, error } = await supabase.storage.from(bucket).download(path)
-  if (error || !data) throw error ?? new Error('Fichier introuvable')
-  await putInCache(path, data, contentType ?? data.type)
-  return data
+  let blob: Blob
+  try {
+    blob = await downloadSigned(bucket, path)
+  } catch {
+    // Repli : téléchargement direct, comme avant les liens groupés
+    const { data, error } = await supabase.storage.from(bucket).download(path)
+    if (error || !data) throw error ?? new Error('Fichier introuvable')
+    blob = data
+  }
+  await putInCache(path, blob, contentType ?? blob.type)
+  return blob
 }
 
 /** Contenu d'un billet joint (copie locale d'abord). */
@@ -137,6 +210,8 @@ export async function prefetchFiles(files: BookingFile[]): Promise<void> {
 
 /** À la déconnexion : aucun billet ne doit rester lisible sur le téléphone. */
 export async function clearFileCache(): Promise<void> {
+  // Les liens signés en mémoire appartiennent au compte qui se déconnecte
+  signedLinks.clear()
   try {
     if ('caches' in window) await caches.delete(CACHE_NAME)
   } catch {
